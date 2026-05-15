@@ -14,9 +14,9 @@ An **activation function** is a non-linear transformation applied to the output 
 
 Without activation functions, a neural network — regardless of its depth — collapses into a single linear transformation:
 
-\[
+$$
 y = W_n(W_{n-1}(\dots(W_1 x + b_1)\dots) + b_{n-1}) + b_n = W'x + b'
-\]
+$$
 
 A stack of linear layers is still linear. Activation functions inject **non-linearity**, enabling networks to approximate arbitrarily complex functions (Universal Approximation Theorem). They are the reason deep learning can model images, language, speech, and virtually any non-trivial mapping.
 
@@ -36,17 +36,17 @@ A stack of linear layers is still linear. Activation functions inject **non-line
 
 **Formula:**
 
-\[
+$$
 \sigma(x) = \frac{1}{1 + e^{-x}}
-\]
+$$
 
 **Range:** (0, 1)
 
 **Derivative:**
 
-\[
+$$
 \sigma'(x) = \sigma(x)(1 - \sigma(x))
-\]
+$$
 
 **When Used:**
 - Binary classification output layer (predict probability of positive class)
@@ -99,21 +99,21 @@ class BinaryClassifier(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} = 2\sigma(2x) - 1
-\]
+$$
 
 **Range:** (-1, 1)
 
 **Derivative:**
 
-\[
+$$
 \tanh'(x) = 1 - \tanh^2(x)
-\]
+$$
 
 **When Used:**
 - Hidden layers of RNNs and LSTMs (candidate cell state computation)
-- LSTM gates: the candidate value \(\tilde{C}_t\) uses tanh
+- LSTM gates: the candidate value $\tilde{C}_t$ uses tanh
 - GRU candidate hidden state
 - Normalizing features to a centered range
 - Some older fully-connected architectures
@@ -166,17 +166,17 @@ class SimpleLSTMCell(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{ReLU}(x) = \max(0, x)
-\]
+$$
 
 **Range:** [0, ∞)
 
 **Derivative:**
 
-\[
+$$
 \text{ReLU}'(x) = \begin{cases} 1 & \text{if } x > 0 \\ 0 & \text{if } x < 0 \end{cases}
-\]
+$$
 
 (Undefined at x = 0; typically set to 0 in practice.)
 
@@ -229,19 +229,19 @@ class ConvBlock(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{LeakyReLU}(x) = \begin{cases} x & \text{if } x > 0 \\ \alpha x & \text{if } x \leq 0 \end{cases}
-\]
+$$
 
-where \(\alpha\) is a small constant, typically 0.01.
+where $\alpha$ is a small constant, typically 0.01.
 
 **Range:** (-∞, ∞)
 
 **Derivative:**
 
-\[
+$$
 \text{LeakyReLU}'(x) = \begin{cases} 1 & \text{if } x > 0 \\ \alpha & \text{if } x \leq 0 \end{cases}
-\]
+$$
 
 **When Used:**
 - **GANs** (Discriminator networks — DCGAN, WGAN, StyleGAN)
@@ -293,11 +293,11 @@ class Discriminator(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{PReLU}(x) = \begin{cases} x & \text{if } x > 0 \\ a \cdot x & \text{if } x \leq 0 \end{cases}
-\]
+$$
 
-where \(a\) is a **learnable parameter** (updated via backpropagation).
+where $a$ is a **learnable parameter** (updated via backpropagation).
 
 **Range:** (-∞, ∞)
 
@@ -347,19 +347,19 @@ class PReLUBlock(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{ELU}(x) = \begin{cases} x & \text{if } x > 0 \\ \alpha (e^x - 1) & \text{if } x \leq 0 \end{cases}
-\]
+$$
 
-where \(\alpha > 0\) (default = 1.0).
+where $\alpha > 0$ (default = 1.0).
 
 **Range:** (-α, ∞)
 
 **Derivative:**
 
-\[
+$$
 \text{ELU}'(x) = \begin{cases} 1 & \text{if } x > 0 \\ \text{ELU}(x) + \alpha & \text{if } x \leq 0 \end{cases}
-\]
+$$
 
 **When Used:**
 - Deep networks where zero-centered activations improve learning
@@ -412,15 +412,15 @@ class DeepNet(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{GELU}(x) = x \cdot \Phi(x) = x \cdot \frac{1}{2}\left[1 + \text{erf}\left(\frac{x}{\sqrt{2}}\right)\right]
-\]
+$$
 
 **Approximation (commonly used):**
 
-\[
+$$
 \text{GELU}(x) \approx 0.5x\left(1 + \tanh\left[\sqrt{\frac{2}{\pi}}\left(x + 0.044715x^3\right)\right]\right)
-\]
+$$
 
 **Range:** ≈ (-0.17, ∞)
 
@@ -483,11 +483,11 @@ class TransformerFFN(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{Softmax}(x_i) = \frac{e^{x_i}}{\sum_{j=1}^{K} e^{x_j}}
-\]
+$$
 
-for each class \(i\) in \(K\) classes.
+for each class $i$ in $K$ classes.
 
 **Range:** (0, 1) per element; sums to exactly 1.0 across the vector.
 
@@ -500,15 +500,15 @@ for each class \(i\) in \(K\) classes.
 
 **Why Used (Advantages):**
 - Converts raw logits into a valid **probability distribution** (sums to 1, all positive).
-- Differentiable — clean gradient with cross-entropy loss (gradient simplifies to \(\hat{y} - y\)).
+- Differentiable — clean gradient with cross-entropy loss (gradient simplifies to $\hat{y} - y$).
 - Preserves relative ordering (argmax of logits = argmax of softmax).
-- Temperature scaling allows controlling confidence: \(\text{Softmax}(x_i / T)\).
+- Temperature scaling allows controlling confidence: $\text{Softmax}(x_i / T)$.
 
 **Limitations:**
 - **Computationally expensive** for very large vocabularies (LLMs mitigate with tricks like sampled softmax).
 - **Overconfident:** Tends to produce sharp distributions even when uncertain (calibration issue).
 - Sensitive to outlier logits (one very large value dominates).
-- Numerical instability without the max-subtraction trick: \(\text{Softmax}(x_i - \max(x))\).
+- Numerical instability without the max-subtraction trick: $\text{Softmax}(x_i - \max(x))$.
 
 **PyTorch Example:**
 
@@ -560,11 +560,11 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
 
 **Formula:**
 
-\[
+$$
 \text{Swish}(x) = x \cdot \sigma(\beta x) = \frac{x}{1 + e^{-\beta x}}
-\]
+$$
 
-where \(\beta\) is a learnable parameter or fixed constant (commonly \(\beta = 1\)).
+where $\beta$ is a learnable parameter or fixed constant (commonly $\beta = 1$).
 
 **Range:** ≈ (-0.278, ∞) when β=1
 
@@ -631,9 +631,9 @@ class MBConvBlock(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{Mish}(x) = x \cdot \tanh\left(\text{softplus}(x)\right) = x \cdot \tanh\left(\ln(1 + e^x)\right)
-\]
+$$
 
 **Range:** ≈ (-0.31, ∞)
 
@@ -689,9 +689,9 @@ class YOLOConvBlock(nn.Module):
 
 **Formula:**
 
-\[
+$$
 \text{SiLU}(x) = x \cdot \sigma(x) = \frac{x}{1 + e^{-x}}
-\]
+$$
 
 This is **identical to Swish with β = 1**. The name "SiLU" was proposed independently by Elfwing et al. (2018), while "Swish" was proposed by Ramachandran et al. (2017).
 
@@ -866,9 +866,9 @@ Softmax is used because it converts a vector of arbitrary real-valued logits int
 **Mathematical elegance with cross-entropy:**
 When paired with cross-entropy loss, the gradient simplifies beautifully:
 
-\[
+$$
 \frac{\partial \mathcal{L}}{\partial z_i} = \hat{y}_i - y_i
-\]
+$$
 
 This clean gradient (predicted minus actual) leads to stable, efficient training.
 

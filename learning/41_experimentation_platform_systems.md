@@ -287,9 +287,9 @@ When a user actually **sees** the variant, the platform logs an event:
 
 A user is **triggered** when they first hit the surface that could be impacted by the experiment. Triggered analysis restricts to:
 
-\[
+$$
 \text{Triggered population} = \{ u : u \text{ exposed within experiment window} \}
-\]
+$$
 
 This sharply increases sensitivity if only a fraction of users are exposed (e.g., new search filter only affects 10% of searches).
 
@@ -519,16 +519,16 @@ A user is triggered as soon as they first hit the surface within the window.
 
 ## 9.3 Math: Why Triggering Helps
 
-If only fraction \(p\) of users trigger, and the true effect on triggered users is \(\delta\), then:
+If only fraction $p$ of users trigger, and the true effect on triggered users is $\delta$, then:
 
 | Quantity | Value |
 |----------|------|
-| Population ATE | \(p \cdot \delta\) |
-| Triggered ATE | \(\delta\) |
-| Population SE | scaled by full \(n\) |
-| Triggered SE | scaled by \(p \cdot n\), but with smaller \(\sigma^2_{\text{triggered}}\) |
+| Population ATE | $p \cdot \delta$ |
+| Triggered ATE | $\delta$ |
+| Population SE | scaled by full $n$ |
+| Triggered SE | scaled by $p \cdot n$, but with smaller $\sigma^2_{\text{triggered}}$ |
 
-The trade-off: smaller sample but cleaner signal. In practice, **triggered analysis almost always wins** when \(p < 0.5\).
+The trade-off: smaller sample but cleaner signal. In practice, **triggered analysis almost always wins** when $p < 0.5$.
 
 ## 9.4 Common Pitfall — Conditioning on Treatment
 

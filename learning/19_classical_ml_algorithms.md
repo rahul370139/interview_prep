@@ -35,59 +35,59 @@ Despite the name, **Logistic Regression** is a **classification** algorithm. It 
 
 **Linear part (logit):**
 
-\[
+$$
 z = \mathbf{w}^T \mathbf{x} + b = w_1 x_1 + w_2 x_2 + \dots + w_n x_n + b
-\]
+$$
 
 **Sigmoid (logistic) function:**
 
-\[
+$$
 \sigma(z) = \frac{1}{1 + e^{-z}}
-\]
+$$
 
 **Predicted probability:**
 
-\[
+$$
 P(y=1 \mid \mathbf{x}) = \sigma(\mathbf{w}^T \mathbf{x} + b)
-\]
+$$
 
 **Decision rule:**
 
-\[
+$$
 \hat{y} = \begin{cases} 1 & \text{if } P(y=1 \mid \mathbf{x}) \geq 0.5 \\ 0 & \text{otherwise} \end{cases}
-\]
+$$
 
 ### Sigmoid Properties
 
 | Property | Value |
 |----------|-------|
 | Range | (0, 1) |
-| \(\sigma(0)\) | 0.5 |
+| $\sigma(0)$ | 0.5 |
 | Monotonic | Yes — always increasing |
-| Derivative | \(\sigma'(z) = \sigma(z)(1 - \sigma(z))\) |
-| Saturation | Gradients vanish as \(\|z\| \to \infty\) |
+| Derivative | $\sigma'(z) = \sigma(z)(1 - \sigma(z))$ |
+| Saturation | Gradients vanish as $\|z\| \to \infty$ |
 
 ### Decision Boundary
 
-The decision boundary is where \(P(y=1) = 0.5\), i.e., \(\mathbf{w}^T \mathbf{x} + b = 0\). For 2D features, this is a straight line. For higher dimensions, it is a hyperplane. Logistic regression can only learn **linear** decision boundaries.
+The decision boundary is where $P(y=1) = 0.5$, i.e., $\mathbf{w}^T \mathbf{x} + b = 0$. For 2D features, this is a straight line. For higher dimensions, it is a hyperplane. Logistic regression can only learn **linear** decision boundaries.
 
 ### Loss Function — Binary Cross-Entropy
 
-\[
+$$
 \mathcal{L}(\mathbf{w}) = -\frac{1}{N} \sum_{i=1}^{N} \left[ y_i \log(\hat{p}_i) + (1 - y_i) \log(1 - \hat{p}_i) \right]
-\]
+$$
 
-- When \(y=1\): penalizes low \(\hat{p}\)
-- When \(y=0\): penalizes high \(\hat{p}\)
+- When $y=1$: penalizes low $\hat{p}$
+- When $y=0$: penalizes high $\hat{p}$
 - Convex function — guarantees a global minimum via gradient descent
 
 ### Regularization
 
 | Type | Penalty Term | Effect |
 |------|-------------|--------|
-| **L1 (Lasso)** | \(\lambda \sum \|w_j\|\) | Sparse weights — drives coefficients to exactly zero (feature selection) |
-| **L2 (Ridge)** | \(\lambda \sum w_j^2\) | Shrinks weights — prevents any single feature from dominating |
-| **Elastic Net** | \(\alpha \lambda \sum \|w_j\| + \frac{(1-\alpha)}{2} \lambda \sum w_j^2\) | Combines L1 and L2 — both sparsity and regularization |
+| **L1 (Lasso)** | $\lambda \sum \|w_j\|$ | Sparse weights — drives coefficients to exactly zero (feature selection) |
+| **L2 (Ridge)** | $\lambda \sum w_j^2$ | Shrinks weights — prevents any single feature from dominating |
+| **Elastic Net** | $\alpha \lambda \sum \|w_j\| + \frac{(1-\alpha)}{2} \lambda \sum w_j^2$ | Combines L1 and L2 — both sparsity and regularization |
 
 In scikit-learn, `LogisticRegression(C=1.0, penalty='l2')` — **C is the inverse regularization strength**: smaller C = stronger regularization.
 
@@ -96,9 +96,9 @@ In scikit-learn, `LogisticRegression(C=1.0, penalty='l2')` — **C is the invers
 - **One-vs-Rest (OvR):** Train K binary classifiers, each separating one class from all others.
 - **Softmax (Multinomial):** Generalize sigmoid to K classes:
 
-\[
+$$
 P(y=k \mid \mathbf{x}) = \frac{e^{\mathbf{w}_k^T \mathbf{x}}}{\sum_{j=1}^{K} e^{\mathbf{w}_j^T \mathbf{x}}}
-\]
+$$
 
 ### When to Use Logistic Regression
 
@@ -145,28 +145,28 @@ A **Decision Tree** recursively partitions the feature space into regions using 
 
 #### Gini Impurity
 
-\[
+$$
 \text{Gini}(S) = 1 - \sum_{k=1}^{K} p_k^2
-\]
+$$
 
 - Measures the probability of misclassifying a randomly chosen element
-- Range: 0 (pure node) to \(1 - 1/K\) (uniform distribution)
+- Range: 0 (pure node) to $1 - 1/K$ (uniform distribution)
 - Preferred by CART (Classification and Regression Trees) — default in scikit-learn
 
 #### Entropy (Information Gain)
 
-\[
+$$
 \text{Entropy}(S) = -\sum_{k=1}^{K} p_k \log_2(p_k)
-\]
+$$
 
 - Measures the information content / uncertainty in the node
-- Range: 0 (pure node) to \(\log_2(K)\) (uniform)
+- Range: 0 (pure node) to $\log_2(K)$ (uniform)
 
 #### Information Gain
 
-\[
+$$
 \text{IG}(S, A) = \text{Entropy}(S) - \sum_{v \in \text{values}(A)} \frac{|S_v|}{|S|} \text{Entropy}(S_v)
-\]
+$$
 
 - Used by ID3 and C4.5 algorithms
 - Selects the feature-threshold combination that maximizes IG (or equivalently, maximizes impurity reduction)
@@ -204,11 +204,11 @@ Overfitting is the main weakness of decision trees. Two strategies:
 
 **Cost-complexity pruning** minimizes:
 
-\[
+$$
 R_\alpha(T) = R(T) + \alpha \cdot |T|
-\]
+$$
 
-where \(R(T)\) is the total misclassification rate, \(|T|\) is the number of leaf nodes, and \(\alpha\) is the complexity parameter.
+where $R(T)$ is the total misclassification rate, $|T|$ is the number of leaf nodes, and $\alpha$ is the complexity parameter.
 
 ### Pros and Cons
 
@@ -280,19 +280,19 @@ plt.show()
 
 Without feature randomness, all trees would split on the same dominant features — making them **correlated**. The variance reduction from averaging correlated predictors is:
 
-\[
+$$
 \text{Var}(\bar{X}) = \rho \sigma^2 + \frac{1 - \rho}{B} \sigma^2
-\]
+$$
 
-where \(\rho\) is the average correlation between trees. Lower \(\rho\) = more variance reduction. Feature sampling decreases \(\rho\).
+where $\rho$ is the average correlation between trees. Lower $\rho$ = more variance reduction. Feature sampling decreases $\rho$.
 
 ### Out-of-Bag (OOB) Error
 
 Each bootstrap sample leaves out ~36.8% of data (the **out-of-bag** samples). These can be used as a **free validation set**:
 
-\[
+$$
 P(\text{not selected in one draw}) = \left(1 - \frac{1}{N}\right)^N \approx e^{-1} \approx 0.368
-\]
+$$
 
 ```python
 rf = RandomForestClassifier(n_estimators=500, oob_score=True, random_state=42)
@@ -360,31 +360,31 @@ For m = 1 to M:
 
 For **regression** with MSE loss:
 
-\[
+$$
 L(y, F(x)) = \frac{1}{2}(y - F(x))^2 \implies r_i = -\frac{\partial L}{\partial F(x_i)} = y_i - F_{m-1}(x_i) = \text{residual}
-\]
+$$
 
 Each tree literally fits the **residuals**. For other losses (log-loss, Huber), the pseudo-residuals are the negative gradients of the respective loss function.
 
 ### XGBoost Objective — Regularized Loss
 
-\[
+$$
 \text{Obj} = \sum_{i=1}^{N} L(y_i, \hat{y}_i) + \sum_{m=1}^{M} \Omega(h_m)
-\]
+$$
 
-\[
+$$
 \Omega(h) = \gamma T + \frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
-\]
+$$
 
-where \(T\) is the number of leaves, \(w_j\) are leaf weights, \(\gamma\) penalizes complexity (pruning), and \(\lambda\) is L2 regularization on leaf weights.
+where $T$ is the number of leaves, $w_j$ are leaf weights, $\gamma$ penalizes complexity (pruning), and $\lambda$ is L2 regularization on leaf weights.
 
 ### XGBoost Split Gain
 
-\[
+$$
 \text{Gain} = \frac{1}{2} \left[ \frac{G_L^2}{H_L + \lambda} + \frac{G_R^2}{H_R + \lambda} - \frac{(G_L + G_R)^2}{H_L + H_R + \lambda} \right] - \gamma
-\]
+$$
 
-where \(G = \sum g_i\) (sum of first-order gradients) and \(H = \sum h_i\) (sum of second-order gradients). Split only happens if Gain > 0.
+where $G = \sum g_i$ (sum of first-order gradients) and $H = \sum h_i$ (sum of second-order gradients). Split only happens if Gain > 0.
 
 ### XGBoost vs LightGBM vs CatBoost
 
@@ -469,25 +469,25 @@ SVM finds the **hyperplane** that maximizes the **margin** — the distance betw
 
 ### Hard-Margin SVM (Linearly Separable)
 
-\[
+$$
 \min_{\mathbf{w}, b} \frac{1}{2} \|\mathbf{w}\|^2 \quad \text{subject to} \quad y_i(\mathbf{w}^T \mathbf{x}_i + b) \geq 1 \quad \forall i
-\]
+$$
 
-- The margin width is \(\frac{2}{\|\mathbf{w}\|}\)
-- Minimizing \(\|\mathbf{w}\|^2\) maximizes the margin
+- The margin width is $\frac{2}{\|\mathbf{w}\|}$
+- Minimizing $\|\mathbf{w}\|^2$ maximizes the margin
 - Only works for linearly separable data
 
 ### Soft-Margin SVM (C Parameter)
 
-\[
+$$
 \min_{\mathbf{w}, b, \xi} \frac{1}{2} \|\mathbf{w}\|^2 + C \sum_{i=1}^{N} \xi_i
-\]
+$$
 
-\[
+$$
 \text{subject to} \quad y_i(\mathbf{w}^T \mathbf{x}_i + b) \geq 1 - \xi_i, \quad \xi_i \geq 0
-\]
+$$
 
-where \(\xi_i\) are **slack variables** allowing misclassification.
+where $\xi_i$ are **slack variables** allowing misclassification.
 
 | C Value | Behavior |
 |---------|----------|
@@ -498,18 +498,18 @@ where \(\xi_i\) are **slack variables** allowing misclassification.
 
 For non-linearly separable data, SVM maps inputs to a **higher-dimensional** space where a linear separator exists:
 
-\[
+$$
 K(\mathbf{x}_i, \mathbf{x}_j) = \phi(\mathbf{x}_i)^T \phi(\mathbf{x}_j)
-\]
+$$
 
-The **kernel trick** computes the dot product in the high-dimensional space **without explicitly computing** \(\phi(\mathbf{x})\).
+The **kernel trick** computes the dot product in the high-dimensional space **without explicitly computing** $\phi(\mathbf{x})$.
 
 | Kernel | Formula | Use Case |
 |--------|---------|----------|
-| **Linear** | \(K(\mathbf{x}, \mathbf{z}) = \mathbf{x}^T \mathbf{z}\) | Linearly separable data, high-dimensional text |
-| **Polynomial** | \(K(\mathbf{x}, \mathbf{z}) = (\gamma \mathbf{x}^T \mathbf{z} + r)^d\) | Feature interactions up to degree d |
-| **RBF (Gaussian)** | \(K(\mathbf{x}, \mathbf{z}) = \exp(-\gamma \|\mathbf{x} - \mathbf{z}\|^2)\) | Most common; maps to infinite dimensions |
-| **Sigmoid** | \(K(\mathbf{x}, \mathbf{z}) = \tanh(\gamma \mathbf{x}^T \mathbf{z} + r)\) | Similar to neural networks; rarely used |
+| **Linear** | $K(\mathbf{x}, \mathbf{z}) = \mathbf{x}^T \mathbf{z}$ | Linearly separable data, high-dimensional text |
+| **Polynomial** | $K(\mathbf{x}, \mathbf{z}) = (\gamma \mathbf{x}^T \mathbf{z} + r)^d$ | Feature interactions up to degree d |
+| **RBF (Gaussian)** | $K(\mathbf{x}, \mathbf{z}) = \exp(-\gamma \|\mathbf{x} - \mathbf{z}\|^2)$ | Most common; maps to infinite dimensions |
+| **Sigmoid** | $K(\mathbf{x}, \mathbf{z}) = \tanh(\gamma \mathbf{x}^T \mathbf{z} + r)$ | Similar to neural networks; rarely used |
 
 ### RBF Kernel — gamma Parameter
 
@@ -518,14 +518,14 @@ The **kernel trick** computes the dot product in the high-dimensional space **wi
 
 ### When to Use SVM
 
-- **Small to medium** datasets (training is \(O(N^2)\) to \(O(N^3)\))
+- **Small to medium** datasets (training is $O(N^2)$ to $O(N^3)$)
 - **High-dimensional** data (text classification with TF-IDF)
 - When you need a **maximum-margin** classifier
 - Binary classification with clear separation
 
 ### When NOT to Use SVM
 
-- Large datasets (\(N > 100K\)) — too slow
+- Large datasets ($N > 100K$) — too slow
 - When probability estimates are needed (SVM doesn't natively output probabilities; Platt scaling adds overhead)
 - When interpretability is critical
 
@@ -564,10 +564,10 @@ For a new query point x_q:
 
 | Metric | Formula | Properties |
 |--------|---------|------------|
-| **Euclidean (L2)** | \(\sqrt{\sum (x_i - y_i)^2}\) | Sensitive to scale; most common |
-| **Manhattan (L1)** | \(\sum \|x_i - y_i\|\) | More robust to outliers |
-| **Minkowski** | \(\left(\sum \|x_i - y_i\|^p\right)^{1/p}\) | Generalizes L1 (p=1) and L2 (p=2) |
-| **Cosine** | \(1 - \frac{\mathbf{x} \cdot \mathbf{y}}{\|\mathbf{x}\| \|\mathbf{y}\|}\) | For text/embeddings (direction, not magnitude) |
+| **Euclidean (L2)** | $\sqrt{\sum (x_i - y_i)^2}$ | Sensitive to scale; most common |
+| **Manhattan (L1)** | $\sum \|x_i - y_i\|$ | More robust to outliers |
+| **Minkowski** | $\left(\sum \|x_i - y_i\|^p\right)^{1/p}$ | Generalizes L1 (p=1) and L2 (p=2) |
+| **Cosine** | $1 - \frac{\mathbf{x} \cdot \mathbf{y}}{\|\mathbf{x}\| \|\mathbf{y}\|}$ | For text/embeddings (direction, not magnitude) |
 
 ### Choosing K
 
@@ -583,9 +583,9 @@ For a new query point x_q:
 
 In high dimensions, **all points become equidistant**. The concept of "nearest" loses meaning:
 
-\[
+$$
 \frac{d_{\max} - d_{\min}}{d_{\min}} \to 0 \quad \text{as} \quad \text{dimensions} \to \infty
-\]
+$$
 
 **Mitigation:** PCA / feature selection before KNN; use appropriate distance metrics.
 
@@ -593,7 +593,7 @@ In high dimensions, **all points become equidistant**. The concept of "nearest" 
 
 | Pros | Cons |
 |------|------|
-| No training phase (lazy) | Slow prediction: \(O(Nd)\) per query |
+| No training phase (lazy) | Slow prediction: $O(Nd)$ per query |
 | Nonparametric — no assumptions | Memory-intensive — stores all data |
 | Simple and intuitive | Sensitive to irrelevant features |
 | Works well with small data | Curse of dimensionality |
@@ -619,31 +619,31 @@ Naive Bayes classifies by applying **Bayes' theorem** with a **strong independen
 
 ### Bayes' Theorem
 
-\[
+$$
 P(y \mid \mathbf{x}) = \frac{P(\mathbf{x} \mid y) \cdot P(y)}{P(\mathbf{x})}
-\]
+$$
 
 ### Naive Independence Assumption
 
-\[
+$$
 P(\mathbf{x} \mid y) = P(x_1 \mid y) \cdot P(x_2 \mid y) \cdots P(x_n \mid y) = \prod_{j=1}^{n} P(x_j \mid y)
-\]
+$$
 
 ### Classification Rule
 
-\[
+$$
 \hat{y} = \arg\max_{y} \, P(y) \prod_{j=1}^{n} P(x_j \mid y)
-\]
+$$
 
 In practice, use **log-probabilities** to avoid numerical underflow:
 
-\[
+$$
 \hat{y} = \arg\max_{y} \left[ \log P(y) + \sum_{j=1}^{n} \log P(x_j \mid y) \right]
-\]
+$$
 
 ### Variants
 
-| Variant | Feature Type | \(P(x_j \mid y)\) Model | Use Case |
+| Variant | Feature Type | $P(x_j \mid y)$ Model | Use Case |
 |---------|-------------|------------------------|----------|
 | **Gaussian NB** | Continuous | Normal distribution | General numerical features |
 | **Multinomial NB** | Counts/frequencies | Multinomial distribution | **Text classification** (word counts, TF-IDF) |
@@ -654,11 +654,11 @@ In practice, use **log-probabilities** to avoid numerical underflow:
 
 To handle zero probabilities (a feature value never seen with a class):
 
-\[
+$$
 P(x_j \mid y) = \frac{\text{count}(x_j, y) + \alpha}{\text{count}(y) + \alpha \cdot |V|}
-\]
+$$
 
-where \(\alpha = 1\) is Laplace smoothing and \(|V|\) is the vocabulary size.
+where $\alpha = 1$ is Laplace smoothing and $|V|$ is the vocabulary size.
 
 ### Text Classification Example
 
@@ -693,25 +693,25 @@ predictions = text_clf.predict(X_test_text)
 
 ### Core Idea
 
-Linear regression models the relationship between a dependent variable \(y\) and independent variables \(\mathbf{x}\) as a linear function:
+Linear regression models the relationship between a dependent variable $y$ and independent variables $\mathbf{x}$ as a linear function:
 
-\[
+$$
 \hat{y} = \mathbf{w}^T \mathbf{x} + b = w_0 + w_1 x_1 + w_2 x_2 + \dots + w_p x_p
-\]
+$$
 
 ### Ordinary Least Squares (OLS)
 
 Minimize the sum of squared residuals:
 
-\[
+$$
 \hat{\mathbf{w}} = \arg\min_{\mathbf{w}} \sum_{i=1}^{N} (y_i - \mathbf{w}^T \mathbf{x}_i)^2 = \arg\min_{\mathbf{w}} \| \mathbf{y} - \mathbf{X}\mathbf{w} \|^2
-\]
+$$
 
 **Closed-form solution (Normal Equation):**
 
-\[
+$$
 \hat{\mathbf{w}} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}
-\]
+$$
 
 ### Assumptions of Linear Regression
 
@@ -723,21 +723,21 @@ Minimize the sum of squared residuals:
 | **Normality** | Errors are normally distributed | Q-Q plot, Shapiro-Wilk |
 | **No multicollinearity** | Features not highly correlated | VIF (Variance Inflation Factor) |
 
-### R-Squared (\(R^2\))
+### R-Squared ($R^2$)
 
-\[
+$$
 R^2 = 1 - \frac{\text{SS}_{\text{res}}}{\text{SS}_{\text{tot}}} = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}
-\]
+$$
 
-- \(R^2 = 1\): perfect fit
-- \(R^2 = 0\): model predicts the mean (no better than baseline)
-- \(R^2 < 0\): model worse than predicting the mean
+- $R^2 = 1$: perfect fit
+- $R^2 = 0$: model predicts the mean (no better than baseline)
+- $R^2 < 0$: model worse than predicting the mean
 
-**Adjusted \(R^2\):** Penalizes adding unnecessary features:
+**Adjusted $R^2$:** Penalizes adding unnecessary features:
 
-\[
+$$
 R^2_{\text{adj}} = 1 - \frac{(1 - R^2)(N - 1)}{N - p - 1}
-\]
+$$
 
 ---
 
@@ -745,20 +745,20 @@ R^2_{\text{adj}} = 1 - \frac{(1 - R^2)(N - 1)}{N - p - 1}
 
 ### Ridge Regression (L2)
 
-\[
+$$
 \hat{\mathbf{w}} = \arg\min_{\mathbf{w}} \left[ \| \mathbf{y} - \mathbf{X}\mathbf{w} \|^2 + \lambda \| \mathbf{w} \|_2^2 \right]
-\]
+$$
 
-- **Closed-form:** \(\hat{\mathbf{w}} = (\mathbf{X}^T \mathbf{X} + \lambda \mathbf{I})^{-1} \mathbf{X}^T \mathbf{y}\)
+- **Closed-form:** $\hat{\mathbf{w}} = (\mathbf{X}^T \mathbf{X} + \lambda \mathbf{I})^{-1} \mathbf{X}^T \mathbf{y}$
 - Shrinks coefficients toward zero but **never exactly zero**
 - Handles **multicollinearity** by stabilizing the matrix inversion
 - Use when: all features are potentially relevant
 
 ### Lasso Regression (L1)
 
-\[
+$$
 \hat{\mathbf{w}} = \arg\min_{\mathbf{w}} \left[ \| \mathbf{y} - \mathbf{X}\mathbf{w} \|^2 + \lambda \| \mathbf{w} \|_1 \right]
-\]
+$$
 
 - No closed-form — solved by coordinate descent
 - Drives coefficients to **exactly zero** — performs **automatic feature selection**
@@ -766,9 +766,9 @@ R^2_{\text{adj}} = 1 - \frac{(1 - R^2)(N - 1)}{N - p - 1}
 
 ### Elastic Net (L1 + L2)
 
-\[
+$$
 \hat{\mathbf{w}} = \arg\min_{\mathbf{w}} \left[ \| \mathbf{y} - \mathbf{X}\mathbf{w} \|^2 + \lambda_1 \| \mathbf{w} \|_1 + \lambda_2 \| \mathbf{w} \|_2^2 \right]
-\]
+$$
 
 - Combines L1 sparsity with L2 stability
 - Handles groups of correlated features better than Lasso alone
@@ -811,11 +811,11 @@ print(f"Best alpha: {ridge_cv.best_params_['alpha']}")
 
 Polynomial regression models **non-linear** relationships by adding polynomial feature terms while keeping the model **linear in its parameters**:
 
-\[
+$$
 \hat{y} = w_0 + w_1 x + w_2 x^2 + w_3 x^3 + \dots + w_d x^d
-\]
+$$
 
-This is still linear regression applied to **transformed** features \([x, x^2, x^3, \dots, x^d]\).
+This is still linear regression applied to **transformed** features $[x, x^2, x^3, \dots, x^d]$.
 
 ```python
 from sklearn.preprocessing import PolynomialFeatures
@@ -833,7 +833,7 @@ poly_model.fit(X_train, y_train)
 ### Caution
 
 - Degree > 3 often overfits
-- Feature count explodes: \(\binom{p + d}{d}\) features for \(p\) original features at degree \(d\)
+- Feature count explodes: $\binom{p + d}{d}$ features for $p$ original features at degree $d$
 - Combine with Ridge/Lasso regularization to control overfitting
 
 ---
@@ -851,9 +851,9 @@ All tree-based classifiers have regression counterparts:
 
 **Key difference from classification:** Splitting criterion uses **MSE** (or MAE, Friedman MSE) instead of Gini/entropy.
 
-\[
+$$
 \text{MSE split criterion} = \frac{N_L}{N} \text{MSE}_L + \frac{N_R}{N} \text{MSE}_R
-\]
+$$
 
 ```python
 from sklearn.ensemble import RandomForestRegressor
@@ -882,11 +882,11 @@ xgb_reg.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=100)
 
 ### Core Idea
 
-Partition \(N\) data points into \(K\) clusters by minimizing the **within-cluster sum of squares (WCSS)**:
+Partition $N$ data points into $K$ clusters by minimizing the **within-cluster sum of squares (WCSS)**:
 
-\[
+$$
 \text{WCSS} = \sum_{k=1}^{K} \sum_{\mathbf{x}_i \in C_k} \| \mathbf{x}_i - \boldsymbol{\mu}_k \|_2^2
-\]
+$$
 
 ### Algorithm (Lloyd's)
 
@@ -905,9 +905,9 @@ Partition \(N\) data points into \(K\) clusters by minimizing the **within-clust
 Standard random initialization can produce poor clusters. **K-Means++** selects initial centroids that are spread apart:
 
 1. Choose first centroid uniformly at random
-2. For each subsequent centroid, select point with probability proportional to \(D(x)^2\) (squared distance to nearest existing centroid)
+2. For each subsequent centroid, select point with probability proportional to $D(x)^2$ (squared distance to nearest existing centroid)
 
-This yields \(O(\log K)\)-competitive solution compared to optimal — drastically reduces poor convergence.
+This yields $O(\log K)$-competitive solution compared to optimal — drastically reduces poor convergence.
 
 ### Choosing K
 
@@ -918,16 +918,16 @@ This yields \(O(\log K)\)-competitive solution compared to optimal — drastical
 
 **Silhouette Score:**
 
-\[
+$$
 s(i) = \frac{b(i) - a(i)}{\max(a(i), b(i))}
-\]
+$$
 
-where \(a(i)\) = average distance to same-cluster points, \(b(i)\) = average distance to nearest-cluster points.
+where $a(i)$ = average distance to same-cluster points, $b(i)$ = average distance to nearest-cluster points.
 
-- Range: \([-1, 1]\)
-- \(s \approx 1\): well-clustered
-- \(s \approx 0\): on boundary
-- \(s < 0\): likely in wrong cluster
+- Range: $[-1, 1]$
+- $s \approx 1$: well-clustered
+- $s \approx 0$: on boundary
+- $s < 0$: likely in wrong cluster
 
 ```python
 from sklearn.cluster import KMeans
@@ -970,7 +970,7 @@ Like K-Means but uses **actual data points** (medoids) as cluster centers instea
 | Center | Mean (virtual point) | Actual data point |
 | Distance | L2 (Euclidean) | Any metric (L1, L2, custom) |
 | Outlier robustness | Low (mean pulled by outliers) | High (medoid stays on data) |
-| Complexity | \(O(NKI)\) | \(O(N^2 K I)\) — slower |
+| Complexity | $O(NKI)$ | $O(N^2 K I)$ — slower |
 | Interpretability | Centroid may not be a real point | Center is always a real observation |
 
 ### Algorithm (Partitioning Around Medoids — PAM)
@@ -1031,7 +1031,7 @@ Clusters are **dense regions** separated by **sparse regions**. Points in low-de
 
 ### Choosing eps and min_samples
 
-- **min_samples:** Rule of thumb = \(\max(2 \times \text{dimensions}, 5)\)
+- **min_samples:** Rule of thumb = $\max(2 \times \text{dimensions}, 5)$
 - **eps:** Use the **k-distance graph** (k = min_samples):
   - Compute k-th nearest neighbor distance for each point
   - Sort in ascending order and plot
@@ -1066,7 +1066,7 @@ print(f"Clusters: {n_clusters}, Noise points: {n_noise}")
 | Outliers | No handling (assigns all) | Labels as noise (-1) |
 | Cluster sizes | Roughly equal | Can be different |
 | Density | Assumes uniform | Requires uniform density within clusters |
-| Scalability | \(O(NK)\) | \(O(N \log N)\) with spatial indexing |
+| Scalability | $O(NK)$ | $O(N \log N)$ with spatial indexing |
 
 ---
 
@@ -1091,9 +1091,9 @@ Builds a **hierarchy of clusters** — either by merging small clusters (agglome
 
 | Linkage | Distance Between Clusters | Behavior |
 |---------|--------------------------|----------|
-| **Single** | \(\min_{a \in A, b \in B} d(a, b)\) | Chain effect — elongated clusters |
-| **Complete** | \(\max_{a \in A, b \in B} d(a, b)\) | Compact, spherical clusters |
-| **Average** | \(\frac{1}{|A||B|} \sum_{a,b} d(a, b)\) | Balanced — most commonly used |
+| **Single** | $\min_{a \in A, b \in B} d(a, b)$ | Chain effect — elongated clusters |
+| **Complete** | $\max_{a \in A, b \in B} d(a, b)$ | Compact, spherical clusters |
+| **Average** | $\frac{1}{|A||B|} \sum_{a,b} d(a, b)$ | Balanced — most commonly used |
 | **Ward** | Minimizes increase in total WCSS | Produces equal-size clusters — most popular |
 
 ### Dendrogram
@@ -1118,7 +1118,7 @@ labels = fcluster(Z, t=3, criterion='maxclust')
 
 - You want to **visualize** the cluster hierarchy (dendrogram)
 - Don't know the number of clusters in advance
-- Small to medium datasets (\(O(N^2)\) memory, \(O(N^3)\) time for naive implementation)
+- Small to medium datasets ($O(N^2)$ memory, $O(N^3)$ time for naive implementation)
 - Need **nested** cluster structure
 
 ---
@@ -1131,19 +1131,19 @@ PCA finds a new coordinate system (principal components) that captures **maximum
 
 ### Mathematical Formulation
 
-1. **Center** the data: \(\mathbf{X}_c = \mathbf{X} - \boldsymbol{\mu}\)
-2. **Covariance matrix:** \(\mathbf{C} = \frac{1}{N-1} \mathbf{X}_c^T \mathbf{X}_c\)
-3. **Eigendecomposition:** \(\mathbf{C} \mathbf{v}_k = \lambda_k \mathbf{v}_k\)
+1. **Center** the data: $\mathbf{X}_c = \mathbf{X} - \boldsymbol{\mu}$
+2. **Covariance matrix:** $\mathbf{C} = \frac{1}{N-1} \mathbf{X}_c^T \mathbf{X}_c$
+3. **Eigendecomposition:** $\mathbf{C} \mathbf{v}_k = \lambda_k \mathbf{v}_k$
 4. **Sort** eigenvectors by eigenvalue (largest first)
-5. **Project:** \(\mathbf{Z} = \mathbf{X}_c \mathbf{V}_d\) where \(\mathbf{V}_d\) contains the top \(d\) eigenvectors
+5. **Project:** $\mathbf{Z} = \mathbf{X}_c \mathbf{V}_d$ where $\mathbf{V}_d$ contains the top $d$ eigenvectors
 
 ### Explained Variance
 
-\[
+$$
 \text{Explained variance ratio}_k = \frac{\lambda_k}{\sum_{j=1}^{p} \lambda_j}
-\]
+$$
 
-Select \(d\) components such that cumulative explained variance ≥ 95% (common threshold).
+Select $d$ components such that cumulative explained variance ≥ 95% (common threshold).
 
 ### When to Use
 
@@ -1214,7 +1214,7 @@ plt.title('PCA Scree Plot')
 
 | Aspect | t-SNE | UMAP |
 |--------|-------|------|
-| Speed | Slow (\(O(N^2)\)) | Fast (\(O(N \log N)\)) |
+| Speed | Slow ($O(N^2)$) | Fast ($O(N \log N)$) |
 | Scalability | ~10K points | 1M+ points |
 | Global structure | Poorly preserved | Better preserved |
 | Determinism | Non-deterministic | More stable (with random_state) |
@@ -1337,18 +1337,18 @@ LOF measures the **local density** of a point relative to its neighbors. A point
 ### Key Concepts
 
 1. **k-distance(p):** Distance from point p to its k-th nearest neighbor
-2. **Reachability distance:** \(\text{reach-dist}_k(p, o) = \max(k\text{-distance}(o), d(p, o))\) — smooths out density estimation
+2. **Reachability distance:** $\text{reach-dist}_k(p, o) = \max(k\text{-distance}(o), d(p, o))$ — smooths out density estimation
 3. **Local Reachability Density (LRD):**
 
-\[
+$$
 \text{LRD}_k(p) = \frac{1}{\frac{1}{k} \sum_{o \in N_k(p)} \text{reach-dist}_k(p, o)}
-\]
+$$
 
 4. **Local Outlier Factor:**
 
-\[
+$$
 \text{LOF}_k(p) = \frac{1}{k} \sum_{o \in N_k(p)} \frac{\text{LRD}_k(o)}{\text{LRD}_k(p)}
-\]
+$$
 
 ### Interpretation
 
@@ -1380,13 +1380,13 @@ Learn a boundary that encloses the **normal** data in feature space. Points outs
 
 ### Formulation
 
-\[
+$$
 \min_{\mathbf{w}, \rho, \xi} \frac{1}{2} \|\mathbf{w}\|^2 + \frac{1}{\nu N} \sum_{i} \xi_i - \rho
-\]
+$$
 
-subject to: \(\mathbf{w}^T \phi(\mathbf{x}_i) \geq \rho - \xi_i, \quad \xi_i \geq 0\)
+subject to: $\mathbf{w}^T \phi(\mathbf{x}_i) \geq \rho - \xi_i, \quad \xi_i \geq 0$
 
-where \(\nu\) is the upper bound on the fraction of outliers.
+where $\nu$ is the upper bound on the fraction of outliers.
 
 ### When to Use
 
@@ -1498,19 +1498,19 @@ Train multiple models on **random bootstrap samples** of the data and **aggregat
 
 ### Why It Works — Variance Reduction
 
-For i.i.d. estimators with variance \(\sigma^2\):
+For i.i.d. estimators with variance $\sigma^2$:
 
-\[
+$$
 \text{Var}(\text{average}) = \frac{\sigma^2}{B}
-\]
+$$
 
-For correlated estimators (correlation \(\rho\)):
+For correlated estimators (correlation $\rho$):
 
-\[
+$$
 \text{Var}(\text{average}) = \rho \sigma^2 + \frac{1-\rho}{B} \sigma^2
-\]
+$$
 
-Bagging reduces the second term. Random Forest further reduces \(\rho\) via feature randomization.
+Bagging reduces the second term. Random Forest further reduces $\rho$ via feature randomization.
 
 ---
 
@@ -1591,17 +1591,17 @@ stacking.fit(X_train, y_train)
 
 ### Hard Voting
 
-\[
+$$
 \hat{y} = \text{mode}(h_1(\mathbf{x}), h_2(\mathbf{x}), \dots, h_M(\mathbf{x}))
-\]
+$$
 
 Majority vote of predicted class labels.
 
 ### Soft Voting
 
-\[
+$$
 \hat{y} = \arg\max_k \sum_{m=1}^{M} w_m \cdot P_m(y = k \mid \mathbf{x})
-\]
+$$
 
 Weighted average of predicted **probabilities** — generally better because it leverages confidence levels.
 
@@ -1730,9 +1730,9 @@ for train_idx, val_idx in tscv.split(X):
 
 ### Decomposition of Expected Error
 
-\[
+$$
 \text{Expected Error} = \text{Bias}^2 + \text{Variance} + \text{Irreducible Noise}
-\]
+$$
 
 | Term | Definition | Example |
 |------|-----------|---------|
@@ -1861,7 +1861,7 @@ Evaluate features **independently** of the model using statistical tests.
 | Method | Criterion | For |
 |--------|-----------|-----|
 | Correlation | Pearson/Spearman | Regression |
-| Chi-squared | \(\chi^2\) independence test | Classification (categorical) |
+| Chi-squared | $\chi^2$ independence test | Classification (categorical) |
 | Mutual Information | MI(X; Y) | Both (captures non-linear) |
 | ANOVA F-test | Variance ratio between classes | Classification (continuous) |
 
@@ -1879,7 +1879,7 @@ Use the **model's performance** to evaluate feature subsets.
 
 | Method | Approach | Pros | Cons |
 |--------|----------|------|------|
-| **Forward Selection** | Start empty, add best feature each step | Finds good subsets | Slow \(O(p^2)\) |
+| **Forward Selection** | Start empty, add best feature each step | Finds good subsets | Slow $O(p^2)$ |
 | **Backward Elimination** | Start with all, remove worst each step | Less greedy | Even slower |
 | **Recursive Feature Elimination (RFE)** | Recursively remove least important | Built into sklearn | Depends on model |
 
@@ -1929,10 +1929,10 @@ Algorithms using distance (KNN, SVM, K-Means) or gradient-based optimization (lo
 
 | Scaler | Formula | Range | When to Use |
 |--------|---------|-------|-------------|
-| **StandardScaler** | \(\frac{x - \mu}{\sigma}\) | Mean=0, Std=1 | Default choice; assumes ~Gaussian |
-| **MinMaxScaler** | \(\frac{x - x_{\min}}{x_{\max} - x_{\min}}\) | [0, 1] | Bounded features; neural networks |
-| **RobustScaler** | \(\frac{x - \text{median}}{\text{IQR}}\) | Centered on median | Data with **outliers** |
-| **MaxAbsScaler** | \(\frac{x}{\max(|x|)}\) | [-1, 1] | Sparse data |
+| **StandardScaler** | $\frac{x - \mu}{\sigma}$ | Mean=0, Std=1 | Default choice; assumes ~Gaussian |
+| **MinMaxScaler** | $\frac{x - x_{\min}}{x_{\max} - x_{\min}}$ | [0, 1] | Bounded features; neural networks |
+| **RobustScaler** | $\frac{x - \text{median}}{\text{IQR}}$ | Centered on median | Data with **outliers** |
+| **MaxAbsScaler** | $\frac{x}{\max(|x|)}$ | [-1, 1] | Sparse data |
 
 ### Critical Rules
 
@@ -2027,7 +2027,7 @@ pipe = Pipeline([
 
 | Feature | Formula / Description | Signal |
 |---------|----------------------|--------|
-| **RSI** (Relative Strength Index) | \(\text{RSI} = 100 - \frac{100}{1 + \text{RS}}\) where RS = avg gain / avg loss over 14 periods | Overbought (>70) / Oversold (<30) |
+| **RSI** (Relative Strength Index) | $\text{RSI} = 100 - \frac{100}{1 + \text{RS}}$ where RS = avg gain / avg loss over 14 periods | Overbought (>70) / Oversold (<30) |
 | **MACD** (Moving Average Convergence Divergence) | EMA(12) - EMA(26), Signal line = EMA(9) of MACD | Trend direction and momentum |
 | **OBV** (On-Balance Volume) | Cumulative sum: +volume on up days, -volume on down days | Volume confirms price trends |
 | **Bollinger Bands** | Middle: SMA(20), Upper/Lower: ±2σ from SMA | Volatility and breakout signals |
@@ -2201,7 +2201,7 @@ X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
 | **MDI (Gini Importance)** | Sum of impurity decreases per feature across all trees | Fast, built-in | Biased toward high-cardinality features |
 | **Permutation Importance** | Shuffle feature, measure score drop | Model-agnostic, unbiased | Slower, affected by correlated features |
 | **SHAP Values** | Game-theoretic: Shapley values for each feature per prediction | Local + global, consistent, theoretically grounded | Computationally expensive |
-| **Drop-column** | Remove feature, retrain, measure score drop | Most accurate | Very expensive (\(O(p)\) retraining) |
+| **Drop-column** | Remove feature, retrain, measure score drop | Most accurate | Very expensive ($O(p)$ retraining) |
 | **Coefficient magnitude** | Absolute value of linear model coefficients | Simple, interpretable | Only for linear models, needs scaling |
 
 > "I always start with **built-in importance** for quick iteration, then use **permutation importance** for unbiased rankings, and **SHAP** for stakeholder presentations. In my risk scoring model, MDI showed 'claim_count' as top feature, which SHAP confirmed — and SHAP additionally showed that its effect was non-linear (marginal impact decreased above 10 claims)."
@@ -2212,9 +2212,9 @@ X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
 
 **Answer:**
 
-"The kernel trick lets SVMs learn **non-linear** decision boundaries without explicitly mapping data to higher dimensions. Instead of computing \(\phi(\mathbf{x})\) (which could be infinite-dimensional for RBF), we compute the **dot product** in that space directly via a kernel function: \(K(\mathbf{x}, \mathbf{z}) = \phi(\mathbf{x})^T \phi(\mathbf{z})\).
+"The kernel trick lets SVMs learn **non-linear** decision boundaries without explicitly mapping data to higher dimensions. Instead of computing $\phi(\mathbf{x})$ (which could be infinite-dimensional for RBF), we compute the **dot product** in that space directly via a kernel function: $K(\mathbf{x}, \mathbf{z}) = \phi(\mathbf{x})^T \phi(\mathbf{z})$.
 
-For example, the RBF kernel \(K(\mathbf{x}, \mathbf{z}) = \exp(-\gamma \|\mathbf{x} - \mathbf{z}\|^2)\) implicitly maps to an **infinite-dimensional** space — computing this directly would be impossible, but the kernel function gives us the answer in \(O(d)\) time.
+For example, the RBF kernel $K(\mathbf{x}, \mathbf{z}) = \exp(-\gamma \|\mathbf{x} - \mathbf{z}\|^2)$ implicitly maps to an **infinite-dimensional** space — computing this directly would be impossible, but the kernel function gives us the answer in $O(d)$ time.
 
 This matters beyond SVMs — kernel methods appear in kernel PCA, Gaussian processes, and kernel ridge regression."
 
@@ -2246,9 +2246,9 @@ This matters beyond SVMs — kernel methods appear in kernel PCA, Gaussian proce
 
 "Regularization adds a **penalty** on model complexity to the loss function:
 
-\[
+$$
 \text{Total Loss} = \text{Data Loss} + \lambda \cdot \text{Complexity Penalty}
-\]
+$$
 
 **L2 (Ridge)** penalizes large weights — forces the model to distribute importance across features rather than relying on a few with huge coefficients. Geometrically, it constrains weights to lie within a sphere.
 
@@ -2264,11 +2264,11 @@ For trees, regularization takes the form of `max_depth`, `min_samples_leaf`, and
 
 | Aspect | L1 (Lasso) | L2 (Ridge) |
 |--------|-----------|-----------|
-| Penalty | \(\lambda \sum \|w_j\|\) | \(\lambda \sum w_j^2\) |
+| Penalty | $\lambda \sum \|w_j\|$ | $\lambda \sum w_j^2$ |
 | Geometry | Diamond (L1 ball) | Sphere (L2 ball) |
 | Sparsity | Yes — drives weights to zero | No — only shrinks toward zero |
 | Feature selection | Built-in | No |
-| Solution | No closed form (coordinate descent) | Closed form: \((X^TX + \lambda I)^{-1}X^Ty\) |
+| Solution | No closed form (coordinate descent) | Closed form: $(X^TX + \lambda I)^{-1}X^Ty$ |
 | Correlated features | Picks one, ignores rest | Distributes weight among correlated |
 | Best when | Many irrelevant features | All features somewhat relevant |
 
@@ -2284,11 +2284,11 @@ For trees, regularization takes the form of `max_depth`, `min_samples_leaf`, and
 1. **Correlation matrix:** Pearson correlation > 0.8–0.9 between features
 2. **VIF (Variance Inflation Factor):** VIF > 5–10 indicates problematic multicollinearity
 
-\[
+$$
 \text{VIF}_j = \frac{1}{1 - R_j^2}
-\]
+$$
 
-where \(R_j^2\) is the R-squared from regressing feature j on all other features.
+where $R_j^2$ is the R-squared from regressing feature j on all other features.
 
 **Handling:**
 - Remove one from each highly correlated pair
@@ -2361,15 +2361,15 @@ Is your problem classification or regression?
 
 | Algorithm | Training | Prediction | Memory |
 |-----------|----------|------------|--------|
-| Logistic Regression | \(O(Npd)\) | \(O(p)\) | \(O(p)\) |
-| Decision Tree | \(O(Np \log N)\) | \(O(\log N)\) | \(O(\text{nodes})\) |
-| Random Forest | \(O(B \cdot N' p' \log N')\) | \(O(B \log N)\) | \(O(B \cdot \text{nodes})\) |
-| XGBoost | \(O(M \cdot Np \log N)\) | \(O(M \cdot \text{depth})\) | \(O(M \cdot \text{nodes})\) |
-| SVM (RBF) | \(O(N^2 p)\) to \(O(N^3)\) | \(O(N_{sv} \cdot p)\) | \(O(N_{sv} \cdot p)\) |
-| KNN | \(O(1)\) (lazy) | \(O(Np)\) | \(O(Np)\) |
-| K-Means | \(O(NKdI)\) | \(O(Kd)\) | \(O(Kd)\) |
-| DBSCAN | \(O(N \log N)\) | N/A | \(O(N)\) |
-| Isolation Forest | \(O(T \cdot N' \log N')\) | \(O(T \cdot \log N')\) | \(O(T \cdot \text{nodes})\) |
+| Logistic Regression | $O(Npd)$ | $O(p)$ | $O(p)$ |
+| Decision Tree | $O(Np \log N)$ | $O(\log N)$ | $O(\text{nodes})$ |
+| Random Forest | $O(B \cdot N' p' \log N')$ | $O(B \log N)$ | $O(B \cdot \text{nodes})$ |
+| XGBoost | $O(M \cdot Np \log N)$ | $O(M \cdot \text{depth})$ | $O(M \cdot \text{nodes})$ |
+| SVM (RBF) | $O(N^2 p)$ to $O(N^3)$ | $O(N_{sv} \cdot p)$ | $O(N_{sv} \cdot p)$ |
+| KNN | $O(1)$ (lazy) | $O(Np)$ | $O(Np)$ |
+| K-Means | $O(NKdI)$ | $O(Kd)$ | $O(Kd)$ |
+| DBSCAN | $O(N \log N)$ | N/A | $O(N)$ |
+| Isolation Forest | $O(T \cdot N' \log N')$ | $O(T \cdot \log N')$ | $O(T \cdot \text{nodes})$ |
 
 ---
 

@@ -88,20 +88,20 @@ Tests provide **evidence consistent with**, not **proof of**, identification.
 
 ## 3.1 The Linear Model
 
-\[
+$$
 Y = X\beta + \varepsilon, \quad \mathbb{E}[\varepsilon \mid X] = 0
-\]
+$$
 
 ## 3.2 Gauss-Markov Assumptions
 
 | Assumption | Meaning | Violation symptom |
 |-----------|---------|-------------------|
-| **Linearity in parameters** | Y is linear function of \(\beta\) | Wrong functional form |
+| **Linearity in parameters** | Y is linear function of $\beta$ | Wrong functional form |
 | **Random sample** | iid (or strict exogeneity in time series) | Selection bias |
 | **No perfect multicollinearity** | X has full column rank | Singular design matrix |
-| **Zero conditional mean** | \(\mathbb{E}[\varepsilon|X]=0\) | Omitted variable bias / endogeneity |
-| **Homoskedasticity** | \(\text{Var}(\varepsilon|X)=\sigma^2\) | Heteroskedasticity (use robust SE) |
-| **No autocorrelation** | \(\text{Cov}(\varepsilon_i, \varepsilon_j)=0\) | Time-series serial correlation |
+| **Zero conditional mean** | $\mathbb{E}[\varepsilon|X]=0$ | Omitted variable bias / endogeneity |
+| **Homoskedasticity** | $\text{Var}(\varepsilon|X)=\sigma^2$ | Heteroskedasticity (use robust SE) |
+| **No autocorrelation** | $\text{Cov}(\varepsilon_i, \varepsilon_j)=0$ | Time-series serial correlation |
 
 > Under all six, OLS is **BLUE** (Best Linear Unbiased Estimator).
 
@@ -113,15 +113,15 @@ Y = X\beta + \varepsilon, \quad \mathbb{E}[\varepsilon \mid X] = 0
 
 ## 3.4 The OVB Formula
 
-Suppose true model: \(Y = \beta_1 X_1 + \beta_2 X_2 + \varepsilon\), you omit \(X_2\). Then:
+Suppose true model: $Y = \beta_1 X_1 + \beta_2 X_2 + \varepsilon$, you omit $X_2$. Then:
 
-\[
+$$
 \hat{\beta}_1^{\text{OLS}} = \beta_1 + \beta_2 \cdot \frac{\text{Cov}(X_1, X_2)}{\text{Var}(X_1)}
-\]
+$$
 
 The bias direction is the **product of**:
-- the omitted variable's effect on Y (\(\beta_2\))
-- its correlation with the included variable (\(\text{Cov}(X_1, X_2)/\text{Var}(X_1)\))
+- the omitted variable's effect on Y ($\beta_2$)
+- its correlation with the included variable ($\text{Cov}(X_1, X_2)/\text{Var}(X_1)$)
 
 > **Interview move:** when the interviewer asks "what's the bias?", apply this formula in your head.
 
@@ -131,62 +131,62 @@ The bias direction is the **product of**:
 
 ## 4.1 Setup
 
-Panel = N units observed over T periods: \(Y_{it}\), \(X_{it}\) for unit i, period t.
+Panel = N units observed over T periods: $Y_{it}$, $X_{it}$ for unit i, period t.
 
 ## 4.2 Three Estimators
 
 ### Pooled OLS
 Treat the panel as a giant cross-section, ignore the panel structure.
 
-\[
+$$
 Y_{it} = \alpha + X_{it}\beta + \varepsilon_{it}
-\]
+$$
 
-**Problem:** ignores unit-specific unobserved heterogeneity. Biased if \(\alpha_i\) (unit fixed effect) is correlated with \(X_{it}\).
+**Problem:** ignores unit-specific unobserved heterogeneity. Biased if $\alpha_i$ (unit fixed effect) is correlated with $X_{it}$.
 
 ### Fixed Effects (FE / Within)
 Each unit has its own intercept absorbing time-invariant unobservables:
 
-\[
+$$
 Y_{it} = \alpha_i + X_{it}\beta + \varepsilon_{it}
-\]
+$$
 
 Estimation: subtract unit means (within transformation):
 
-\[
+$$
 (Y_{it} - \bar{Y}_i) = (X_{it} - \bar{X}_i)\beta + (\varepsilon_{it} - \bar{\varepsilon}_i)
-\]
+$$
 
 **Pros:** controls for ALL time-invariant confounders (observed and unobserved).
 **Cons:** loses identifying variation; can't estimate effects of time-invariant variables.
 
 ### Random Effects (RE)
-Treats \(\alpha_i\) as a random variable independent of \(X_{it}\).
+Treats $\alpha_i$ as a random variable independent of $X_{it}$.
 
-\[
+$$
 Y_{it} = \alpha + X_{it}\beta + u_i + \varepsilon_{it}, \quad u_i \perp X_{it}
-\]
+$$
 
 **Pros:** more efficient than FE if assumption holds.
-**Cons:** biased if \(u_i\) is correlated with \(X_{it}\) (almost always the case in observational data).
+**Cons:** biased if $u_i$ is correlated with $X_{it}$ (almost always the case in observational data).
 
 ## 4.3 Hausman Test
 
 Tests RE vs FE: under the null, both are consistent and RE is efficient; under the alternative, only FE is consistent.
 
-\[
+$$
 H = (\hat{\beta}_{FE} - \hat{\beta}_{RE})' [\text{Var}(\hat{\beta}_{FE}) - \text{Var}(\hat{\beta}_{RE})]^{-1} (\hat{\beta}_{FE} - \hat{\beta}_{RE})
-\]
+$$
 
-If \(p < 0.05\), prefer FE.
+If $p < 0.05$, prefer FE.
 
 ## 4.4 Two-Way Fixed Effects (TWFE)
 
 Add **time fixed effects** to absorb common shocks:
 
-\[
+$$
 Y_{it} = \alpha_i + \gamma_t + X_{it}\beta + \varepsilon_{it}
-\]
+$$
 
 This is the workhorse of empirical economics. Be aware of recent literature on **TWFE pitfalls with staggered adoption** (Goodman-Bacon, Callaway-Sant'Anna).
 
@@ -208,18 +208,18 @@ fe_model = smf.ols(
 
 ## 5.1 The Dynamic Panel Model
 
-\[
+$$
 Y_{it} = \rho Y_{i,t-1} + X_{it}\beta + \alpha_i + \varepsilon_{it}
-\]
+$$
 
-\(\rho\) captures persistence: e.g., if Y is consumer spending, \(\rho \approx 0.7\) means 70% of last period's spending carries over.
+$\rho$ captures persistence: e.g., if Y is consumer spending, $\rho \approx 0.7$ means 70% of last period's spending carries over.
 
 ## 5.2 The Nickell Bias
 
-OLS with FE on dynamic panels is **biased** because \(Y_{i,t-1}\) is mechanically correlated with the within-transformed error term. The bias scales as \(O(1/T)\) — disappears with long panels, severe with short ones.
+OLS with FE on dynamic panels is **biased** because $Y_{i,t-1}$ is mechanically correlated with the within-transformed error term. The bias scales as $O(1/T)$ — disappears with long panels, severe with short ones.
 
 **Mitigations:**
-- **Arellano-Bond (GMM)** — instruments \(Y_{i,t-1}\) with deeper lags (\(Y_{i,t-2}, Y_{i,t-3}, ...\)).
+- **Arellano-Bond (GMM)** — instruments $Y_{i,t-1}$ with deeper lags ($Y_{i,t-2}, Y_{i,t-3}, ...$).
 - **System GMM (Blundell-Bond)** — uses both differences and levels as moment conditions.
 - **Bias-corrected estimators** (Kiviet) for short panels.
 
@@ -233,23 +233,23 @@ Many product / marketplace metrics are **persistent** — yesterday's GMV is the
 
 ## 6.1 Recap
 
-Endogeneity: \(\text{Cov}(X, \varepsilon) \neq 0\). Direct OLS is biased.
+Endogeneity: $\text{Cov}(X, \varepsilon) \neq 0$. Direct OLS is biased.
 
 IV: find Z such that:
-1. **Relevance**: \(\text{Cov}(Z, X) \neq 0\).
-2. **Exclusion**: \(Z\) affects \(Y\) only through \(X\) — \(\text{Cov}(Z, \varepsilon) = 0\).
+1. **Relevance**: $\text{Cov}(Z, X) \neq 0$.
+2. **Exclusion**: $Z$ affects $Y$ only through $X$ — $\text{Cov}(Z, \varepsilon) = 0$.
 
 ## 6.2 Two-Stage Least Squares (2SLS)
 
-\[
+$$
 \hat{X} = \pi_0 + \pi_1 Z + \nu \quad \text{(first stage)}
-\]
+$$
 
-\[
+$$
 Y = \beta_0 + \beta_1 \hat{X} + \eta \quad \text{(second stage)}
-\]
+$$
 
-\(\hat{\beta}_1\) is the IV estimate.
+$\hat{\beta}_1$ is the IV estimate.
 
 ## 6.3 Weak Instruments
 
@@ -269,9 +269,9 @@ print(model.first_stage)  # F-stat
 
 With heterogeneous effects, IV identifies the **Local Average Treatment Effect** on **compliers** — units whose treatment status was changed by the instrument:
 
-\[
+$$
 \text{LATE} = \mathbb{E}[Y(1) - Y(0) \mid \text{complier}]
-\]
+$$
 
 Not the ATE for the full population. Important caveat in interpretation.
 
@@ -279,9 +279,9 @@ Not the ATE for the full population. Important caveat in interpretation.
 
 If you have more instruments than endogenous variables, you can test exclusion via the J-test:
 
-\[
+$$
 H_0: \text{all instruments are exogenous}
-\]
+$$
 
 Reject → at least one instrument is invalid (you don't know which).
 
@@ -303,14 +303,14 @@ Reject → at least one instrument is invalid (you don't know which).
 
 Supply and demand:
 
-\[
+$$
 Q_d = \alpha_d - \beta_d P + \varepsilon_d \quad \text{(demand)}
-\]
-\[
+$$
+$$
 Q_s = \alpha_s + \beta_s P + \varepsilon_s \quad \text{(supply)}
-\]
+$$
 
-At equilibrium, \(Q_d = Q_s\) — both P and Q are endogenous. OLS of Q on P doesn't recover demand or supply elasticity; it recovers a mishmash.
+At equilibrium, $Q_d = Q_s$ — both P and Q are endogenous. OLS of Q on P doesn't recover demand or supply elasticity; it recovers a mishmash.
 
 ## 7.2 Identification via Exclusion Restrictions
 
@@ -338,39 +338,39 @@ For a system of simultaneous equations, 3SLS uses cross-equation information to 
 
 For binary Y ∈ {0, 1}:
 
-\[
+$$
 Y = X\beta + \varepsilon
-\]
+$$
 
 The **linear probability model (LPM)** gives unbounded predictions and heteroskedastic errors. It's still used for ATE interpretation when effects are small, but classical discrete choice uses **logit** or **probit**.
 
 ## 8.2 Logit / Logistic Regression
 
-\[
+$$
 P(Y=1 \mid X) = \frac{\exp(X\beta)}{1 + \exp(X\beta)}
-\]
+$$
 
 Estimation: MLE. The **log-odds** are linear in X:
 
-\[
+$$
 \log \frac{P(Y=1)}{P(Y=0)} = X\beta
-\]
+$$
 
-Coefficient \(\beta_k\): a one-unit increase in \(X_k\) increases the log-odds by \(\beta_k\).
+Coefficient $\beta_k$: a one-unit increase in $X_k$ increases the log-odds by $\beta_k$.
 
 ## 8.3 Probit
 
 Same idea but with normal CDF:
 
-\[
+$$
 P(Y=1 \mid X) = \Phi(X\beta)
-\]
+$$
 
 In practice, logit and probit give very similar marginal effects.
 
 ## 8.4 Marginal Effects
 
-For interpretability, report **average marginal effects (AME)** — the average derivative of \(P(Y=1)\) w.r.t. \(X_k\) across the sample.
+For interpretability, report **average marginal effects (AME)** — the average derivative of $P(Y=1)$ w.r.t. $X_k$ across the sample.
 
 ```python
 from statsmodels.discrete.discrete_model import Logit
@@ -383,9 +383,9 @@ print(ame.summary())
 
 For categorical outcomes with K > 2 alternatives (e.g., choice of mode of transport):
 
-\[
+$$
 P(Y=j \mid X) = \frac{\exp(X\beta_j)}{\sum_{k=1}^K \exp(X\beta_k)}
-\]
+$$
 
 The **IIA assumption** (Independence of Irrelevant Alternatives) is restrictive — relative odds of choosing j vs k should not depend on availability of other alternatives.
 
@@ -407,25 +407,25 @@ The **IIA assumption** (Independence of Irrelevant Alternatives) is restrictive 
 
 ## 9.1 The Problem
 
-You want to estimate \(\mathbb{E}[Y \mid X]\), but Y is only observed for a non-random subset (e.g., wages only observed for people who work).
+You want to estimate $\mathbb{E}[Y \mid X]$, but Y is only observed for a non-random subset (e.g., wages only observed for people who work).
 
 ## 9.2 The Heckman Two-Step
 
 **Step 1: Selection equation (probit).** Model the probability of observing Y:
 
-\[
+$$
 P(\text{observed} = 1 \mid Z) = \Phi(Z\gamma)
-\]
+$$
 
-Compute the **inverse Mills ratio** \(\lambda = \phi(Z\gamma) / \Phi(Z\gamma)\).
+Compute the **inverse Mills ratio** $\lambda = \phi(Z\gamma) / \Phi(Z\gamma)$.
 
 **Step 2: Outcome equation.** Estimate:
 
-\[
+$$
 Y = X\beta + \rho \sigma \lambda + \eta
-\]
+$$
 
-The coefficient on \(\lambda\) tests for selection bias.
+The coefficient on $\lambda$ tests for selection bias.
 
 ## 9.3 Identification
 
@@ -455,7 +455,7 @@ print(f"ADF stat: {result[0]:.3f}, p: {result[1]:.3f}")
 
 ## 10.2 Differencing
 
-If non-stationary, take first differences: \(\Delta Y_t = Y_t - Y_{t-1}\). Most macro series need first differences; some need second.
+If non-stationary, take first differences: $\Delta Y_t = Y_t - Y_{t-1}$. Most macro series need first differences; some need second.
 
 ## 10.3 Spurious Regression
 
@@ -463,11 +463,11 @@ Regressing one non-stationary series on another gives **fake R²** and significa
 
 ## 10.4 Cointegration
 
-Two non-stationary series \(X_t, Y_t\) are **cointegrated** if a linear combination is stationary:
+Two non-stationary series $X_t, Y_t$ are **cointegrated** if a linear combination is stationary:
 
-\[
+$$
 Y_t - \beta X_t = u_t \text{ where } u_t \text{ is stationary}
-\]
+$$
 
 **Engle-Granger** and **Johansen** tests check for cointegration. If cointegrated, run an **Error Correction Model (ECM)**.
 
@@ -475,11 +475,11 @@ Y_t - \beta X_t = u_t \text{ where } u_t \text{ is stationary}
 
 X **Granger-causes** Y if past values of X help predict Y, beyond past values of Y alone.
 
-\[
+$$
 Y_t = \alpha + \sum_{i=1}^p \beta_i Y_{t-i} + \sum_{j=1}^q \gamma_j X_{t-j} + \varepsilon_t
-\]
+$$
 
-Test \(H_0: \gamma_1 = \gamma_2 = \dots = 0\) via F-test.
+Test $H_0: \gamma_1 = \gamma_2 = \dots = 0$ via F-test.
 
 > **Caveat:** Granger causality is **predictive precedence**, NOT causation in the structural sense.
 
@@ -506,7 +506,7 @@ Test \(H_0: \gamma_1 = \gamma_2 = \dots = 0\) via F-test.
 |-------------|-----------|
 | Estimate a parameter (e.g., ATE) without modeling the mechanism | Model the economic process generating the data |
 | Direct inference from data | Counterfactual policy simulation |
-| Identifies "what is the effect of X on Y" | Identifies "what would happen if we changed the parameter \(\theta\)" |
+| Identifies "what is the effect of X on Y" | Identifies "what would happen if we changed the parameter $\theta$" |
 | Cheaper, more transparent | More demanding assumptions |
 | Examples: DiD, IV, RDD | Examples: BLP, dynamic discrete choice, structural search models |
 
@@ -536,15 +536,15 @@ This gives "the answer is X, and here's the mechanism."
 
 White (heteroskedasticity-robust) SE:
 
-\[
+$$
 \hat{V}_{\text{robust}} = (X'X)^{-1} \left( \sum_i e_i^2 x_i x_i' \right) (X'X)^{-1}
-\]
+$$
 
 Cluster-robust (Liang-Zeger):
 
-\[
+$$
 \hat{V}_{\text{cluster}} = (X'X)^{-1} \left( \sum_{g} X_g' e_g e_g' X_g \right) (X'X)^{-1}
-\]
+$$
 
 ## 12.2 When to Cluster
 
@@ -559,9 +559,9 @@ Cluster-robust (Liang-Zeger):
 
 If errors are correlated along **two** dimensions (e.g., firm and year), use two-way clustering:
 
-\[
+$$
 \hat{V}_{\text{2-way}} = \hat{V}_{\text{firm}} + \hat{V}_{\text{year}} - \hat{V}_{\text{firm} \cap \text{year}}
-\]
+$$
 
 ## 12.4 Bootstrap Alternatives
 
@@ -598,11 +598,11 @@ When G is small or model is complex:
 
 > DiD compares the **change** in outcome between treated and control groups before and after treatment, identifying ATT under parallel trends. The estimator:
 
-\[
+$$
 \hat{\tau}_{\text{DiD}} = (\bar{Y}_{T,\text{post}} - \bar{Y}_{T,\text{pre}}) - (\bar{Y}_{C,\text{post}} - \bar{Y}_{C,\text{pre}})
-\]
+$$
 
-> The key assumption is **parallel trends**: in the absence of treatment, treated and control would have moved together. You can't test this in the post period (impossible), but you can build evidence with pre-period trends — plot both groups for several pre-treatment periods and visually verify they move in parallel. The regression form is \(Y_{it} = \alpha_i + \gamma_t + \tau D_{it} + \varepsilon_{it}\) — unit and time fixed effects, treatment indicator. Cluster SE at the unit level. Recent literature (Goodman-Bacon, Callaway-Sant'Anna) shows that TWFE with **staggered adoption** can mis-estimate when treatment timing varies; in those cases, use event-study or stacked DiD designs.
+> The key assumption is **parallel trends**: in the absence of treatment, treated and control would have moved together. You can't test this in the post period (impossible), but you can build evidence with pre-period trends — plot both groups for several pre-treatment periods and visually verify they move in parallel. The regression form is $Y_{it} = \alpha_i + \gamma_t + \tau D_{it} + \varepsilon_{it}$ — unit and time fixed effects, treatment indicator. Cluster SE at the unit level. Recent literature (Goodman-Bacon, Callaway-Sant'Anna) shows that TWFE with **staggered adoption** can mis-estimate when treatment timing varies; in those cases, use event-study or stacked DiD designs.
 
 ## Q7: "Logit vs probit vs LPM — when do you use each?"
 
@@ -614,7 +614,7 @@ When G is small or model is complex:
 
 ## Q9: "How do you handle endogeneity in a panel where lagged Y is a regressor?"
 
-> The Nickell bias problem. Within-transformed (FE) OLS on \(Y_{it} = \rho Y_{i,t-1} + X_{it}\beta + \alpha_i + \varepsilon_{it}\) is biased because subtracting unit means makes \(Y_{i,t-1}\) mechanically correlated with the transformed error. The bias is order 1/T, so it's serious for short panels. The standard fix is **Arellano-Bond GMM**: difference the equation to eliminate fixed effects, then use deeper lags of Y (\(Y_{i,t-2}, Y_{i,t-3}, ...\)) as instruments for \(\Delta Y_{i,t-1}\). **System GMM (Blundell-Bond)** adds level moment conditions for efficiency. The diagnostics to check: AR(2) test in residuals (should fail to reject), Hansen J-test for instrument validity, and instrument count (too many → overfitted). In practice for long panels (T > 30) the bias is small and FE-OLS is fine.
+> The Nickell bias problem. Within-transformed (FE) OLS on $Y_{it} = \rho Y_{i,t-1} + X_{it}\beta + \alpha_i + \varepsilon_{it}$ is biased because subtracting unit means makes $Y_{i,t-1}$ mechanically correlated with the transformed error. The bias is order 1/T, so it's serious for short panels. The standard fix is **Arellano-Bond GMM**: difference the equation to eliminate fixed effects, then use deeper lags of Y ($Y_{i,t-2}, Y_{i,t-3}, ...$) as instruments for $\Delta Y_{i,t-1}$. **System GMM (Blundell-Bond)** adds level moment conditions for efficiency. The diagnostics to check: AR(2) test in residuals (should fail to reject), Hansen J-test for instrument validity, and instrument count (too many → overfitted). In practice for long panels (T > 30) the bias is small and FE-OLS is fine.
 
 ## Q10: "What is the difference between reduced-form and structural estimation?"
 

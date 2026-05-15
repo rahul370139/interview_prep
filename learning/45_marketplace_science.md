@@ -95,9 +95,9 @@ A marketplace with zero sellers has no buyers and vice versa. Strategies:
 
 The probability that a buyer who arrives can complete a transaction quickly.
 
-\[
+$$
 \text{Liquidity} = P(\text{transaction} \mid \text{intent})
-\]
+$$
 
 | Marketplace | Liquidity proxy |
 |------------|----------------|
@@ -133,14 +133,14 @@ Combining thickness with **proximity** — participants must not just exist but 
 ## 3.4 The Quantitative Measures
 
 ### Match rate
-\[
+$$
 \text{Match rate} = \frac{\text{successful matches}}{\text{intents (searches, requests)}}
-\]
+$$
 
 ### Fill rate (for ad / dispatch markets)
-\[
+$$
 \text{Fill rate} = \frac{\text{requests served}}{\text{requests received}}
-\]
+$$
 
 ### Time to fill
 Median time between an intent and a transaction.
@@ -199,9 +199,9 @@ Pure greedy ranking (always show top seller) leads to:
 
 Modern marketplaces rank with **both sides' utility in mind**:
 
-\[
+$$
 \text{Score} = \alpha \cdot P(\text{buyer clicks}) + \beta \cdot P(\text{seller accepts}) + \gamma \cdot P(\text{successful transaction})
-\]
+$$
 
 Optimizing only buyer-side CTR can lead to ranking listings that look attractive but never convert (low seller acceptance, cancellations, refunds).
 
@@ -235,13 +235,13 @@ In RecSys (Netflix), cold start is a one-sided problem — recommend to new user
 
 ## 5.4 The Bayesian Average for Ratings
 
-For a seller with \(n\) ratings averaging \(\bar{r}\), the shrunken score is:
+For a seller with $n$ ratings averaging $\bar{r}$, the shrunken score is:
 
-\[
+$$
 r_{\text{shrunken}} = \frac{n \cdot \bar{r} + k \cdot \mu}{n + k}
-\]
+$$
 
-where \(\mu\) is the prior mean (e.g., overall marketplace average) and \(k\) is the strength of the prior (e.g., 10 ratings).
+where $\mu$ is the prior mean (e.g., overall marketplace average) and $k$ is the strength of the prior (e.g., 10 ratings).
 
 This prevents a 5-star seller with 1 review from outranking a 4.8-star seller with 100 reviews.
 
@@ -253,9 +253,9 @@ This prevents a 5-star seller with 1 review from outranking a 4.8-star seller wi
 
 The fraction of GMV (Gross Merchandise Value) the platform captures.
 
-\[
+$$
 \text{Take rate} = \frac{\text{Platform revenue}}{\text{GMV}}
-\]
+$$
 
 | Marketplace | Approx take rate |
 |------------|------------------|
@@ -374,11 +374,11 @@ For most marketplaces: **repeat transaction rate**. It captures whether the expe
 
 The **Herfindahl-Hirschman Index (HHI)** of GMV by seller:
 
-\[
+$$
 \text{HHI} = \sum_i s_i^2
-\]
+$$
 
-where \(s_i\) is seller i's share of GMV. HHI near 0 = competitive; HHI near 1 = monopolistic.
+where $s_i$ is seller i's share of GMV. HHI near 0 = competitive; HHI near 1 = monopolistic.
 
 Healthy marketplaces have HHI < 0.1 in any category. Concentration is a leading indicator of supply churn ("only top 5 sellers earn anything").
 

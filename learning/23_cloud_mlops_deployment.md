@@ -2379,9 +2379,9 @@ PSI quantifies how much a variable's distribution has shifted:
 | 0.1 – 0.2 | Moderate shift | Investigate, increase monitoring frequency |
 | > 0.2 | Significant shift | Retrain model, investigate root cause |
 
-\[
+$$
 \text{PSI} = \sum_{i=1}^{n} (p_i^{\text{actual}} - p_i^{\text{expected}}) \times \ln\left(\frac{p_i^{\text{actual}}}{p_i^{\text{expected}}}\right)
-\]
+$$
 
 ### Data Versioning with DVC
 

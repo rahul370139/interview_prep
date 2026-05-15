@@ -213,25 +213,25 @@ The fundamental quantization/dequantization equations:
 
 **Quantize (float → int):**
 
-\[
+$$
 x_{int} = \text{round}\!\left(\frac{x_{float}}{\text{scale}}\right) + \text{zero\_point}
-\]
+$$
 
 **Dequantize (int → float):**
 
-\[
+$$
 \hat{x} = \text{scale} \times (x_{int} - \text{zero\_point})
-\]
+$$
 
 **Where:**
 
-\[
+$$
 \text{scale} = \frac{x_{max} - x_{min}}{2^b - 1}
-\]
+$$
 
-\[
+$$
 \text{zero\_point} = \text{round}\!\left(-\frac{x_{min}}{\text{scale}}\right)
-\]
+$$
 
 - `b` = target bit-width (e.g., 8 for INT8, 4 for INT4)
 - `x_max`, `x_min` = the observed (or calibrated) range of the floating-point values
@@ -470,9 +470,9 @@ QAT inserts **fake quantization nodes** during training so the model *learns* to
 
 **Straight-Through Estimator (STE):**
 
-\[
+$$
 \frac{\partial \text{round}(x)}{\partial x} \approx 1 \quad (\text{in backprop, treat round as identity})
-\]
+$$
 
 ```python
 # PyTorch QAT Example

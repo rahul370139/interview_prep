@@ -31,9 +31,9 @@
 
 The perceptron (Rosenblatt, 1958) is the simplest neural unit — a single neuron that computes a weighted sum of inputs, adds a bias, and passes the result through an activation function:
 
-\[
+$$
 y = \sigma\left(\sum_{i=1}^{n} w_i x_i + b\right) = \sigma(\mathbf{w}^T \mathbf{x} + b)
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -56,7 +56,7 @@ y = \sigma\left(\sum_{i=1}^{n} w_i x_i + b\right) = \sigma(\mathbf{w}^T \mathbf{
 
 ## **1.2 Multi-Layer Perceptron (MLP) — Feedforward Networks**
 
-An MLP stacks multiple layers of neurons — input, one or more hidden layers, and an output layer — with non-linear activations between them. Every neuron in layer \(l\) connects to every neuron in layer \(l+1\) (fully connected / dense).
+An MLP stacks multiple layers of neurons — input, one or more hidden layers, and an output layer — with non-linear activations between them. Every neuron in layer $l$ connects to every neuron in layer $l+1$ (fully connected / dense).
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -110,19 +110,19 @@ model = MLP(input_dim=784, hidden_dims=[512, 256, 128], output_dim=10)
 
 ## **1.3 Forward Propagation**
 
-Forward propagation is the process of passing input data through the network layer by layer to produce a prediction. For an \(L\)-layer network:
+Forward propagation is the process of passing input data through the network layer by layer to produce a prediction. For an $L$-layer network:
 
-\[
+$$
 \mathbf{a}^{(0)} = \mathbf{x} \quad \text{(input)}
-\]
-\[
+$$
+$$
 \mathbf{z}^{(l)} = \mathbf{W}^{(l)} \mathbf{a}^{(l-1)} + \mathbf{b}^{(l)} \quad \text{(pre-activation)}
-\]
-\[
+$$
+$$
 \mathbf{a}^{(l)} = \sigma^{(l)}(\mathbf{z}^{(l)}) \quad \text{(post-activation)}
-\]
+$$
 
-**Key point:** During forward pass, we cache each \(\mathbf{z}^{(l)}\) and \(\mathbf{a}^{(l)}\) because they are needed during backpropagation.
+**Key point:** During forward pass, we cache each $\mathbf{z}^{(l)}$ and $\mathbf{a}^{(l)}$ because they are needed during backpropagation.
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -146,26 +146,26 @@ Backpropagation computes gradients of the loss with respect to every parameter b
 
 **The chain rule in action:**
 
-For a parameter \(W^{(l)}\) in layer \(l\):
+For a parameter $W^{(l)}$ in layer $l$:
 
-\[
+$$
 \frac{\partial \mathcal{L}}{\partial W^{(l)}} = \frac{\partial \mathcal{L}}{\partial \mathbf{a}^{(L)}} \cdot \frac{\partial \mathbf{a}^{(L)}}{\partial \mathbf{z}^{(L)}} \cdot \frac{\partial \mathbf{z}^{(L)}}{\partial \mathbf{a}^{(L-1)}} \cdots \frac{\partial \mathbf{z}^{(l)}}{\partial W^{(l)}}
-\]
+$$
 
 **Layer-by-layer backward computation:**
 
-\[
+$$
 \delta^{(L)} = \nabla_{\mathbf{a}^{(L)}} \mathcal{L} \odot \sigma'(\mathbf{z}^{(L)}) \quad \text{(output layer error)}
-\]
-\[
+$$
+$$
 \delta^{(l)} = \left(W^{(l+1)}\right)^T \delta^{(l+1)} \odot \sigma'(\mathbf{z}^{(l)}) \quad \text{(hidden layer error)}
-\]
-\[
+$$
+$$
 \frac{\partial \mathcal{L}}{\partial W^{(l)}} = \delta^{(l)} \cdot \left(\mathbf{a}^{(l-1)}\right)^T \quad \text{(weight gradient)}
-\]
-\[
+$$
+$$
 \frac{\partial \mathcal{L}}{\partial \mathbf{b}^{(l)}} = \delta^{(l)} \quad \text{(bias gradient)}
-\]
+$$
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -192,9 +192,9 @@ For a parameter \(W^{(l)}\) in layer \(l\):
 
 | Variant | Update Rule | Batch Size | Pros | Cons |
 |---|---|---|---|---|
-| **Batch GD** | \(W = W - \eta \nabla_W \mathcal{L}_{\text{full}}\) | Entire dataset | Stable convergence | Slow, high memory |
-| **Stochastic GD** | \(W = W - \eta \nabla_W \mathcal{L}_i\) | 1 sample | Fast updates, escapes local minima | Noisy, oscillates |
-| **Mini-batch SGD** | \(W = W - \eta \nabla_W \mathcal{L}_B\) | 32–512 samples | Best of both, GPU efficient | Requires tuning batch size |
+| **Batch GD** | $W = W - \eta \nabla_W \mathcal{L}_{\text{full}}$ | Entire dataset | Stable convergence | Slow, high memory |
+| **Stochastic GD** | $W = W - \eta \nabla_W \mathcal{L}_i$ | 1 sample | Fast updates, escapes local minima | Noisy, oscillates |
+| **Mini-batch SGD** | $W = W - \eta \nabla_W \mathcal{L}_B$ | 32–512 samples | Best of both, GPU efficient | Requires tuning batch size |
 
 **Modern optimizers build on SGD:**
 
@@ -210,13 +210,13 @@ For a parameter \(W^{(l)}\) in layer \(l\):
 
 The deepest problem in training deep networks. During backpropagation, gradients are multiplied by the derivative of the activation function and the weight matrix at each layer:
 
-\[
+$$
 \frac{\partial \mathcal{L}}{\partial W^{(1)}} = \prod_{l=2}^{L} \left( W^{(l)} \cdot \sigma'(z^{(l-1)}) \right) \cdot \frac{\partial \mathcal{L}}{\partial z^{(L)}}
-\]
+$$
 
-**Vanishing gradients:** If \(\|W^{(l)} \cdot \sigma'(z^{(l)})\| < 1\) consistently, the product shrinks exponentially with depth. Early layers receive near-zero gradients and stop learning.
+**Vanishing gradients:** If $\|W^{(l)} \cdot \sigma'(z^{(l)})\| < 1$ consistently, the product shrinks exponentially with depth. Early layers receive near-zero gradients and stop learning.
 
-**Exploding gradients:** If \(\|W^{(l)} \cdot \sigma'(z^{(l)})\| > 1\) consistently, the product grows exponentially. Weights become NaN.
+**Exploding gradients:** If $\|W^{(l)} \cdot \sigma'(z^{(l)})\| > 1$ consistently, the product grows exponentially. Weights become NaN.
 
 ```
 ┌───────────────────────────────────────────────────────────┐
@@ -239,7 +239,7 @@ The deepest problem in training deep networks. During backpropagation, gradients
 | Problem | Solution | Mechanism |
 |---|---|---|
 | Vanishing | **ReLU activation** | Gradient = 1 for positive inputs (no saturation) |
-| Vanishing | **Residual connections** | \(y = F(x) + x\) — gradient flows through identity shortcut |
+| Vanishing | **Residual connections** | $y = F(x) + x$ — gradient flows through identity shortcut |
 | Vanishing | **Batch normalization** | Normalizes activations, keeps gradients in a healthy range |
 | Vanishing | **LSTM / GRU** | Gating mechanism controls gradient flow in sequences |
 | Exploding | **Gradient clipping** | `torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)` |
@@ -250,7 +250,7 @@ The deepest problem in training deep networks. During backpropagation, gradients
 
 ## **1.7 Universal Approximation Theorem**
 
-**Statement:** A feedforward network with a single hidden layer containing a finite number of neurons can approximate any continuous function on compact subsets of \(\mathbb{R}^n\), given a non-linear activation function.
+**Statement:** A feedforward network with a single hidden layer containing a finite number of neurons can approximate any continuous function on compact subsets of $\mathbb{R}^n$, given a non-linear activation function.
 
 **What it means:**
 - MLPs are theoretically powerful enough to model *any* function
@@ -273,9 +273,9 @@ The deepest problem in training deep networks. During backpropagation, gradients
 
 A convolution slides a learnable filter (kernel) over the input, computing element-wise multiplications and summing them into a single output value. This operation is **translation-equivariant** — a pattern is detected regardless of where it appears in the image.
 
-\[
+$$
 (I * K)(i, j) = \sum_{m} \sum_{n} I(i+m, j+n) \cdot K(m, n)
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -429,11 +429,11 @@ class CNNBlock(nn.Module):
 
 The most influential CNN architecture. Introduced **residual/skip connections** that enabled training networks with 100+ layers.
 
-**The core idea:** Instead of learning \(H(x)\), learn the residual \(F(x) = H(x) - x\), so the layer computes \(H(x) = F(x) + x\).
+**The core idea:** Instead of learning $H(x)$, learn the residual $F(x) = H(x) - x$, so the layer computes $H(x) = F(x) + x$.
 
-\[
+$$
 \mathbf{y} = F(\mathbf{x}, \{W_i\}) + \mathbf{x}
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -509,11 +509,11 @@ class ResidualBlock(nn.Module):
 - **Compound scaling**: uniformly scales depth, width, and resolution with fixed ratios
 - EfficientNet-B7 achieves better accuracy than ResNet with 8.4× fewer parameters
 
-\[
+$$
 \text{depth} = \alpha^\phi, \quad \text{width} = \beta^\phi, \quad \text{resolution} = \gamma^\phi
-\]
+$$
 
-Subject to: \(\alpha \cdot \beta^2 \cdot \gamma^2 \approx 2\), where \(\phi\) is the compound coefficient.
+Subject to: $\alpha \cdot \beta^2 \cdot \gamma^2 \approx 2$, where $\phi$ is the compound coefficient.
 
 ---
 
@@ -594,12 +594,12 @@ for name, param in model.named_parameters():
 
 RNNs process sequential data by maintaining a **hidden state** that acts as memory, updated at each time step:
 
-\[
+$$
 \mathbf{h}_t = \tanh(\mathbf{W}_{hh} \mathbf{h}_{t-1} + \mathbf{W}_{xh} \mathbf{x}_t + \mathbf{b}_h)
-\]
-\[
+$$
+$$
 \mathbf{y}_t = \mathbf{W}_{hy} \mathbf{h}_t + \mathbf{b}_y
-\]
+$$
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
@@ -621,19 +621,19 @@ RNNs process sequential data by maintaining a **hidden state** that acts as memo
 
 **The Vanishing Gradient Problem in RNNs:**
 
-During backpropagation through time (BPTT), gradients must flow through repeated multiplication by \(W_{hh}\):
+During backpropagation through time (BPTT), gradients must flow through repeated multiplication by $W_{hh}$:
 
-\[
+$$
 \frac{\partial h_T}{\partial h_1} = \prod_{t=2}^{T} \frac{\partial h_t}{\partial h_{t-1}} = \prod_{t=2}^{T} W_{hh} \cdot \text{diag}(\tanh'(z_t))
-\]
+$$
 
-Since \(\tanh'(x) \leq 1\), this product shrinks exponentially for long sequences. A vanilla RNN effectively "forgets" inputs from more than ~10-20 steps back.
+Since $\tanh'(x) \leq 1$, this product shrinks exponentially for long sequences. A vanilla RNN effectively "forgets" inputs from more than ~10-20 steps back.
 
 ---
 
 ## **3.2 LSTM — Long Short-Term Memory**
 
-LSTMs (Hochreiter & Schmidhuber, 1997) solve the vanishing gradient problem by introducing a **cell state** \(C_t\) (a "highway" for information) controlled by three **gates**:
+LSTMs (Hochreiter & Schmidhuber, 1997) solve the vanishing gradient problem by introducing a **cell state** $C_t$ (a "highway" for information) controlled by three **gates**:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -661,37 +661,37 @@ LSTMs (Hochreiter & Schmidhuber, 1997) solve the vanishing gradient problem by i
 ### **Gate Formulas (memorize these for interviews)**
 
 **Forget Gate** — decides what to discard from cell state:
-\[
+$$
 \mathbf{f}_t = \sigma(\mathbf{W}_f [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_f)
-\]
+$$
 
 **Input Gate** — decides which new values to store:
-\[
+$$
 \mathbf{i}_t = \sigma(\mathbf{W}_i [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_i)
-\]
+$$
 
 **Candidate Cell State** — creates new candidate values:
-\[
+$$
 \tilde{\mathbf{C}}_t = \tanh(\mathbf{W}_C [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_C)
-\]
+$$
 
 **Cell State Update** — forget old info, add new info:
-\[
+$$
 \mathbf{C}_t = \mathbf{f}_t \odot \mathbf{C}_{t-1} + \mathbf{i}_t \odot \tilde{\mathbf{C}}_t
-\]
+$$
 
 **Output Gate** — decides what to output:
-\[
+$$
 \mathbf{o}_t = \sigma(\mathbf{W}_o [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_o)
-\]
+$$
 
 **Hidden State** — filtered cell state:
-\[
+$$
 \mathbf{h}_t = \mathbf{o}_t \odot \tanh(\mathbf{C}_t)
-\]
+$$
 
-> **Key insight for interviews:** The cell state \(C_t\) is the secret. It flows through time with only element-wise operations (multiply by forget gate, add input gate). No matrix multiplication means gradients don't vanish along this path. The gradient through the cell state is:
-> \[\frac{\partial C_T}{\partial C_1} = \prod_{t=2}^{T} f_t\]
+> **Key insight for interviews:** The cell state $C_t$ is the secret. It flows through time with only element-wise operations (multiply by forget gate, add input gate). No matrix multiplication means gradients don't vanish along this path. The gradient through the cell state is:
+> $$\frac{\partial C_T}{\partial C_1} = \prod_{t=2}^{T} f_t$$
 > As long as forget gates stay close to 1, gradients flow unimpeded.
 
 ```python
@@ -728,24 +728,24 @@ class LSTMClassifier(nn.Module):
 GRU (Cho et al., 2014) simplifies LSTM by merging the cell state and hidden state into one, using only two gates:
 
 **Reset Gate** — controls how much past information to forget:
-\[
+$$
 \mathbf{r}_t = \sigma(\mathbf{W}_r [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_r)
-\]
+$$
 
 **Update Gate** — controls the balance between old and new state (acts like combined forget + input gate):
-\[
+$$
 \mathbf{z}_t = \sigma(\mathbf{W}_z [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_z)
-\]
+$$
 
 **Candidate Hidden State:**
-\[
+$$
 \tilde{\mathbf{h}}_t = \tanh(\mathbf{W}_h [\mathbf{r}_t \odot \mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_h)
-\]
+$$
 
 **Hidden State Update:**
-\[
+$$
 \mathbf{h}_t = (1 - \mathbf{z}_t) \odot \mathbf{h}_{t-1} + \mathbf{z}_t \odot \tilde{\mathbf{h}}_t
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -877,28 +877,28 @@ Attention solves the bottleneck problem by letting the decoder look at **all** e
 
 ### **Bahdanau Attention (Additive, 2015)**
 
-\[
+$$
 e_{t,i} = \mathbf{v}^T \tanh(\mathbf{W}_1 \mathbf{s}_{t-1} + \mathbf{W}_2 \mathbf{h}_i) \quad \text{(alignment score)}
-\]
-\[
+$$
+$$
 \alpha_{t,i} = \frac{\exp(e_{t,i})}{\sum_j \exp(e_{t,j})} \quad \text{(attention weight via softmax)}
-\]
-\[
+$$
+$$
 \mathbf{c}_t = \sum_i \alpha_{t,i} \mathbf{h}_i \quad \text{(context vector)}
-\]
+$$
 
 ### **Luong Attention (Multiplicative, 2015)**
 
 Three scoring functions:
-\[
+$$
 \text{dot:} \quad e_{t,i} = \mathbf{s}_t^T \mathbf{h}_i
-\]
-\[
+$$
+$$
 \text{general:} \quad e_{t,i} = \mathbf{s}_t^T \mathbf{W} \mathbf{h}_i
-\]
-\[
+$$
+$$
 \text{concat:} \quad e_{t,i} = \mathbf{v}^T \tanh(\mathbf{W}[\mathbf{s}_t; \mathbf{h}_i])
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -941,15 +941,15 @@ The progression:
 
 An autoencoder learns a compressed representation by training a network to reconstruct its own input. The **encoder** maps input to a lower-dimensional **bottleneck** (latent space), and the **decoder** reconstructs from it.
 
-\[
+$$
 \text{Encoder:} \quad \mathbf{z} = f_\theta(\mathbf{x}) \quad \text{(compress)}
-\]
-\[
+$$
+$$
 \text{Decoder:} \quad \hat{\mathbf{x}} = g_\phi(\mathbf{z}) \quad \text{(reconstruct)}
-\]
-\[
+$$
+$$
 \mathcal{L} = \|\mathbf{x} - \hat{\mathbf{x}}\|^2 \quad \text{(reconstruction loss)}
-\]
+$$
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -1003,7 +1003,7 @@ class Autoencoder(nn.Module):
 
 ## **5.2 Variational Autoencoder (VAE)**
 
-A VAE differs from a standard autoencoder in a fundamental way: instead of encoding to a single point in latent space, it encodes to a **probability distribution** — specifically, a Gaussian parameterized by mean \(\mu\) and variance \(\sigma^2\).
+A VAE differs from a standard autoencoder in a fundamental way: instead of encoding to a single point in latent space, it encodes to a **probability distribution** — specifically, a Gaussian parameterized by mean $\mu$ and variance $\sigma^2$.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -1027,9 +1027,9 @@ A VAE differs from a standard autoencoder in a fundamental way: instead of encod
 
 Sampling is not differentiable — we can't backpropagate through a random sampling operation. The trick: express the sample as a deterministic function of the parameters plus external noise:
 
-\[
+$$
 \mathbf{z} = \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})
-\]
+$$
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
@@ -1050,20 +1050,20 @@ Sampling is not differentiable — we can't backpropagate through a random sampl
 
 The VAE loss has two terms:
 
-\[
+$$
 \mathcal{L}_{\text{VAE}} = \underbrace{\mathbb{E}_{q(\mathbf{z}|\mathbf{x})}[\log p(\mathbf{x}|\mathbf{z})]}_{\text{Reconstruction Loss}} - \underbrace{D_{KL}(q(\mathbf{z}|\mathbf{x}) \| p(\mathbf{z}))}_{\text{KL Regularization}}
-\]
+$$
 
 | Term | Role | Intuition |
 |---|---|---|
 | **Reconstruction** | How well can decoder reconstruct x from z? | Forces z to capture information |
-| **KL Divergence** | How close is \(q(z|x)\) to the prior \(N(0, I)\)? | Forces latent space to be smooth, regular |
+| **KL Divergence** | How close is $q(z|x)$ to the prior $N(0, I)$? | Forces latent space to be smooth, regular |
 
 The KL term has a closed-form solution for Gaussians:
 
-\[
+$$
 D_{KL} = -\frac{1}{2} \sum_{j=1}^{d} \left(1 + \log \sigma_j^2 - \mu_j^2 - \sigma_j^2\right)
-\]
+$$
 
 ```python
 class VAE(nn.Module):
@@ -1104,12 +1104,12 @@ def vae_loss(reconstructed, original, mu, logvar):
 
 Adds noise to the input and trains the network to reconstruct the clean original:
 
-\[
+$$
 \tilde{\mathbf{x}} = \mathbf{x} + \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \sigma^2 \mathbf{I})
-\]
-\[
+$$
+$$
 \mathcal{L} = \|\mathbf{x} - g_\phi(f_\theta(\tilde{\mathbf{x}}))\|^2
-\]
+$$
 
 **Why this helps:** Prevents the autoencoder from learning the identity function. The model must learn the underlying structure/manifold to reconstruct clean data from noisy input. This is the core idea behind **diffusion models** — denoising autoencoders applied iteratively.
 
@@ -1135,12 +1135,12 @@ Adds noise to the input and trains the network to reconstruct the clean original
 
 GANs (Goodfellow et al., 2014) consist of two neural networks in a **minimax game**:
 
-- **Generator (G):** Takes random noise \(z \sim p(z)\) and generates fake data \(G(z)\)
+- **Generator (G):** Takes random noise $z \sim p(z)$ and generates fake data $G(z)$
 - **Discriminator (D):** Classifies data as real (from training set) or fake (from generator)
 
-\[
+$$
 \min_G \max_D \; V(D, G) = \mathbb{E}_{\mathbf{x} \sim p_{\text{data}}}[\log D(\mathbf{x})] + \mathbb{E}_{\mathbf{z} \sim p(\mathbf{z})}[\log(1 - D(G(\mathbf{z})))]
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -1218,7 +1218,7 @@ Generator learns to produce only a few types of outputs that fool the discrimina
 | Mode collapse | **WGAN** (Wasserstein loss) | Earth mover's distance — smoother gradients everywhere |
 | Instability | **Spectral normalization** | Constrains Lipschitz constant of D |
 | Instability | **Progressive growing** | Start with low-res, progressively add layers |
-| Vanishing G gradients | **Non-saturating loss** | Use \(-\log D(G(z))\) instead of \(\log(1 - D(G(z)))\) |
+| Vanishing G gradients | **Non-saturating loss** | Use $-\log D(G(z))$ instead of $\log(1 - D(G(z)))$ |
 | Evaluation | **FID score** | Frechet Inception Distance — measures quality + diversity |
 
 ---
@@ -1316,27 +1316,27 @@ Diffusion models learn to generate data by learning to **reverse a gradual noisi
 
 ### **Forward Process (Adding Noise)**
 
-At each step \(t\), add a small amount of Gaussian noise:
+At each step $t$, add a small amount of Gaussian noise:
 
-\[
+$$
 q(\mathbf{x}_t | \mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t; \sqrt{1 - \beta_t} \mathbf{x}_{t-1}, \beta_t \mathbf{I})
-\]
+$$
 
-A key property: we can jump directly to any step \(t\) from \(\mathbf{x}_0\):
+A key property: we can jump directly to any step $t$ from $\mathbf{x}_0$:
 
-\[
+$$
 q(\mathbf{x}_t | \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1 - \bar{\alpha}_t) \mathbf{I})
-\]
+$$
 
-where \(\alpha_t = 1 - \beta_t\) and \(\bar{\alpha}_t = \prod_{s=1}^t \alpha_s\).
+where $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{s=1}^t \alpha_s$.
 
 ### **Reverse Process (Denoising)**
 
-A neural network \(\epsilon_\theta\) learns to predict the noise \(\epsilon\) that was added:
+A neural network $\epsilon_\theta$ learns to predict the noise $\epsilon$ that was added:
 
-\[
+$$
 \mathcal{L}_{\text{simple}} = \mathbb{E}_{t, \mathbf{x}_0, \boldsymbol{\epsilon}} \left[ \| \boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t) \|^2 \right]
-\]
+$$
 
 ---
 
@@ -1600,9 +1600,9 @@ MoE replaces a single large feed-forward layer with multiple **expert** sub-netw
 
 ### **Why MoE Matters**
 
-\[
+$$
 \text{Output} = \sum_{i=1}^{N} g_i(\mathbf{x}) \cdot E_i(\mathbf{x}), \quad \text{where only top-}k \text{ gates are non-zero}
-\]
+$$
 
 | Aspect | Dense Model | MoE Model |
 |---|---|---|
@@ -1642,7 +1642,7 @@ MoE replaces a single large feed-forward layer with multiple **expert** sub-netw
 
 ## **10.1 The Problem with Transformers for Long Sequences**
 
-Self-attention is \(O(n^2)\) in sequence length — doubling the context doubles both compute and memory quadratically. For very long sequences (100K+ tokens, genomics, audio), this becomes prohibitive.
+Self-attention is $O(n^2)$ in sequence length — doubling the context doubles both compute and memory quadratically. For very long sequences (100K+ tokens, genomics, audio), this becomes prohibitive.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -1668,20 +1668,20 @@ Self-attention is \(O(n^2)\) in sequence length — doubling the context doubles
 State space models (SSMs) are inspired by continuous-time dynamical systems. They maintain a **hidden state** that is updated linearly at each time step:
 
 **Continuous form:**
-\[
+$$
 \mathbf{h}'(t) = \mathbf{A}\mathbf{h}(t) + \mathbf{B}\mathbf{x}(t)
-\]
-\[
+$$
+$$
 \mathbf{y}(t) = \mathbf{C}\mathbf{h}(t) + \mathbf{D}\mathbf{x}(t)
-\]
+$$
 
 **Discretized form (what we actually compute):**
-\[
+$$
 \mathbf{h}_t = \bar{\mathbf{A}} \mathbf{h}_{t-1} + \bar{\mathbf{B}} \mathbf{x}_t
-\]
-\[
+$$
+$$
 \mathbf{y}_t = \mathbf{C} \mathbf{h}_t
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -1831,14 +1831,14 @@ Mamba (Gu & Dao, 2023) makes SSMs **input-dependent** — the matrices A, B, C c
 
 ## **Q3: "What are skip/residual connections and why do they work?"**
 
-> "Residual connections, introduced in ResNet, add the input of a block directly to its output: \(y = F(x) + x\). Instead of learning the full mapping \(H(x)\), the layers only learn the residual \(F(x) = H(x) - x\).
+> "Residual connections, introduced in ResNet, add the input of a block directly to its output: $y = F(x) + x$. Instead of learning the full mapping $H(x)$, the layers only learn the residual $F(x) = H(x) - x$.
 >
-> They solve two problems. First, **vanishing gradients**: during backpropagation, the gradient through a residual connection is at least 1 (from the identity path), regardless of how small the learned function's gradient is. This enables training networks with hundreds of layers. Second, **degradation**: paradoxically, deeper plain networks can have higher training error than shallower ones. With residual connections, adding a layer can't hurt — in the worst case, the layer learns \(F(x) = 0\) and the block reduces to identity.
+> They solve two problems. First, **vanishing gradients**: during backpropagation, the gradient through a residual connection is at least 1 (from the identity path), regardless of how small the learned function's gradient is. This enables training networks with hundreds of layers. Second, **degradation**: paradoxically, deeper plain networks can have higher training error than shallower ones. With residual connections, adding a layer can't hurt — in the worst case, the layer learns $F(x) = 0$ and the block reduces to identity.
 >
 > Mathematically, the gradient flowing through a residual block is:
-> \(\frac{\partial y}{\partial x} = \frac{\partial F}{\partial x} + I\)
+> $\frac{\partial y}{\partial x} = \frac{\partial F}{\partial x} + I$
 >
-> The identity matrix \(I\) ensures the gradient never drops below 1. This is the same principle that makes LSTM cell states work — a highway for gradient flow."
+> The identity matrix $I$ ensures the gradient never drops below 1. This is the same principle that makes LSTM cell states work — a highway for gradient flow."
 
 ---
 
@@ -1846,7 +1846,7 @@ Mamba (Gu & Dao, 2023) makes SSMs **input-dependent** — the matrices A, B, C c
 
 > "GANs consist of two networks — a generator and a discriminator — trained adversarially. The generator takes random noise and produces fake data; the discriminator classifies data as real or fake. The generator's objective is to fool the discriminator; the discriminator's objective is to correctly classify.
 >
-> Formally, this is a minimax game where D maximizes and G minimizes: \(V = E[\log D(x)] + E[\log(1-D(G(z)))]\). At Nash equilibrium, the generator has learned the true data distribution and the discriminator outputs 0.5 everywhere.
+> Formally, this is a minimax game where D maximizes and G minimizes: $V = E[\log D(x)] + E[\log(1-D(G(z)))]$. At Nash equilibrium, the generator has learned the true data distribution and the discriminator outputs 0.5 everywhere.
 >
 > The main challenges are: **mode collapse** — the generator only produces a few types of outputs instead of the full distribution; **training instability** — balancing G and D is delicate; if D is too strong, G gets no gradient; if too weak, G has no incentive to improve; and **evaluation** — there's no single loss to monitor. We use metrics like FID (Frechet Inception Distance) and IS (Inception Score).
 >

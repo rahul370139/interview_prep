@@ -110,11 +110,11 @@ A digital image is a 2D grid of pixels. Each pixel stores intensity values that 
 
 For an RGB image of size H × W:
 
-\[
+$$
 \text{Memory (bytes)} = H \times W \times C \times \text{bytes\_per\_channel}
-\]
+$$
 
-**Example:** A 1920 × 1080 × 3 (uint8) image uses \(1920 \times 1080 \times 3 = 6{,}220{,}800\) bytes ≈ 5.9 MB uncompressed.
+**Example:** A 1920 × 1080 × 3 (uint8) image uses $1920 \times 1080 \times 3 = 6{,}220{,}800$ bytes ≈ 5.9 MB uncompressed.
 
 ### **Data Layout Conventions**
 
@@ -202,11 +202,11 @@ Resizing is necessary because models require fixed input dimensions but real-wor
 
 Nearly all pretrained models (ResNet, CLIP, ViT, EfficientNet) were trained with ImageNet statistics:
 
-\[
+$$
 x_{\text{norm}} = \frac{x - \mu}{\sigma}
-\]
+$$
 
-| Channel | Mean (\(\mu\)) | Std (\(\sigma\)) |
+| Channel | Mean ($\mu$) | Std ($\sigma$) |
 |---------|------|------|
 | R | 0.485 | 0.229 |
 | G | 0.456 | 0.224 |
@@ -232,11 +232,11 @@ standard_transform = T.Compose([
 
 | Method | Formula | Use Case |
 |--------|---------|----------|
-| **[0, 1] scaling** | \(x / 255.0\) | Generic float conversion |
-| **[-1, 1] scaling** | \((x / 255.0) \times 2 - 1\) | GANs, Stable Diffusion |
-| **ImageNet** | \((x - \mu) / \sigma\) | All ImageNet-pretrained models |
+| **[0, 1] scaling** | $x / 255.0$ | Generic float conversion |
+| **[-1, 1] scaling** | $(x / 255.0) \times 2 - 1$ | GANs, Stable Diffusion |
+| **ImageNet** | $(x - \mu) / \sigma$ | All ImageNet-pretrained models |
 | **CLIP-specific** | Built into `clip.load()` preprocess | CLIP models (your project) |
-| **Per-image** | \((x - \text{mean}(x)) / \text{std}(x)\) | Medical imaging, custom domains |
+| **Per-image** | $(x - \text{mean}(x)) / \text{std}(x)$ | Medical imaging, custom domains |
 
 **Interview Tip:** "In our fashion recommendation system, CLIP's preprocess function handles normalization internally — it resizes to 224×224, converts to tensor, and applies CLIP-specific normalization. We don't manually normalize."
 
@@ -309,19 +309,19 @@ val_transform = T.Compose([
 
 **Mixup** (Zhang et al., 2018):
 
-\[
+$$
 \tilde{x} = \lambda x_i + (1 - \lambda) x_j, \quad \tilde{y} = \lambda y_i + (1 - \lambda) y_j
-\]
+$$
 
-where \(\lambda \sim \text{Beta}(\alpha, \alpha)\), typically \(\alpha = 0.2\).
+where $\lambda \sim \text{Beta}(\alpha, \alpha)$, typically $\alpha = 0.2$.
 
 **CutMix** (Yun et al., 2019):
 
-\[
+$$
 \tilde{x} = \mathbf{M} \odot x_i + (1 - \mathbf{M}) \odot x_j, \quad \tilde{y} = \lambda y_i + (1 - \lambda) y_j
-\]
+$$
 
-where \(\mathbf{M}\) is a binary mask indicating the cut region, and \(\lambda = 1 - \frac{r_w \cdot r_h}{W \cdot H}\) (proportion of area cut).
+where $\mathbf{M}$ is a binary mask indicating the cut region, and $\lambda = 1 - \frac{r_w \cdot r_h}{W \cdot H}$ (proportion of area cut).
 
 ### **Augmentation Selection Guide**
 
@@ -446,10 +446,10 @@ Canny is a multi-stage algorithm producing clean, thin edges:
 
 Computes image gradients using convolution kernels:
 
-\[
+$$
 G_x = \begin{bmatrix} -1 & 0 & +1 \\ -2 & 0 & +2 \\ -1 & 0 & +1 \end{bmatrix} * I, \quad
 G_y = \begin{bmatrix} -1 & -2 & -1 \\ 0 & 0 & 0 \\ +1 & +2 & +1 \end{bmatrix} * I
-\]
+$$
 
 ```python
 # Canny edge detection
@@ -636,9 +636,9 @@ matches = sorted(matches, key=lambda x: x.distance)
 
 The vanishing gradient problem made training networks beyond ~20 layers impractical. ResNet solves this with **residual connections**:
 
-\[
+$$
 \mathbf{y} = \mathcal{F}(\mathbf{x}, \{W_i\}) + \mathbf{x}
-\]
+$$
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -715,11 +715,11 @@ Processes features at **multiple scales simultaneously**:
 
 Instead of arbitrarily scaling depth, width, or resolution independently, EfficientNet scales all three together:
 
-\[
+$$
 \text{depth:} \quad d = \alpha^\phi, \quad \text{width:} \quad w = \beta^\phi, \quad \text{resolution:} \quad r = \gamma^\phi
-\]
+$$
 
-subject to \(\alpha \cdot \beta^2 \cdot \gamma^2 \approx 2\), where \(\phi\) is the compound coefficient.
+subject to $\alpha \cdot \beta^2 \cdot \gamma^2 \approx 2$, where $\phi$ is the compound coefficient.
 
 | Variant | Params | Top-1 Accuracy | Resolution |
 |---------|--------|----------------|------------|
@@ -729,8 +729,8 @@ subject to \(\alpha \cdot \beta^2 \cdot \gamma^2 \approx 2\), where \(\phi\) is 
 
 ### **MobileNet — Depthwise Separable Convolutions**
 
-Standard conv: \(D_K \times D_K \times M \times N\) multiplications.
-Depthwise separable: \(D_K \times D_K \times M + M \times N\) — up to **8–9× reduction**.
+Standard conv: $D_K \times D_K \times M \times N$ multiplications.
+Depthwise separable: $D_K \times D_K \times M + M \times N$ — up to **8–9× reduction**.
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -771,7 +771,7 @@ Depthwise separable: \(D_K \times D_K \times M + M \times N\) — up to **8–9�
 
 Object detection = **classification + localization**. For each object in an image, predict:
 - **Class label** (what is it?)
-- **Bounding box** (where is it?) — \((x_{\min}, y_{\min}, x_{\max}, y_{\max})\) or \((x_c, y_c, w, h)\)
+- **Bounding box** (where is it?) — $(x_{\min}, y_{\min}, x_{\max}, y_{\max})$ or $(x_c, y_c, w, h)$
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -870,9 +870,9 @@ YOLO treats detection as a **single regression problem** — predicting bounding
 
 Divides image into S×S grid. Each cell predicts B bounding boxes + confidence + C class probabilities.
 
-\[
+$$
 \text{Output tensor: } S \times S \times (B \times 5 + C)
-\]
+$$
 
 For S=7, B=2, C=20 (PASCAL VOC): 7×7×30 = 1,470 predictions in one pass.
 
@@ -956,9 +956,9 @@ After detection, many overlapping boxes may predict the same object. NMS removes
 
 ### **Intersection over Union (IoU)**
 
-\[
+$$
 \text{IoU} = \frac{|B_{\text{pred}} \cap B_{\text{gt}}|}{|B_{\text{pred}} \cup B_{\text{gt}}|}
-\]
+$$
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -1134,11 +1134,11 @@ Originally for biomedical image segmentation, now the backbone of Stable Diffusi
 
 **Atrous (Dilated) Convolution:**
 
-\[
+$$
 y[i] = \sum_{k} x[i + r \cdot k] \cdot w[k]
-\]
+$$
 
-where \(r\) is the dilation rate. Increases receptive field without losing resolution or adding parameters.
+where $r$ is the dilation rate. Increases receptive field without losing resolution or adding parameters.
 
 ```
 Standard Conv (rate=1):    Dilated Conv (rate=2):    Dilated Conv (rate=4):
@@ -1382,11 +1382,11 @@ The breakthrough paper that showed pure Transformers can match or exceed CNNs on
 
 ### **Patch Embedding in Detail**
 
-\[
+$$
 \mathbf{z}_0 = [\mathbf{x}_{\text{class}}; \; \mathbf{x}_p^1 \mathbf{E}; \; \mathbf{x}_p^2 \mathbf{E}; \; \ldots; \; \mathbf{x}_p^N \mathbf{E}] + \mathbf{E}_{\text{pos}}
-\]
+$$
 
-where \(\mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}\) is the patch embedding matrix and \(\mathbf{E}_{\text{pos}} \in \mathbb{R}^{(N+1) \times D}\) are learned positional embeddings.
+where $\mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}$ is the patch embedding matrix and $\mathbf{E}_{\text{pos}} \in \mathbb{R}^{(N+1) \times D}$ are learned positional embeddings.
 
 ---
 
@@ -1500,19 +1500,19 @@ CLIP (OpenAI, 2021) learns visual concepts from natural language supervision usi
 
 ### **CLIP Contrastive Loss — Mathematical Formulation**
 
-Given a batch of \(N\) image-text pairs, let \(\mathbf{i}_k = f_\theta(\text{image}_k)\) and \(\mathbf{t}_k = g_\phi(\text{text}_k)\) be the L2-normalized embeddings:
+Given a batch of $N$ image-text pairs, let $\mathbf{i}_k = f_\theta(\text{image}_k)$ and $\mathbf{t}_k = g_\phi(\text{text}_k)$ be the L2-normalized embeddings:
 
-\[
+$$
 \mathcal{L}_{\text{image} \to \text{text}} = -\frac{1}{N} \sum_{k=1}^{N} \log \frac{\exp(\mathbf{i}_k \cdot \mathbf{t}_k / \tau)}{\sum_{j=1}^{N} \exp(\mathbf{i}_k \cdot \mathbf{t}_j / \tau)}
-\]
+$$
 
-\[
+$$
 \mathcal{L}_{\text{text} \to \text{image}} = -\frac{1}{N} \sum_{k=1}^{N} \log \frac{\exp(\mathbf{t}_k \cdot \mathbf{i}_k / \tau)}{\sum_{j=1}^{N} \exp(\mathbf{t}_k \cdot \mathbf{i}_j / \tau)}
-\]
+$$
 
-\[
+$$
 \mathcal{L}_{\text{CLIP}} = \frac{1}{2}(\mathcal{L}_{\text{image} \to \text{text}} + \mathcal{L}_{\text{text} \to \text{image}})
-\]
+$$
 
 ### **Zero-Shot Classification with CLIP**
 
@@ -2099,9 +2099,9 @@ ControlNet adds **spatial conditioning** to Stable Diffusion without modifying t
 
 **Answer:** "A convolution slides a learned kernel (e.g., 3×3) over the input feature map, computing element-wise multiplication and summation at each position. The output at position (i,j) is:
 
-\[
+$$
 \text{out}(i,j) = \sum_m \sum_n \text{input}(i+m, j+n) \cdot \text{kernel}(m,n) + \text{bias}
-\]
+$$
 
 The receptive field is the region of the input image that affects a particular neuron's output. A 3×3 conv has a 3×3 receptive field. Stacking two 3×3 convs gives a 5×5 effective receptive field — this is VGG's insight: two 3×3 convs are more parameter-efficient than one 5×5 conv (18 vs 25 parameters) while achieving the same receptive field, plus they add an extra non-linearity."
 
@@ -2115,7 +2115,7 @@ The receptive field is the region of the input image that affects a particular n
 
 ### **Q3: Why do ResNet skip connections help? What problem do they solve?**
 
-**Answer:** "Skip connections solve the degradation problem — deeper networks paradoxically had higher training error than shallower ones, not due to overfitting but because gradients vanished through many layers. The residual connection \(y = F(x) + x\) ensures gradients can flow directly through the shortcut during backpropagation. Mathematically, the gradient includes an additive identity term: \(\frac{\partial \mathcal{L}}{\partial x} = \frac{\partial \mathcal{L}}{\partial y} \cdot (1 + \frac{\partial F}{\partial x})\), meaning even if \(\frac{\partial F}{\partial x}\) is small, the gradient doesn't vanish because of the 1. Additionally, the network only needs to learn the residual \(F(x) = H(x) - x\), which is easier — if the identity mapping is optimal, driving \(F(x)\) to zero is simpler than learning \(H(x) = x\) from scratch."
+**Answer:** "Skip connections solve the degradation problem — deeper networks paradoxically had higher training error than shallower ones, not due to overfitting but because gradients vanished through many layers. The residual connection $y = F(x) + x$ ensures gradients can flow directly through the shortcut during backpropagation. Mathematically, the gradient includes an additive identity term: $\frac{\partial \mathcal{L}}{\partial x} = \frac{\partial \mathcal{L}}{\partial y} \cdot (1 + \frac{\partial F}{\partial x})$, meaning even if $\frac{\partial F}{\partial x}$ is small, the gradient doesn't vanish because of the 1. Additionally, the network only needs to learn the residual $F(x) = H(x) - x$, which is easier — if the identity mapping is optimal, driving $F(x)$ to zero is simpler than learning $H(x) = x$ from scratch."
 
 ---
 

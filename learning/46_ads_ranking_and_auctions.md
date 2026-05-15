@@ -141,9 +141,9 @@ def run_auction(ads, slot, reserve_price):
 
 **Predicted Click-Through Rate** = the model's estimate of P(user clicks | ad shown).
 
-\[
+$$
 \hat{p}_{\text{CTR}}(u, a, c) = P(\text{click} \mid \text{user } u, \text{ad } a, \text{context } c)
-\]
+$$
 
 This is the most-deployed ML model in the world. Every ad impression, every platform.
 
@@ -202,9 +202,9 @@ We only observe labels for ads that were **shown**. Ads that lost the auction ne
 
 A model is **calibrated** if its predicted probabilities match observed frequencies:
 
-\[
+$$
 \text{Among predictions of } \hat{p} = 0.1, \text{ the empirical CTR is } 10\%.
-\]
+$$
 
 A model can be **good at ranking** (AUC = 0.9) but **poorly calibrated** (predicts 0.5 when truth is 0.1).
 
@@ -234,17 +234,17 @@ Empirical
 
 ### Expected Calibration Error (ECE)
 
-\[
+$$
 \text{ECE} = \sum_{b=1}^{B} \frac{n_b}{N} \left| \bar{p}_b - \bar{y}_b \right|
-\]
+$$
 
 where bins are over predicted probability ranges.
 
 ### Population-level calibration
 
-\[
+$$
 \text{Avg pCTR over all impressions} \approx \text{Empirical CTR overall}
-\]
+$$
 
 This is the **first** check in production — easy to monitor.
 
@@ -264,9 +264,9 @@ This is the **first** check in production — easy to monitor.
 
 Fit a logistic regression on the predicted logit:
 
-\[
+$$
 p_{\text{cal}} = \sigma(a \cdot \text{logit}(\hat{p}) + b)
-\]
+$$
 
 Two parameters; very effective.
 
@@ -276,11 +276,11 @@ Non-parametric monotonic mapping from raw to calibrated. More flexible than Plat
 
 ### Negative-sampling correction
 
-If training subsampled negatives by factor \(r\), the true probability is:
+If training subsampled negatives by factor $r$, the true probability is:
 
-\[
+$$
 p_{\text{true}} = \frac{p_{\text{model}}}{p_{\text{model}} + (1 - p_{\text{model}})/r}
-\]
+$$
 
 ### Post-hoc rescaling
 
@@ -294,27 +294,27 @@ Periodically rescale predictions by the ratio `empirical_CTR / avg_predicted_CTR
 
 Ranking by raw pCTR ignores **what an advertiser pays**. The auction needs:
 
-\[
+$$
 \text{Score} = \text{expected revenue} = \text{bid} \cdot \hat{p}_{\text{CTR}}
-\]
+$$
 
 For conversion-based bidding (advertiser pays per conversion, e.g., purchase):
 
-\[
+$$
 \text{Score} = \hat{p}_{\text{conv}} \cdot \text{value}_{\text{conv}}
-\]
+$$
 
-where conversion is further decomposed: \(\hat{p}_{\text{conv}} = \hat{p}_{\text{CTR}} \cdot \hat{p}_{\text{conv|click}}\).
+where conversion is further decomposed: $\hat{p}_{\text{conv}} = \hat{p}_{\text{CTR}} \cdot \hat{p}_{\text{conv|click}}$.
 
 ## 5.2 Multi-Outcome Scoring
 
 For long sessions and indirect conversions:
 
-\[
+$$
 \text{Score} = \sum_k w_k \cdot \hat{p}_k \cdot v_k
-\]
+$$
 
-where \(k\) indexes outcomes (click, page view, add to cart, purchase, lifetime value).
+where $k$ indexes outcomes (click, page view, add to cart, purchase, lifetime value).
 
 ## 5.3 Bid Types
 
@@ -330,13 +330,13 @@ where \(k\) indexes outcomes (click, page view, add to cart, purchase, lifetime 
 
 Internally, platforms convert all bid types to a common metric — **expected value per impression (eVPI)**:
 
-\[
+$$
 \text{eVPI} = \begin{cases}
 \hat{p}_{\text{CTR}} \cdot \text{bid}_{\text{CPC}} & \text{if CPC} \\
 \text{bid}_{\text{CPM}} / 1000 & \text{if CPM} \\
 \hat{p}_{\text{CTR}} \cdot \hat{p}_{\text{conv|click}} \cdot \text{bid}_{\text{CPA}} & \text{if CPA} \\
 \end{cases}
-\]
+$$
 
 This is the auction's currency. All bid types compete fairly when reduced to eVPI.
 
@@ -356,9 +356,9 @@ Modern ads ranking optimizes:
 
 ## 6.2 Linear Combination
 
-\[
+$$
 \text{Final score} = \alpha \cdot eVPI + \beta \cdot \text{quality} + \gamma \cdot \text{relevance} - \delta \cdot \text{annoyance}
-\]
+$$
 
 Weights tuned via A/B tests on a long-term outcome (often a holdout-based monthly DAU lift).
 
@@ -366,9 +366,9 @@ Weights tuned via A/B tests on a long-term outcome (often a holdout-based monthl
 
 Maximize revenue **subject to** user satisfaction constraints:
 
-\[
+$$
 \max \sum_t \text{revenue}_t \quad \text{s.t.} \quad \text{user satisfaction}_t \geq \theta
-\]
+$$
 
 Solved via **Lagrangian** approaches: introduce a shadow price for user satisfaction, optimize jointly.
 
@@ -410,15 +410,15 @@ Spend at a constant rate over the day. Misses fact that some hours have higher v
 
 ## 7.3 Optimization Pacing
 
-Define a **pacing multiplier** \(\rho \in [0, 1]\) on bids:
+Define a **pacing multiplier** $\rho \in [0, 1]$ on bids:
 
-\[
+$$
 \text{effective bid} = \rho \cdot \text{bid}
-\]
+$$
 
-Adjust \(\rho\) throughout the day so cumulative spend follows the optimal path.
+Adjust $\rho$ throughout the day so cumulative spend follows the optimal path.
 
-If ahead of budget, decrease \(\rho\). If behind, increase. Control-theory-style PID loops are common.
+If ahead of budget, decrease $\rho$. If behind, increase. Control-theory-style PID loops are common.
 
 ## 7.4 Throttling vs Pacing
 
@@ -460,9 +460,9 @@ With remaining probability, they SKIP and continue.
 
 This gives a position-conditional click probability:
 
-\[
+$$
 P(\text{click} \mid \text{relevance}, \text{position}) = P(\text{examined} \mid \text{position}) \cdot P(\text{click} \mid \text{examined, relevance})
-\]
+$$
 
 Training on **examination probability × relevance** separates the two effects.
 
@@ -530,9 +530,9 @@ Standard cluster design — see `42_switchback_geo_cluster_designs.md`.
 
 Train a new model. Replay historical impressions through it. Compute would-be revenue using IPS.
 
-\[
+$$
 \hat{R}^{\text{new}} = \frac{1}{n} \sum_i w_i \cdot r_i \quad \text{where } w_i = \frac{P(\text{action by new}|i)}{P(\text{action by old}|i)}
-\]
+$$
 
 **Variance** grows when policies disagree strongly → use IPS clipping or self-normalized IPS.
 
@@ -568,11 +568,11 @@ Short-term revenue maximization burns the user surface. Long-term DAU drops, adv
 
 Most platforms incorporate a **quality score**:
 
-\[
+$$
 \text{ad\_rank} = \text{bid} \cdot \hat{p}_{\text{CTR}} \cdot Q
-\]
+$$
 
-where \(Q\) penalizes low-quality ads. Google's "Quality Score" is the famous example.
+where $Q$ penalizes low-quality ads. Google's "Quality Score" is the famous example.
 
 ## 11.4 User-Side Experiments
 
@@ -617,7 +617,7 @@ This is one of the most strategically important measurements at any ad-supported
 
 ## Q8: "What is IPS and when do you use it?"
 
-> Inverse Propensity Scoring is a counterfactual evaluation technique. Suppose the production system shows ad A with probability `p(A | impression)`. You want to know what would have happened if you'd used a new system that would have shown ad A' instead. IPS estimates the new system's expected reward by reweighting historical impressions: \(\hat{R}^{\text{new}} = \sum_i \frac{P_{\text{new}}(a_i | x_i)}{P_{\text{old}}(a_i | x_i)} r_i\). The ratio of new vs old action probabilities is the "propensity weight." It's unbiased if both systems have non-zero probability on every action. Limitations: high variance when the two systems disagree strongly; can be stabilized with clipping (cap weights at some max) or self-normalization (divide by sum of weights). IPS is the standard tool for offline policy evaluation in ads, used to screen new rankers before live tests.
+> Inverse Propensity Scoring is a counterfactual evaluation technique. Suppose the production system shows ad A with probability `p(A | impression)`. You want to know what would have happened if you'd used a new system that would have shown ad A' instead. IPS estimates the new system's expected reward by reweighting historical impressions: $\hat{R}^{\text{new}} = \sum_i \frac{P_{\text{new}}(a_i | x_i)}{P_{\text{old}}(a_i | x_i)} r_i$. The ratio of new vs old action probabilities is the "propensity weight." It's unbiased if both systems have non-zero probability on every action. Limitations: high variance when the two systems disagree strongly; can be stabilized with clipping (cap weights at some max) or self-normalization (divide by sum of weights). IPS is the standard tool for offline policy evaluation in ads, used to screen new rankers before live tests.
 
 ## Q9: "How do you handle exploration in ads ranking?"
 

@@ -35,114 +35,114 @@ Probability is the mathematical framework for quantifying uncertainty. Every sta
 
 | Term | Definition |
 |------|-----------|
-| Sample space (\(\Omega\)) | The set of all possible outcomes |
-| Event (\(A\)) | A subset of the sample space |
-| \(P(A)\) | Probability of event \(A\), where \(0 \leq P(A) \leq 1\) |
-| \(P(\Omega) = 1\) | Something must happen |
-| \(P(\emptyset) = 0\) | The impossible event has probability zero |
+| Sample space ($\Omega$) | The set of all possible outcomes |
+| Event ($A$) | A subset of the sample space |
+| $P(A)$ | Probability of event $A$, where $0 \leq P(A) \leq 1$ |
+| $P(\Omega) = 1$ | Something must happen |
+| $P(\emptyset) = 0$ | The impossible event has probability zero |
 
 ### Kolmogorov Axioms
 
-1. **Non-negativity:** \(P(A) \geq 0\) for every event \(A\)
-2. **Normalization:** \(P(\Omega) = 1\)
-3. **Countable additivity:** For mutually exclusive events \(A_1, A_2, \dots\):
+1. **Non-negativity:** $P(A) \geq 0$ for every event $A$
+2. **Normalization:** $P(\Omega) = 1$
+3. **Countable additivity:** For mutually exclusive events $A_1, A_2, \dots$:
 
-\[
+$$
 P\left(\bigcup_{i=1}^{\infty} A_i\right) = \sum_{i=1}^{\infty} P(A_i)
-\]
+$$
 
 ### Addition Rule
 
-**Mutually exclusive events** (\(A \cap B = \emptyset\)):
+**Mutually exclusive events** ($A \cap B = \emptyset$):
 
-\[
+$$
 P(A \cup B) = P(A) + P(B)
-\]
+$$
 
 **General addition rule** (events may overlap):
 
-\[
+$$
 P(A \cup B) = P(A) + P(B) - P(A \cap B)
-\]
+$$
 
-> **Interview tip:** The subtraction of \(P(A \cap B)\) corrects for double-counting outcomes in the intersection.
+> **Interview tip:** The subtraction of $P(A \cap B)$ corrects for double-counting outcomes in the intersection.
 
 ### Multiplication Rule
 
 **General:**
 
-\[
+$$
 P(A \cap B) = P(A) \cdot P(B \mid A) = P(B) \cdot P(A \mid B)
-\]
+$$
 
 **For independent events:**
 
-\[
+$$
 P(A \cap B) = P(A) \cdot P(B)
-\]
+$$
 
 ### Complement Rule
 
-\[
+$$
 P(A^c) = 1 - P(A)
-\]
+$$
 
-Often useful when computing \(P(A)\) directly is hard — compute the complement instead.
+Often useful when computing $P(A)$ directly is hard — compute the complement instead.
 
 ### Law of Total Probability
 
-If \(B_1, B_2, \dots, B_n\) partition the sample space:
+If $B_1, B_2, \dots, B_n$ partition the sample space:
 
-\[
+$$
 P(A) = \sum_{i=1}^{n} P(A \mid B_i) \, P(B_i)
-\]
+$$
 
-> **Example:** You want \(P(\text{click})\). Users come from mobile (60%) and desktop (40%). Click rates differ by device. Total click probability = weighted sum across segments.
+> **Example:** You want $P(\text{click})$. Users come from mobile (60%) and desktop (40%). Click rates differ by device. Total click probability = weighted sum across segments.
 
 ---
 
 ## 1.2 Conditional Probability
 
-\[
+$$
 P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad P(B) > 0
-\]
+$$
 
-**Interpretation:** The probability of \(A\) occurring *given that* \(B\) has already occurred. Conditioning restricts the sample space to outcomes where \(B\) is true.
+**Interpretation:** The probability of $A$ occurring *given that* $B$ has already occurred. Conditioning restricts the sample space to outcomes where $B$ is true.
 
 ### Common Mistake
 
-\(P(A \mid B) \neq P(B \mid A)\) in general. This confusion is called the **prosecutor's fallacy** — confusing the probability of the evidence given innocence with the probability of innocence given the evidence.
+$P(A \mid B) \neq P(B \mid A)$ in general. This confusion is called the **prosecutor's fallacy** — confusing the probability of the evidence given innocence with the probability of innocence given the evidence.
 
 ---
 
 ## 1.3 Bayes' Theorem
 
-\[
+$$
 P(A \mid B) = \frac{P(B \mid A) \, P(A)}{P(B)}
-\]
+$$
 
 Expanding the denominator via the law of total probability:
 
-\[
+$$
 P(A \mid B) = \frac{P(B \mid A) \, P(A)}{P(B \mid A) \, P(A) + P(B \mid A^c) \, P(A^c)}
-\]
+$$
 
 | Component | Name | Meaning |
 |-----------|------|---------|
-| \(P(A)\) | Prior | What we believed before seeing data |
-| \(P(B \mid A)\) | Likelihood | How likely the data is under hypothesis \(A\) |
-| \(P(A \mid B)\) | Posterior | Updated belief after observing data |
-| \(P(B)\) | Evidence (marginal likelihood) | Normalizing constant |
+| $P(A)$ | Prior | What we believed before seeing data |
+| $P(B \mid A)$ | Likelihood | How likely the data is under hypothesis $A$ |
+| $P(A \mid B)$ | Posterior | Updated belief after observing data |
+| $P(B)$ | Evidence (marginal likelihood) | Normalizing constant |
 
 ### Classic Example — Medical Testing
 
-- Disease prevalence: \(P(D) = 0.001\) (1 in 1,000)
-- Test sensitivity: \(P(+ \mid D) = 0.99\)
-- Test specificity: \(P(- \mid D^c) = 0.99\), so \(P(+ \mid D^c) = 0.01\)
+- Disease prevalence: $P(D) = 0.001$ (1 in 1,000)
+- Test sensitivity: $P(+ \mid D) = 0.99$
+- Test specificity: $P(- \mid D^c) = 0.99$, so $P(+ \mid D^c) = 0.01$
 
-\[
+$$
 P(D \mid +) = \frac{0.99 \times 0.001}{0.99 \times 0.001 + 0.01 \times 0.999} = \frac{0.00099}{0.00099 + 0.00999} \approx 0.09
-\]
+$$
 
 Even with a 99% accurate test, a positive result gives only a ~9% chance of disease when the base rate is low. This is the **base rate fallacy**.
 
@@ -163,31 +163,31 @@ print(f"P(Disease | Positive Test) = {p_disease_given_pos:.4f}")
 
 ## 1.4 Independence
 
-Two events \(A\) and \(B\) are **independent** if and only if:
+Two events $A$ and $B$ are **independent** if and only if:
 
-\[
+$$
 P(A \cap B) = P(A) \cdot P(B)
-\]
+$$
 
-Equivalently: \(P(A \mid B) = P(A)\) — knowing \(B\) occurred tells you nothing about \(A\).
+Equivalently: $P(A \mid B) = P(A)$ — knowing $B$ occurred tells you nothing about $A$.
 
 ### Independence vs. Mutual Exclusivity
 
 | Property | Independent | Mutually Exclusive |
 |----------|-------------|-------------------|
-| \(P(A \cap B)\) | \(= P(A) P(B)\) | \(= 0\) |
+| $P(A \cap B)$ | $= P(A) P(B)$ | $= 0$ |
 | Can both occur? | Yes | No |
 | Knowing one tells about other? | No | Yes (if one happens, the other didn't) |
 
-> **Interview gotcha:** If \(P(A) > 0\) and \(P(B) > 0\), mutually exclusive events are **never** independent (because \(P(A \cap B) = 0 \neq P(A)P(B)\)).
+> **Interview gotcha:** If $P(A) > 0$ and $P(B) > 0$, mutually exclusive events are **never** independent (because $P(A \cap B) = 0 \neq P(A)P(B)$).
 
 ### Conditional Independence
 
-\(A\) and \(B\) are conditionally independent given \(C\) if:
+$A$ and $B$ are conditionally independent given $C$ if:
 
-\[
+$$
 P(A \cap B \mid C) = P(A \mid C) \cdot P(B \mid C)
-\]
+$$
 
 This is the core assumption behind **Naive Bayes** classifiers — features are independent given the class label.
 
@@ -195,29 +195,29 @@ This is the core assumption behind **Naive Bayes** classifiers — features are 
 
 ## 1.5 Random Variables
 
-A **random variable** \(X\) is a function that maps outcomes in the sample space to real numbers.
+A **random variable** $X$ is a function that maps outcomes in the sample space to real numbers.
 
 ### Discrete Random Variables
 
 Takes countable values. Described by a **probability mass function (PMF)**:
 
-\[
+$$
 P(X = x) = p(x), \quad \sum_x p(x) = 1
-\]
+$$
 
-**CDF:** \(F(x) = P(X \leq x) = \sum_{t \leq x} p(t)\)
+**CDF:** $F(x) = P(X \leq x) = \sum_{t \leq x} p(t)$
 
 ### Continuous Random Variables
 
 Takes values in an interval. Described by a **probability density function (PDF)**:
 
-\[
+$$
 f(x) \geq 0, \quad \int_{-\infty}^{\infty} f(x) \, dx = 1
-\]
+$$
 
-Note: \(P(X = x) = 0\) for continuous variables. Instead: \(P(a \leq X \leq b) = \int_a^b f(x) \, dx\)
+Note: $P(X = x) = 0$ for continuous variables. Instead: $P(a \leq X \leq b) = \int_a^b f(x) \, dx$
 
-**CDF:** \(F(x) = P(X \leq x) = \int_{-\infty}^{x} f(t) \, dt\)
+**CDF:** $F(x) = P(X \leq x) = \int_{-\infty}^{x} f(t) \, dt$
 
 ---
 
@@ -229,41 +229,41 @@ The expected value is the "center of mass" of a distribution.
 
 **Discrete:**
 
-\[
+$$
 E[X] = \mu = \sum_x x \cdot P(X = x)
-\]
+$$
 
 **Continuous:**
 
-\[
+$$
 E[X] = \mu = \int_{-\infty}^{\infty} x \, f(x) \, dx
-\]
+$$
 
 **Key properties:**
-- \(E[aX + b] = aE[X] + b\) (linearity)
-- \(E[X + Y] = E[X] + E[Y]\) (always — even for dependent variables)
-- \(E[XY] = E[X]E[Y]\) only if \(X\) and \(Y\) are independent
+- $E[aX + b] = aE[X] + b$ (linearity)
+- $E[X + Y] = E[X] + E[Y]$ (always — even for dependent variables)
+- $E[XY] = E[X]E[Y]$ only if $X$ and $Y$ are independent
 
 ### Variance
 
 Variance measures the spread of a distribution around its mean.
 
-\[
+$$
 \text{Var}(X) = \sigma^2 = E[(X - \mu)^2] = E[X^2] - (E[X])^2
-\]
+$$
 
 **Key properties:**
-- \(\text{Var}(aX + b) = a^2 \text{Var}(X)\) (constants shift, scalars square)
-- \(\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X, Y)\)
-- If independent: \(\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)\)
+- $\text{Var}(aX + b) = a^2 \text{Var}(X)$ (constants shift, scalars square)
+- $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X, Y)$
+- If independent: $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)$
 
 ### Standard Deviation
 
-\[
+$$
 \text{SD}(X) = \sigma = \sqrt{\text{Var}(X)}
-\]
+$$
 
-Same units as \(X\) (unlike variance which is in squared units).
+Same units as $X$ (unlike variance which is in squared units).
 
 ---
 
@@ -273,31 +273,31 @@ Same units as \(X\) (unlike variance which is in squared units).
 
 Measures linear association between two random variables.
 
-\[
+$$
 \text{Cov}(X, Y) = E[(X - \mu_X)(Y - \mu_Y)] = E[XY] - E[X]E[Y]
-\]
+$$
 
 | Value | Interpretation |
 |-------|---------------|
-| \(\text{Cov}(X,Y) > 0\) | \(X\) and \(Y\) tend to increase together |
-| \(\text{Cov}(X,Y) < 0\) | One increases as the other decreases |
-| \(\text{Cov}(X,Y) = 0\) | No linear relationship (but could have non-linear dependence!) |
+| $\text{Cov}(X,Y) > 0$ | $X$ and $Y$ tend to increase together |
+| $\text{Cov}(X,Y) < 0$ | One increases as the other decreases |
+| $\text{Cov}(X,Y) = 0$ | No linear relationship (but could have non-linear dependence!) |
 
 ### Pearson Correlation Coefficient
 
 Normalized covariance — dimensionless, bounded between -1 and 1.
 
-\[
+$$
 \rho(X, Y) = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}, \quad -1 \leq \rho \leq 1
-\]
+$$
 
 | Value | Interpretation |
 |-------|---------------|
-| \(\rho = 1\) | Perfect positive linear relationship |
-| \(\rho = -1\) | Perfect negative linear relationship |
-| \(\rho = 0\) | No linear relationship |
+| $\rho = 1$ | Perfect positive linear relationship |
+| $\rho = -1$ | Perfect negative linear relationship |
+| $\rho = 0$ | No linear relationship |
 
-> **Critical interview point:** Correlation = 0 does NOT imply independence. \(X\) and \(X^2\) can be uncorrelated yet completely dependent. Independence implies zero correlation, but not vice versa.
+> **Critical interview point:** Correlation = 0 does NOT imply independence. $X$ and $X^2$ can be uncorrelated yet completely dependent. Independence implies zero correlation, but not vice versa.
 
 ```python
 import numpy as np
@@ -322,16 +322,16 @@ print(f"Correlation: {np.corrcoef(x, y)[0, 1]:.4f}")
 
 Single trial with two outcomes (success/failure).
 
-\[
+$$
 X \sim \text{Bernoulli}(p)
-\]
+$$
 
 | Parameter | Meaning |
 |-----------|---------|
-| \(p\) | Probability of success |
-| PMF | \(P(X=1) = p, \quad P(X=0) = 1-p\) |
-| \(E[X]\) | \(p\) |
-| \(\text{Var}(X)\) | \(p(1-p)\) |
+| $p$ | Probability of success |
+| PMF | $P(X=1) = p, \quad P(X=0) = 1-p$ |
+| $E[X]$ | $p$ |
+| $\text{Var}(X)$ | $p(1-p)$ |
 
 **Use case:** Single coin flip, single user converts or not, single ad click.
 
@@ -339,20 +339,20 @@ X \sim \text{Bernoulli}(p)
 
 ### Binomial Distribution
 
-Number of successes in \(n\) independent Bernoulli trials.
+Number of successes in $n$ independent Bernoulli trials.
 
-\[
+$$
 X \sim \text{Binomial}(n, p)
-\]
+$$
 
-\[
+$$
 P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}, \quad k = 0, 1, \dots, n
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(np\) |
-| \(\text{Var}(X)\) | \(np(1-p)\) |
+| $E[X]$ | $np$ |
+| $\text{Var}(X)$ | $np(1-p)$ |
 
 **Use case:** Number of heads in 100 coin flips, number of users who convert out of 1,000 visitors.
 
@@ -372,22 +372,22 @@ print(f"P(X >= 55) = {p_at_least_55:.4f}")  # ~0.1841
 
 Number of events in a fixed interval when events occur independently at a constant average rate.
 
-\[
+$$
 X \sim \text{Poisson}(\lambda)
-\]
+$$
 
-\[
+$$
 P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}, \quad k = 0, 1, 2, \dots
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(\lambda\) |
-| \(\text{Var}(X)\) | \(\lambda\) (mean = variance — defining characteristic) |
+| $E[X]$ | $\lambda$ |
+| $\text{Var}(X)$ | $\lambda$ (mean = variance — defining characteristic) |
 
 **Use case:** Number of server errors per hour, customer arrivals per minute, emails received per day.
 
-> **Key insight:** Poisson is the limit of Binomial(\(n, p\)) as \(n \to \infty\), \(p \to 0\), and \(np = \lambda\) stays constant. Use Poisson when \(n\) is large and \(p\) is small.
+> **Key insight:** Poisson is the limit of Binomial($n, p$) as $n \to \infty$, $p \to 0$, and $np = \lambda$ stays constant. Use Poisson when $n$ is large and $p$ is small.
 
 ---
 
@@ -395,20 +395,20 @@ P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}, \quad k = 0, 1, 2, \dots
 
 Number of trials until the **first** success.
 
-\[
+$$
 X \sim \text{Geometric}(p)
-\]
+$$
 
-\[
+$$
 P(X = k) = (1-p)^{k-1} p, \quad k = 1, 2, 3, \dots
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(1/p\) |
-| \(\text{Var}(X)\) | \((1-p)/p^2\) |
+| $E[X]$ | $1/p$ |
+| $\text{Var}(X)$ | $(1-p)/p^2$ |
 
-**Memoryless property:** \(P(X > s+t \mid X > s) = P(X > t)\). Past failures don't affect future success probability.
+**Memoryless property:** $P(X > s+t \mid X > s) = P(X > t)$. Past failures don't affect future success probability.
 
 **Use case:** Number of job applications until an offer, A/B test trials until first conversion.
 
@@ -420,22 +420,22 @@ P(X = k) = (1-p)^{k-1} p, \quad k = 1, 2, 3, \dots
 
 The most important distribution in statistics — the foundation of most hypothesis tests and confidence intervals.
 
-\[
+$$
 X \sim \mathcal{N}(\mu, \sigma^2)
-\]
+$$
 
-\[
+$$
 f(x) = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(\mu\) |
-| \(\text{Var}(X)\) | \(\sigma^2\) |
-| Symmetry | Symmetric around \(\mu\) |
-| 68-95-99.7 rule | 68% within \(\pm 1\sigma\), 95% within \(\pm 2\sigma\), 99.7% within \(\pm 3\sigma\) |
+| $E[X]$ | $\mu$ |
+| $\text{Var}(X)$ | $\sigma^2$ |
+| Symmetry | Symmetric around $\mu$ |
+| 68-95-99.7 rule | 68% within $\pm 1\sigma$, 95% within $\pm 2\sigma$, 99.7% within $\pm 3\sigma$ |
 
-**Standard normal:** \(Z = \frac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1)\)
+**Standard normal:** $Z = \frac{X - \mu}{\sigma} \sim \mathcal{N}(0, 1)$
 
 **Why so important:**
 1. CLT guarantees sample means converge to normal
@@ -459,22 +459,22 @@ print(f"P(X > 130) = {1 - rv.cdf(130):.4f}")  # 0.0228
 
 ### Uniform Distribution
 
-All values in \([a, b]\) are equally likely.
+All values in $[a, b]$ are equally likely.
 
-\[
+$$
 X \sim \text{Uniform}(a, b)
-\]
+$$
 
-\[
+$$
 f(x) = \frac{1}{b - a}, \quad a \leq x \leq b
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(\frac{a+b}{2}\) |
-| \(\text{Var}(X)\) | \(\frac{(b-a)^2}{12}\) |
+| $E[X]$ | $\frac{a+b}{2}$ |
+| $\text{Var}(X)$ | $\frac{(b-a)^2}{12}$ |
 
-**Use case:** Random number generation, initial weight sampling, p-values under \(H_0\).
+**Use case:** Random number generation, initial weight sampling, p-values under $H_0$.
 
 ---
 
@@ -482,19 +482,19 @@ f(x) = \frac{1}{b - a}, \quad a \leq x \leq b
 
 Time between events in a Poisson process. The continuous analog of the Geometric distribution.
 
-\[
+$$
 X \sim \text{Exponential}(\lambda)
-\]
+$$
 
-\[
+$$
 f(x) = \lambda e^{-\lambda x}, \quad x \geq 0
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(1/\lambda\) |
-| \(\text{Var}(X)\) | \(1/\lambda^2\) |
-| Memoryless | \(P(X > s+t \mid X > s) = P(X > t)\) |
+| $E[X]$ | $1/\lambda$ |
+| $\text{Var}(X)$ | $1/\lambda^2$ |
+| Memoryless | $P(X > s+t \mid X > s) = P(X > t)$ |
 
 **Use case:** Time between customer arrivals, time until next server failure, radioactive decay.
 
@@ -502,20 +502,20 @@ f(x) = \lambda e^{-\lambda x}, \quad x \geq 0
 
 ### Beta Distribution
 
-Distribution on \([0, 1]\) — ideal for modeling probabilities and proportions.
+Distribution on $[0, 1]$ — ideal for modeling probabilities and proportions.
 
-\[
+$$
 X \sim \text{Beta}(\alpha, \beta)
-\]
+$$
 
-\[
+$$
 f(x) = \frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha, \beta)}, \quad 0 \leq x \leq 1
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(\frac{\alpha}{\alpha + \beta}\) |
-| \(\text{Var}(X)\) | \(\frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}\) |
+| $E[X]$ | $\frac{\alpha}{\alpha + \beta}$ |
+| $\text{Var}(X)$ | $\frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}$ |
 
 **Why critical in data science:**
 - Conjugate prior for the Bernoulli/Binomial likelihood in Bayesian inference
@@ -547,20 +547,20 @@ plt.show()
 
 Generalizes the exponential distribution. Models waiting times for multiple events.
 
-\[
+$$
 X \sim \text{Gamma}(\alpha, \beta)
-\]
+$$
 
-\[
+$$
 f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}, \quad x > 0
-\]
+$$
 
 | Property | Value |
 |----------|-------|
-| \(E[X]\) | \(\alpha / \beta\) |
-| \(\text{Var}(X)\) | \(\alpha / \beta^2\) |
-| Special case | Gamma(1, \(\lambda\)) = Exponential(\(\lambda\)) |
-| Special case | Gamma(\(n/2\), 1/2) = Chi-squared(\(n\)) |
+| $E[X]$ | $\alpha / \beta$ |
+| $\text{Var}(X)$ | $\alpha / \beta^2$ |
+| Special case | Gamma(1, $\lambda$) = Exponential($\lambda$) |
+| Special case | Gamma($n/2$, 1/2) = Chi-squared($n$) |
 
 **Use case:** Conjugate prior for the Poisson rate parameter, modeling insurance claim amounts, Bayesian inference.
 
@@ -571,14 +571,14 @@ f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}, \quad x > 
 | Scenario | Distribution |
 |----------|-------------|
 | Yes/No outcome (single trial) | Bernoulli |
-| Count of successes in \(n\) trials | Binomial |
+| Count of successes in $n$ trials | Binomial |
 | Count of rare events in fixed interval | Poisson |
 | Trials until first success | Geometric |
 | Continuous measurement, symmetric | Normal |
 | Equal probability over an interval | Uniform |
 | Time between independent events | Exponential |
 | Modeling a probability/proportion | Beta |
-| Waiting time for \(\alpha\) events | Gamma |
+| Waiting time for $\alpha$ events | Gamma |
 | Sum of squared standard normals | Chi-squared |
 | Ratio of two chi-squared variables | F-distribution |
 | Small-sample mean with unknown variance | t-distribution |
@@ -589,22 +589,22 @@ f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}, \quad x > 
 
 The most important theorem in statistics.
 
-> **Statement:** Let \(X_1, X_2, \dots, X_n\) be i.i.d. random variables with mean \(\mu\) and finite variance \(\sigma^2\). As \(n \to \infty\):
+> **Statement:** Let $X_1, X_2, \dots, X_n$ be i.i.d. random variables with mean $\mu$ and finite variance $\sigma^2$. As $n \to \infty$:
 >
-> \[
+> $$
 > \bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i \xrightarrow{d} \mathcal{N}\left(\mu, \frac{\sigma^2}{n}\right)
-> \]
+> $$
 >
 > Equivalently:
 >
-> \[
+> $$
 > \frac{\bar{X}_n - \mu}{\sigma / \sqrt{n}} \xrightarrow{d} \mathcal{N}(0, 1)
-> \]
+> $$
 
 **Why it matters:**
 1. Justifies using normal-based confidence intervals and hypothesis tests even when the underlying population is not normal
-2. Sample means of *any* distribution (with finite variance) become approximately normal for large \(n\)
-3. Rule of thumb: \(n \geq 30\) is usually sufficient (but depends on the skewness of the population)
+2. Sample means of *any* distribution (with finite variance) become approximately normal for large $n$
+3. Rule of thumb: $n \geq 30$ is usually sufficient (but depends on the skewness of the population)
 4. Foundation of A/B testing statistical analysis
 
 ```python
@@ -629,11 +629,11 @@ plt.show()
 
 ## 2.5 Law of Large Numbers (LLN)
 
-> **Weak LLN:** As \(n \to \infty\), the sample mean \(\bar{X}_n\) converges in probability to the population mean \(\mu\):
+> **Weak LLN:** As $n \to \infty$, the sample mean $\bar{X}_n$ converges in probability to the population mean $\mu$:
 >
-> \[
+> $$
 > \bar{X}_n \xrightarrow{P} \mu
-> \]
+> $$
 
 **Practical meaning:** The more data you collect, the closer your sample mean gets to the true mean. This justifies using sample averages as estimators.
 
@@ -654,18 +654,18 @@ plt.show()
 
 ### Mean (Arithmetic Average)
 
-\[
+$$
 \bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i
-\]
+$$
 
 - Sensitive to outliers (a single extreme value can shift it dramatically)
 - Best for symmetric distributions
 
 ### Median
 
-The middle value when data is sorted. For \(n\) observations:
-- Odd \(n\): middle value
-- Even \(n\): average of two middle values
+The middle value when data is sorted. For $n$ observations:
+- Odd $n$: middle value
+- Even $n$: average of two middle values
 
 - **Robust to outliers** — not affected by extreme values
 - Better measure of center for skewed distributions
@@ -702,36 +702,36 @@ The most frequently occurring value. Can be:
 
 **Population variance:**
 
-\[
+$$
 \sigma^2 = \frac{1}{N}\sum_{i=1}^{N}(x_i - \mu)^2
-\]
+$$
 
 **Sample variance (Bessel's correction):**
 
-\[
+$$
 s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2
-\]
+$$
 
-> **Why \(n-1\)?** Dividing by \(n\) underestimates the population variance (biased). Using \(n-1\) gives an unbiased estimator. This is **Bessel's correction**. Intuition: the sample mean "uses up" one degree of freedom.
+> **Why $n-1$?** Dividing by $n$ underestimates the population variance (biased). Using $n-1$ gives an unbiased estimator. This is **Bessel's correction**. Intuition: the sample mean "uses up" one degree of freedom.
 
 ### Interquartile Range (IQR)
 
-\[
+$$
 \text{IQR} = Q_3 - Q_1
-\]
+$$
 
-- \(Q_1\) (25th percentile): 25% of data below this value
-- \(Q_2\) (50th percentile): median
-- \(Q_3\) (75th percentile): 75% of data below this value
+- $Q_1$ (25th percentile): 25% of data below this value
+- $Q_2$ (50th percentile): median
+- $Q_3$ (75th percentile): 75% of data below this value
 
 **Outlier detection (Tukey's fences):**
-- Lower fence: \(Q_1 - 1.5 \times \text{IQR}\)
-- Upper fence: \(Q_3 + 1.5 \times \text{IQR}\)
+- Lower fence: $Q_1 - 1.5 \times \text{IQR}$
+- Upper fence: $Q_3 + 1.5 \times \text{IQR}$
 - Points outside fences are flagged as outliers (used in box plots)
 
 ### Percentiles
 
-The \(k\)-th percentile is the value below which \(k\%\) of the data falls.
+The $k$-th percentile is the value below which $k\%$ of the data falls.
 
 ```python
 import numpy as np
@@ -752,9 +752,9 @@ print(f"90th percentile: {np.percentile(data, 90):.2f}")
 
 Measures the asymmetry of the distribution.
 
-\[
+$$
 \text{Skewness} = \frac{E[(X - \mu)^3]}{\sigma^3}
-\]
+$$
 
 | Value | Shape |
 |-------|-------|
@@ -766,9 +766,9 @@ Measures the asymmetry of the distribution.
 
 Measures the "tailedness" — how much of the distribution is in the tails vs. the center.
 
-\[
+$$
 \text{Kurtosis} = \frac{E[(X - \mu)^4]}{\sigma^4}
-\]
+$$
 
 **Excess kurtosis** = Kurtosis - 3 (so the normal distribution has excess kurtosis = 0).
 
@@ -836,16 +836,16 @@ A **point estimate** is a single value used to estimate a population parameter.
 
 | Parameter | Estimator | Symbol |
 |-----------|----------|--------|
-| Population mean (\(\mu\)) | Sample mean | \(\bar{x}\) |
-| Population variance (\(\sigma^2\)) | Sample variance | \(s^2\) |
-| Population proportion (\(p\)) | Sample proportion | \(\hat{p}\) |
+| Population mean ($\mu$) | Sample mean | $\bar{x}$ |
+| Population variance ($\sigma^2$) | Sample variance | $s^2$ |
+| Population proportion ($p$) | Sample proportion | $\hat{p}$ |
 
 **Desirable properties of estimators:**
 
 | Property | Meaning |
 |----------|---------|
-| Unbiased | \(E[\hat{\theta}] = \theta\) — on average, hits the true value |
-| Consistent | As \(n \to \infty\), \(\hat{\theta} \to \theta\) |
+| Unbiased | $E[\hat{\theta}] = \theta$ — on average, hits the true value |
+| Consistent | As $n \to \infty$, $\hat{\theta} \to \theta$ |
 | Efficient | Smallest variance among all unbiased estimators |
 
 ---
@@ -856,15 +856,15 @@ The standard error (SE) measures how much a sample statistic varies from sample 
 
 **Standard error of the mean:**
 
-\[
+$$
 \text{SE}(\bar{x}) = \frac{s}{\sqrt{n}}
-\]
+$$
 
 **Standard error of a proportion:**
 
-\[
+$$
 \text{SE}(\hat{p}) = \sqrt{\frac{\hat{p}(1 - \hat{p})}{n}}
-\]
+$$
 
 > **SE vs. SD:** Standard deviation measures variability *within* a single sample. Standard error measures variability *of a statistic across* many samples.
 
@@ -874,21 +874,21 @@ The standard error (SE) measures how much a sample statistic varies from sample 
 
 A **confidence interval** provides a range of plausible values for a population parameter.
 
-### Formula (for the mean, large sample or known \(\sigma\)):
+### Formula (for the mean, large sample or known $\sigma$):
 
-\[
+$$
 \text{CI} = \bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}
-\]
+$$
 
-For unknown \(\sigma\) and small \(n\), use the t-distribution:
+For unknown $\sigma$ and small $n$, use the t-distribution:
 
-\[
+$$
 \text{CI} = \bar{x} \pm t_{\alpha/2, \, n-1} \cdot \frac{s}{\sqrt{n}}
-\]
+$$
 
 ### Common Confidence Levels
 
-| Confidence Level | \(z_{\alpha/2}\) |
+| Confidence Level | $z_{\alpha/2}$ |
 |-----------------|-----------------|
 | 90% | 1.645 |
 | 95% | 1.960 |
@@ -902,9 +902,9 @@ For unknown \(\sigma\) and small \(n\), use the t-distribution:
 
 ### CI for a Proportion
 
-\[
+$$
 \text{CI} = \hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
-\]
+$$
 
 ```python
 import numpy as np
@@ -933,8 +933,8 @@ print(f"95% CI: ({ci_prop[0]:.4f}, {ci_prop[1]:.4f})")
 | Factor | Effect on CI width |
 |--------|-------------------|
 | Increase confidence level | Wider |
-| Increase sample size \(n\) | Narrower |
-| Higher variability (\(\sigma\)) | Wider |
+| Increase sample size $n$ | Narrower |
+| Higher variability ($\sigma$) | Wider |
 
 ---
 
@@ -949,57 +949,57 @@ Hypothesis testing is the formal process of using sample data to decide between 
 ### Steps
 
 1. **State hypotheses:**
-   - \(H_0\) (null hypothesis): No effect, no difference, status quo
-   - \(H_1\) (alternative hypothesis): There IS an effect, a difference, a change
+   - $H_0$ (null hypothesis): No effect, no difference, status quo
+   - $H_1$ (alternative hypothesis): There IS an effect, a difference, a change
 
-2. **Choose significance level \(\alpha\)** (typically 0.05)
+2. **Choose significance level $\alpha$** (typically 0.05)
 
 3. **Compute test statistic** from the sample data
 
 4. **Determine the p-value** (or compare to critical value)
 
-5. **Make a decision:** Reject \(H_0\) if p-value < \(\alpha\)
+5. **Make a decision:** Reject $H_0$ if p-value < $\alpha$
 
 ### Null and Alternative Hypotheses
 
-| Test Type | \(H_0\) | \(H_1\) |
+| Test Type | $H_0$ | $H_1$ |
 |-----------|---------|---------|
-| Two-tailed | \(\mu = \mu_0\) | \(\mu \neq \mu_0\) |
-| Right-tailed | \(\mu \leq \mu_0\) | \(\mu > \mu_0\) |
-| Left-tailed | \(\mu \geq \mu_0\) | \(\mu < \mu_0\) |
+| Two-tailed | $\mu = \mu_0$ | $\mu \neq \mu_0$ |
+| Right-tailed | $\mu \leq \mu_0$ | $\mu > \mu_0$ |
+| Left-tailed | $\mu \geq \mu_0$ | $\mu < \mu_0$ |
 
 ---
 
 ## 5.2 Errors and Power
 
-| | \(H_0\) is TRUE | \(H_0\) is FALSE |
+| | $H_0$ is TRUE | $H_0$ is FALSE |
 |---|---|---|
-| **Reject \(H_0\)** | Type I Error (\(\alpha\)) — False Positive | Correct (Power = \(1 - \beta\)) |
-| **Fail to reject \(H_0\)** | Correct (True Negative) | Type II Error (\(\beta\)) — False Negative |
+| **Reject $H_0$** | Type I Error ($\alpha$) — False Positive | Correct (Power = $1 - \beta$) |
+| **Fail to reject $H_0$** | Correct (True Negative) | Type II Error ($\beta$) — False Negative |
 
-### Type I Error (\(\alpha\))
+### Type I Error ($\alpha$)
 
-- Rejecting \(H_0\) when it is actually true
+- Rejecting $H_0$ when it is actually true
 - "Finding a difference when there is none"
-- Controlled by significance level (typically \(\alpha = 0.05\))
+- Controlled by significance level (typically $\alpha = 0.05$)
 - **A/B testing analog:** Declaring a winner when there's no real difference
 
-### Type II Error (\(\beta\))
+### Type II Error ($\beta$)
 
-- Failing to reject \(H_0\) when it is actually false
+- Failing to reject $H_0$ when it is actually false
 - "Missing a real difference"
 - Depends on sample size, effect size, and variance
 
 ### Statistical Power
 
-\[
+$$
 \text{Power} = 1 - \beta = P(\text{reject } H_0 \mid H_0 \text{ is false})
-\]
+$$
 
 Factors that increase power:
 1. Larger sample size
 2. Larger effect size
-3. Higher \(\alpha\) (but increases Type I error)
+3. Higher $\alpha$ (but increases Type I error)
 4. Lower variance
 
 > **Industry standard:** Power ≥ 0.80 (80% chance of detecting a real effect).
@@ -1010,25 +1010,25 @@ Factors that increase power:
 
 ### Definition
 
-> The p-value is the probability of observing a test statistic as extreme as (or more extreme than) the one computed, **assuming \(H_0\) is true**.
+> The p-value is the probability of observing a test statistic as extreme as (or more extreme than) the one computed, **assuming $H_0$ is true**.
 
-\[
+$$
 \text{p-value} = P(\text{data as extreme or more} \mid H_0 \text{ true})
-\]
+$$
 
 ### Interpretation
 
-- Small p-value (< \(\alpha\)): Data is unlikely under \(H_0\) → Reject \(H_0\)
-- Large p-value (≥ \(\alpha\)): Data is consistent with \(H_0\) → Fail to reject \(H_0\)
+- Small p-value (< $\alpha$): Data is unlikely under $H_0$ → Reject $H_0$
+- Large p-value (≥ $\alpha$): Data is consistent with $H_0$ → Fail to reject $H_0$
 
 ### Common Misconceptions (Interview Gold)
 
 | Misconception | Correct Statement |
 |--------------|-------------------|
-| "p-value = probability that \(H_0\) is true" | p-value = probability of the data given \(H_0\) is true |
-| "p = 0.03 means 3% chance the null is true" | It means: if \(H_0\) were true, we'd see data this extreme 3% of the time |
-| "p > 0.05 means no effect" | It means we lack evidence to reject \(H_0\) — absence of evidence ≠ evidence of absence |
-| "Small p-value → large effect" | p-value says nothing about effect SIZE; with huge \(n\), tiny effects can yield tiny p-values |
+| "p-value = probability that $H_0$ is true" | p-value = probability of the data given $H_0$ is true |
+| "p = 0.03 means 3% chance the null is true" | It means: if $H_0$ were true, we'd see data this extreme 3% of the time |
+| "p > 0.05 means no effect" | It means we lack evidence to reject $H_0$ — absence of evidence ≠ evidence of absence |
+| "Small p-value → large effect" | p-value says nothing about effect SIZE; with huge $n$, tiny effects can yield tiny p-values |
 | "p-value measures practical importance" | It measures statistical significance only — practical significance is a separate question |
 
 ---
@@ -1037,7 +1037,7 @@ Factors that increase power:
 
 | Aspect | One-Tailed | Two-Tailed |
 |--------|-----------|-----------|
-| \(H_1\) | Direction specified (\(>\) or \(<\)) | Direction not specified (\(\neq\)) |
+| $H_1$ | Direction specified ($>$ or $<$) | Direction not specified ($\neq$) |
 | Rejection region | One tail only | Both tails |
 | Power | Higher for detecting effect in specified direction | Split across both directions |
 | When to use | Strong prior belief about direction | Default choice; more conservative |
@@ -1050,21 +1050,21 @@ Factors that increase power:
 
 ### z-test
 
-**When:** Large sample (\(n \geq 30\)) or known population variance.
+**When:** Large sample ($n \geq 30$) or known population variance.
 
 **Test statistic:**
 
-\[
+$$
 z = \frac{\bar{x} - \mu_0}{\sigma / \sqrt{n}}
-\]
+$$
 
 For proportions:
 
-\[
+$$
 z = \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}(1-\hat{p})\left(\frac{1}{n_1} + \frac{1}{n_2}\right)}}
-\]
+$$
 
-where \(\hat{p} = \frac{x_1 + x_2}{n_1 + n_2}\) is the pooled proportion.
+where $\hat{p} = \frac{x_1 + x_2}{n_1 + n_2}$ is the pooled proportion.
 
 ---
 
@@ -1074,26 +1074,26 @@ where \(\hat{p} = \frac{x_1 + x_2}{n_1 + n_2}\) is the pooled proportion.
 
 **One-sample t-test:**
 
-\[
+$$
 t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}, \quad \text{df} = n - 1
-\]
+$$
 
 **Two-sample (independent) t-test:**
 
-\[
+$$
 t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}
-\]
+$$
 
 **Paired t-test:** For before/after or matched pairs — test if the mean *difference* = 0.
 
-\[
+$$
 t = \frac{\bar{d}}{s_d / \sqrt{n}}, \quad \text{where } d_i = x_{i,\text{after}} - x_{i,\text{before}}
-\]
+$$
 
 **Assumptions:**
 1. Data is continuous
 2. Samples are independent (except paired)
-3. Approximately normal (or \(n\) is large enough for CLT)
+3. Approximately normal (or $n$ is large enough for CLT)
 4. Equal variances (for pooled t-test; Welch's t-test doesn't require this)
 
 ```python
@@ -1116,11 +1116,11 @@ print(f"Significant at α=0.05: {p_value < 0.05}")
 
 **Test for Independence:** Are two categorical variables related?
 
-\[
+$$
 \chi^2 = \sum \frac{(O_i - E_i)^2}{E_i}
-\]
+$$
 
-where \(O_i\) = observed frequency, \(E_i\) = expected frequency under independence.
+where $O_i$ = observed frequency, $E_i$ = expected frequency under independence.
 
 ```python
 from scipy import stats
@@ -1157,15 +1157,15 @@ Compares means across **three or more groups**. Tests whether at least one group
 
 **One-Way ANOVA:**
 
-\[
+$$
 F = \frac{\text{Between-group variance}}{\text{Within-group variance}} = \frac{MS_{\text{between}}}{MS_{\text{within}}}
-\]
+$$
 
 | Component | Formula |
 |-----------|---------|
-| \(SS_{\text{between}}\) | \(\sum n_j (\bar{x}_j - \bar{x})^2\) |
-| \(SS_{\text{within}}\) | \(\sum \sum (x_{ij} - \bar{x}_j)^2\) |
-| \(MS = SS/\text{df}\) | Mean square |
+| $SS_{\text{between}}$ | $\sum n_j (\bar{x}_j - \bar{x})^2$ |
+| $SS_{\text{within}}$ | $\sum \sum (x_{ij} - \bar{x}_j)^2$ |
+| $MS = SS/\text{df}$ | Mean square |
 
 **Assumptions:** Independence, normality, homogeneity of variances (Levene's test).
 
@@ -1298,7 +1298,7 @@ You then measure a **metric of interest** and use statistical tests to determine
 | 1. Formulate hypothesis | "Changing the CTA button color from blue to green will increase conversion rate" |
 | 2. Choose primary metric | Conversion rate, revenue per user, engagement time |
 | 3. Define guardrail metrics | Metrics that should NOT degrade (page load time, error rate) |
-| 4. Calculate sample size | Power analysis based on MDE, baseline rate, \(\alpha\), \(\beta\) |
+| 4. Calculate sample size | Power analysis based on MDE, baseline rate, $\alpha$, $\beta$ |
 | 5. Randomize users | Random assignment to control/treatment |
 | 6. Run the experiment | For the pre-determined duration |
 | 7. Analyze results | Statistical test + practical significance |
@@ -1329,37 +1329,37 @@ You then measure a **metric of interest** and use statistical tests to determine
 
 | Parameter | Symbol | Typical Value |
 |-----------|--------|---------------|
-| Significance level | \(\alpha\) | 0.05 |
-| Power | \(1 - \beta\) | 0.80 |
-| Minimum Detectable Effect (MDE) | \(\delta\) | Business-dependent |
+| Significance level | $\alpha$ | 0.05 |
+| Power | $1 - \beta$ | 0.80 |
+| Minimum Detectable Effect (MDE) | $\delta$ | Business-dependent |
 
 ### Formula for Two-Proportion z-test
 
-\[
+$$
 n = \frac{(z_{\alpha/2} + z_\beta)^2 \cdot (p_1(1-p_1) + p_2(1-p_2))}{(p_1 - p_2)^2}
-\]
+$$
 
-Simplified (assuming equal group sizes and \(p_1 \approx p_2 \approx p\)):
+Simplified (assuming equal group sizes and $p_1 \approx p_2 \approx p$):
 
-\[
+$$
 n_{\text{per group}} = \frac{(z_{\alpha/2} + z_\beta)^2 \cdot 2p(1-p)}{\delta^2}
-\]
+$$
 
-where \(\delta = p_2 - p_1\) is the MDE.
+where $\delta = p_2 - p_1$ is the MDE.
 
 ### Effect Size
 
 **Cohen's h** (for proportions):
 
-\[
+$$
 h = 2 \arcsin(\sqrt{p_2}) - 2 \arcsin(\sqrt{p_1})
-\]
+$$
 
 **Cohen's d** (for means):
 
-\[
+$$
 d = \frac{\mu_1 - \mu_2}{\sigma_{\text{pooled}}}
-\]
+$$
 
 | Cohen's d | Effect Size |
 |-----------|-------------|
@@ -1419,7 +1419,7 @@ print(f"Sample size per group: {int(np.ceil(sample_size_t))}")
 |--------|-------------------------------|
 | Smaller MDE | **Much larger** (quadratic: halving MDE → 4x sample) |
 | Higher power | Larger |
-| Lower \(\alpha\) | Larger |
+| Lower $\alpha$ | Larger |
 | Higher baseline variance | Larger |
 
 ---
@@ -1434,9 +1434,9 @@ print(f"Sample size per group: {int(np.ceil(sample_size_t))}")
 
 ### How Long to Run
 
-\[
+$$
 \text{Duration (days)} = \frac{\text{Total required sample size}}{\text{Daily eligible traffic}}
-\]
+$$
 
 **Minimum duration:** At least 1 full week to capture day-of-week effects. Ideally 2+ weeks.
 
@@ -1559,7 +1559,7 @@ print(f"p-value: {p_value:.4f}")
 
 **What:** Checking results repeatedly during the test and stopping early when p < 0.05.
 
-**Why it's bad:** Inflates Type I error. If you check daily for 30 days, the effective \(\alpha\) can exceed 30%.
+**Why it's bad:** Inflates Type I error. If you check daily for 30 days, the effective $\alpha$ can exceed 30%.
 
 **Solution:** Pre-commit to a fixed sample size/duration, or use **sequential testing** methods.
 
@@ -1567,14 +1567,14 @@ print(f"p-value: {p_value:.4f}")
 
 **What:** Testing many variants or metrics simultaneously without correction.
 
-**Why it's bad:** With 20 independent tests at \(\alpha = 0.05\), expected false positives = 1.
+**Why it's bad:** With 20 independent tests at $\alpha = 0.05$, expected false positives = 1.
 
 **Corrections:**
 
 | Method | Approach | Strictness |
 |--------|----------|-----------|
-| **Bonferroni** | \(\alpha_{\text{adj}} = \alpha / m\) | Most conservative |
-| **Holm-Bonferroni** | Step-down: order p-values, compare to \(\alpha/(m-k+1)\) | Less conservative than Bonferroni |
+| **Bonferroni** | $\alpha_{\text{adj}} = \alpha / m$ | Most conservative |
+| **Holm-Bonferroni** | Step-down: order p-values, compare to $\alpha/(m-k+1)$ | Less conservative than Bonferroni |
 | **Benjamini-Hochberg (FDR)** | Controls false discovery rate instead of FWER | Least conservative |
 
 ```python
@@ -1629,7 +1629,7 @@ Violated in social networks, marketplaces, ride-sharing (if treatment users inte
 
 ## 6.8 Sequential Testing
 
-**Problem:** Classic fixed-sample tests don't allow early stopping without inflating \(\alpha\).
+**Problem:** Classic fixed-sample tests don't allow early stopping without inflating $\alpha$.
 
 **Solution:** Sequential testing methods control Type I error while allowing continuous monitoring.
 
@@ -1657,15 +1657,15 @@ Instead of frequentist hypothesis testing, the Bayesian approach directly comput
 
 1. **Prior:** Start with a prior distribution for each variant's conversion rate (e.g., Beta(1, 1) — uniform)
 2. **Update:** After observing data, compute the posterior using Bayes' theorem
-3. **Decision:** Compute \(P(\text{treatment} > \text{control})\)
+3. **Decision:** Compute $P(\text{treatment} > \text{control})$
 
 ### Beta-Binomial Model
 
 For conversion rate testing:
 
-- Prior: \(p \sim \text{Beta}(\alpha_0, \beta_0)\)
-- Data: \(k\) conversions in \(n\) trials
-- Posterior: \(p \mid \text{data} \sim \text{Beta}(\alpha_0 + k, \beta_0 + n - k)\)
+- Prior: $p \sim \text{Beta}(\alpha_0, \beta_0)$
+- Data: $k$ conversions in $n$ trials
+- Posterior: $p \mid \text{data} \sim \text{Beta}(\alpha_0 + k, \beta_0 + n - k)$
 
 ```python
 from scipy import stats
@@ -1710,7 +1710,7 @@ print(f"95% credible interval for treatment rate: "
 | Aspect | Frequentist | Bayesian |
 |--------|-------------|----------|
 | Output | p-value, CI | Posterior distribution, P(B > A) |
-| Interpretation | "Reject or fail to reject at \(\alpha\)" | "90% probability treatment is better" |
+| Interpretation | "Reject or fail to reject at $\alpha$" | "90% probability treatment is better" |
 | Sample size | Fixed, pre-determined | Flexible — can stop anytime |
 | Peeking | Invalid without correction | Valid — posterior is always valid |
 | Prior needed | No | Yes (can use uninformative) |
@@ -1725,8 +1725,8 @@ An **adaptive** alternative to A/B testing that balances exploration (learning w
 
 ### Epsilon-Greedy
 
-- With probability \(\epsilon\): explore (random variant)
-- With probability \(1-\epsilon\): exploit (best-performing variant)
+- With probability $\epsilon$: explore (random variant)
+- With probability $1-\epsilon$: exploit (best-performing variant)
 
 ### Thompson Sampling
 
@@ -1791,7 +1791,7 @@ bandit.get_stats()
 
 | Criterion | Stop when... |
 |-----------|-------------|
-| Pre-determined sample size reached | \(n\) per group hits the power-calculated target |
+| Pre-determined sample size reached | $n$ per group hits the power-calculated target |
 | Pre-determined duration reached | Minimum 1-2 weeks to capture weekly patterns |
 | Sequential testing boundary crossed | For group sequential or always-valid methods |
 | Bayesian: high confidence | P(B > A) > 0.95 or expected loss < threshold |
@@ -1810,17 +1810,17 @@ bandit.get_stats()
 
 ### Model
 
-\[
+$$
 y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_p x_p + \epsilon
-\]
+$$
 
-where \(\epsilon \sim \mathcal{N}(0, \sigma^2)\)
+where $\epsilon \sim \mathcal{N}(0, \sigma^2)$
 
 ### Assumptions (LINE)
 
 | Letter | Assumption | Test/Check |
 |--------|-----------|-----------|
-| **L** — Linearity | Relationship between \(X\) and \(Y\) is linear | Residual plots, component plots |
+| **L** — Linearity | Relationship between $X$ and $Y$ is linear | Residual plots, component plots |
 | **I** — Independence | Observations are independent | Study design, Durbin-Watson test (autocorrelation) |
 | **N** — Normality | Residuals are normally distributed | Q-Q plot, Shapiro-Wilk test |
 | **E** — Equal variance (Homoscedasticity) | Residual variance is constant | Residual vs fitted plot, Breusch-Pagan test |
@@ -1829,25 +1829,25 @@ where \(\epsilon \sim \mathcal{N}(0, \sigma^2)\)
 
 Minimize the sum of squared residuals:
 
-\[
+$$
 \hat{\boldsymbol{\beta}} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}
-\]
+$$
 
 **R-squared:**
 
-\[
+$$
 R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}} = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}
-\]
+$$
 
 **Adjusted R-squared** (penalizes additional predictors):
 
-\[
+$$
 R^2_{\text{adj}} = 1 - \frac{(1 - R^2)(n - 1)}{n - p - 1}
-\]
+$$
 
 ### Interpretation of Coefficients
 
-\(\hat{\beta}_j\): Holding all other variables constant, a one-unit increase in \(x_j\) is associated with a \(\hat{\beta}_j\) change in \(y\).
+$\hat{\beta}_j$: Holding all other variables constant, a one-unit increase in $x_j$ is associated with a $\hat{\beta}_j$ change in $y$.
 
 ```python
 import statsmodels.api as sm
@@ -1871,11 +1871,11 @@ When predictors are highly correlated, coefficient estimates become unstable.
 
 ### Variance Inflation Factor (VIF)
 
-\[
+$$
 \text{VIF}_j = \frac{1}{1 - R_j^2}
-\]
+$$
 
-where \(R_j^2\) is the R-squared from regressing \(x_j\) on all other predictors.
+where $R_j^2$ is the R-squared from regressing $x_j$ on all other predictors.
 
 | VIF | Interpretation |
 |-----|---------------|
@@ -1904,29 +1904,29 @@ print(vif_data)
 
 For binary outcomes. Models the **log-odds** as a linear function:
 
-\[
+$$
 \log\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p
-\]
+$$
 
-\[
+$$
 P(y=1 \mid \mathbf{x}) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 x_1 + \dots + \beta_p x_p)}}
-\]
+$$
 
 ### Coefficient Interpretation
 
-\(e^{\beta_j}\) = **odds ratio**: a one-unit increase in \(x_j\) multiplies the odds by \(e^{\beta_j}\), holding all else constant.
+$e^{\beta_j}$ = **odds ratio**: a one-unit increase in $x_j$ multiplies the odds by $e^{\beta_j}$, holding all else constant.
 
-- \(e^{\beta_j} > 1\): increases odds of \(y=1\)
-- \(e^{\beta_j} < 1\): decreases odds of \(y=1\)
-- \(e^{\beta_j} = 1\): no effect
+- $e^{\beta_j} > 1$: increases odds of $y=1$
+- $e^{\beta_j} < 1$: decreases odds of $y=1$
+- $e^{\beta_j} = 1$: no effect
 
 ### Loss Function
 
 Binary cross-entropy (log loss):
 
-\[
+$$
 \mathcal{L} = -\frac{1}{n}\sum_{i=1}^{n}\left[y_i \log(\hat{p}_i) + (1-y_i)\log(1-\hat{p}_i)\right]
-\]
+$$
 
 ---
 
@@ -1934,9 +1934,9 @@ Binary cross-entropy (log loss):
 
 | Method | Penalty | Effect |
 |--------|---------|--------|
-| **Ridge (L2)** | \(\lambda \sum \beta_j^2\) | Shrinks coefficients toward zero; keeps all features |
-| **Lasso (L1)** | \(\lambda \sum \|\beta_j\|\) | Can shrink coefficients to exactly zero → feature selection |
-| **Elastic Net** | \(\alpha \lambda \sum \|\beta_j\| + \frac{(1-\alpha)}{2} \lambda \sum \beta_j^2\) | Combines L1 and L2 |
+| **Ridge (L2)** | $\lambda \sum \beta_j^2$ | Shrinks coefficients toward zero; keeps all features |
+| **Lasso (L1)** | $\lambda \sum \|\beta_j\|$ | Can shrink coefficients to exactly zero → feature selection |
+| **Elastic Net** | $\alpha \lambda \sum \|\beta_j\| + \frac{(1-\alpha)}{2} \lambda \sum \beta_j^2$ | Combines L1 and L2 |
 
 **When to use:**
 - Many features → Lasso (automatic feature selection)
@@ -1968,20 +1968,20 @@ print(f"Elastic Net non-zero coefficients: {sum(abs(enet.coef_) > 0.01)}")
 
 ### Core Equation
 
-\[
+$$
 P(\theta \mid \text{data}) = \frac{P(\text{data} \mid \theta) \cdot P(\theta)}{P(\text{data})}
-\]
+$$
 
-\[
+$$
 \text{Posterior} \propto \text{Likelihood} \times \text{Prior}
-\]
+$$
 
 | Component | Symbol | Role |
 |-----------|--------|------|
-| Prior | \(P(\theta)\) | Belief about parameter before seeing data |
-| Likelihood | \(P(\text{data} \mid \theta)\) | Probability of observed data given parameter |
-| Posterior | \(P(\theta \mid \text{data})\) | Updated belief after seeing data |
-| Evidence | \(P(\text{data})\) | Normalizing constant (often intractable) |
+| Prior | $P(\theta)$ | Belief about parameter before seeing data |
+| Likelihood | $P(\text{data} \mid \theta)$ | Probability of observed data given parameter |
+| Posterior | $P(\theta \mid \text{data})$ | Updated belief after seeing data |
+| Evidence | $P(\text{data})$ | Normalizing constant (often intractable) |
 
 ### Interpretation
 
@@ -1998,8 +1998,8 @@ P(\theta \mid \text{data}) = \frac{P(\text{data} \mid \theta) \cdot P(\theta)}{P
 |--------|-------------|----------|
 | Parameter | Fixed but unknown | Random variable with a distribution |
 | Probability of | Long-run frequency | Degree of belief |
-| \(P(\theta \mid \text{data})\) | Not defined | Directly computed |
-| Confidence/Credible interval | "95% of such intervals contain \(\theta\)" | "95% probability \(\theta\) is in this interval" |
+| $P(\theta \mid \text{data})$ | Not defined | Directly computed |
+| Confidence/Credible interval | "95% of such intervals contain $\theta$" | "95% probability $\theta$ is in this interval" |
 | Prior information | Not used | Incorporated formally |
 | Small samples | Can be unreliable | Handles well (prior regularizes) |
 | Computational cost | Usually low | Often high (MCMC) |
@@ -2024,9 +2024,9 @@ When the posterior has the same distributional form as the prior, the prior is c
 
 ### Example: Beta-Binomial
 
-- Prior: \(\theta \sim \text{Beta}(\alpha_0, \beta_0)\)
-- Data: \(k\) successes in \(n\) trials
-- Posterior: \(\theta \mid \text{data} \sim \text{Beta}(\alpha_0 + k, \beta_0 + n - k)\)
+- Prior: $\theta \sim \text{Beta}(\alpha_0, \beta_0)$
+- Data: $k$ successes in $n$ trials
+- Posterior: $\theta \mid \text{data} \sim \text{Beta}(\alpha_0 + k, \beta_0 + n - k)$
 
 ```python
 from scipy import stats
@@ -2069,16 +2069,16 @@ print(f"95% Credible Interval: ({stats.beta.ppf(0.025, alpha_post, beta_post):.4
 
 **Maximum A Posteriori (MAP):** The mode of the posterior distribution.
 
-\[
+$$
 \hat{\theta}_{\text{MAP}} = \arg\max_\theta P(\theta \mid \text{data}) = \arg\max_\theta \left[\log P(\text{data} \mid \theta) + \log P(\theta)\right]
-\]
+$$
 
 ### MAP vs. MLE
 
 | Method | Objective | Regularization |
 |--------|----------|---------------|
-| MLE | \(\arg\max_\theta P(\text{data} \mid \theta)\) | None |
-| MAP | \(\arg\max_\theta P(\text{data} \mid \theta) P(\theta)\) | Prior acts as regularizer |
+| MLE | $\arg\max_\theta P(\text{data} \mid \theta)$ | None |
+| MAP | $\arg\max_\theta P(\text{data} \mid \theta) P(\theta)$ | Prior acts as regularizer |
 
 **Connection to regularization:**
 - Gaussian prior on weights → **L2 regularization** (Ridge)
@@ -2098,29 +2098,29 @@ print(f"95% Credible Interval: ({stats.beta.ppf(0.025, alpha_post, beta_post):.4
 
 Choose parameter values that maximize the probability of the observed data:
 
-\[
+$$
 \hat{\theta}_{\text{MLE}} = \arg\max_\theta \prod_{i=1}^{n} P(x_i \mid \theta)
-\]
+$$
 
 In practice, maximize the **log-likelihood** (converts products to sums):
 
-\[
+$$
 \hat{\theta}_{\text{MLE}} = \arg\max_\theta \sum_{i=1}^{n} \log P(x_i \mid \theta)
-\]
+$$
 
 ### Example: MLE for Normal Distribution
 
-Given i.i.d. samples \(x_1, \dots, x_n\) from \(\mathcal{N}(\mu, \sigma^2)\):
+Given i.i.d. samples $x_1, \dots, x_n$ from $\mathcal{N}(\mu, \sigma^2)$:
 
-\[
+$$
 \hat{\mu}_{\text{MLE}} = \bar{x} = \frac{1}{n}\sum x_i
-\]
+$$
 
-\[
+$$
 \hat{\sigma}^2_{\text{MLE}} = \frac{1}{n}\sum (x_i - \bar{x})^2
-\]
+$$
 
-Note: The MLE for variance divides by \(n\) (biased), not \(n-1\).
+Note: The MLE for variance divides by $n$ (biased), not $n-1$.
 
 ### MLE in ML
 
@@ -2134,11 +2134,11 @@ Note: The MLE for variance divides by \(n\) (biased), not \(n-1\).
 
 ### Information Theory Origin
 
-**Information content** of an event with probability \(p\):
+**Information content** of an event with probability $p$:
 
-\[
+$$
 I(p) = -\log_2(p) \quad \text{(in bits)}
-\]
+$$
 
 Rare events carry more information.
 
@@ -2146,66 +2146,66 @@ Rare events carry more information.
 
 Average information content of a distribution:
 
-\[
+$$
 H(p) = -\sum_x p(x) \log p(x)
-\]
+$$
 
 | Distribution | Entropy |
 |-------------|---------|
 | Deterministic (one outcome has prob 1) | 0 (no uncertainty) |
-| Uniform over \(k\) outcomes | \(\log k\) (maximum uncertainty) |
-| Biased coin \(p = 0.9\) | 0.47 bits |
-| Fair coin \(p = 0.5\) | 1.0 bit |
+| Uniform over $k$ outcomes | $\log k$ (maximum uncertainty) |
+| Biased coin $p = 0.9$ | 0.47 bits |
+| Fair coin $p = 0.5$ | 1.0 bit |
 
 ### Cross-Entropy
 
-Measures how well distribution \(q\) approximates the true distribution \(p\):
+Measures how well distribution $q$ approximates the true distribution $p$:
 
-\[
+$$
 H(p, q) = -\sum_x p(x) \log q(x)
-\]
+$$
 
-- Always \(H(p, q) \geq H(p)\)
-- Minimizing cross-entropy → making \(q\) as close to \(p\) as possible
+- Always $H(p, q) \geq H(p)$
+- Minimizing cross-entropy → making $q$ as close to $p$ as possible
 
-**In ML classification:** \(p\) = true labels (one-hot), \(q\) = model's predicted probabilities.
+**In ML classification:** $p$ = true labels (one-hot), $q$ = model's predicted probabilities.
 
-\[
+$$
 \mathcal{L}_{\text{CE}} = -\sum_{i=1}^{n} \sum_{c=1}^{C} y_{i,c} \log(\hat{p}_{i,c})
-\]
+$$
 
 For binary classification:
 
-\[
+$$
 \mathcal{L}_{\text{BCE}} = -\frac{1}{n}\sum_{i=1}^{n}\left[y_i \log \hat{p}_i + (1-y_i)\log(1-\hat{p}_i)\right]
-\]
+$$
 
 ---
 
 ## 9.3 KL Divergence
 
-Measures how one distribution \(q\) diverges from a reference distribution \(p\):
+Measures how one distribution $q$ diverges from a reference distribution $p$:
 
-\[
+$$
 D_{\text{KL}}(p \| q) = \sum_x p(x) \log \frac{p(x)}{q(x)} = H(p, q) - H(p)
-\]
+$$
 
 **Properties:**
-- \(D_{\text{KL}}(p \| q) \geq 0\) (Gibbs' inequality)
-- \(D_{\text{KL}}(p \| q) = 0 \iff p = q\)
-- **NOT symmetric:** \(D_{\text{KL}}(p \| q) \neq D_{\text{KL}}(q \| p)\) in general
+- $D_{\text{KL}}(p \| q) \geq 0$ (Gibbs' inequality)
+- $D_{\text{KL}}(p \| q) = 0 \iff p = q$
+- **NOT symmetric:** $D_{\text{KL}}(p \| q) \neq D_{\text{KL}}(q \| p)$ in general
 - Not a true distance metric (no triangle inequality, no symmetry)
 
 **In ML:**
-- **VAEs:** KL divergence between the encoder's posterior and the prior \(\mathcal{N}(0, I)\)
+- **VAEs:** KL divergence between the encoder's posterior and the prior $\mathcal{N}(0, I)$
 - **Knowledge distillation:** KL divergence between teacher and student softmax outputs
 - **Policy gradient (RL):** KL constraint in TRPO/PPO
 
 **Relationship:**
 
-\[
+$$
 \text{Cross-Entropy} = \text{Entropy} + \text{KL Divergence}
-\]
+$$
 
 Since entropy of true labels is constant, minimizing cross-entropy = minimizing KL divergence.
 
@@ -2215,12 +2215,12 @@ Since entropy of true labels is constant, minimizing cross-entropy = minimizing 
 
 Quantifies the amount of information obtained about one variable by observing another:
 
-\[
+$$
 I(X; Y) = D_{\text{KL}}(P(X,Y) \| P(X)P(Y)) = H(X) + H(Y) - H(X, Y)
-\]
+$$
 
-- \(I(X; Y) = 0 \iff X\) and \(Y\) are independent
-- \(I(X; Y) = H(X) \iff Y\) completely determines \(X\)
+- $I(X; Y) = 0 \iff X$ and $Y$ are independent
+- $I(X; Y) = H(X) \iff Y$ completely determines $X$
 
 **In ML:** Feature selection (mutual information between features and target), representation learning (InfoNCE loss in contrastive learning).
 
@@ -2241,15 +2241,15 @@ for i, score in enumerate(mi_scores):
 
 For any estimator, the expected prediction error decomposes as:
 
-\[
+$$
 E\left[(y - \hat{f}(x))^2\right] = \text{Bias}^2[\hat{f}(x)] + \text{Var}[\hat{f}(x)] + \sigma^2_\epsilon
-\]
+$$
 
 | Component | Definition | Source |
 |-----------|-----------|--------|
-| Bias\(^2\) | \((E[\hat{f}(x)] - f(x))^2\) | Systematic error from wrong assumptions |
-| Variance | \(E[(\hat{f}(x) - E[\hat{f}(x)])^2]\) | Sensitivity to training data fluctuations |
-| Irreducible error | \(\sigma^2_\epsilon\) | Noise in the data itself |
+| Bias$^2$ | $(E[\hat{f}(x)] - f(x))^2$ | Systematic error from wrong assumptions |
+| Variance | $E[(\hat{f}(x) - E[\hat{f}(x)])^2]$ | Sensitivity to training data fluctuations |
+| Irreducible error | $\sigma^2_\epsilon$ | Noise in the data itself |
 
 ### Bias-Variance Tradeoff
 
@@ -2279,7 +2279,7 @@ E\left[(y - \hat{f}(x))^2\right] = \text{Bias}^2[\hat{f}(x)] + \text{Var}[\hat{f
 > 1. **Hypothesis:** "The new checkout flow will increase purchase completion rate."
 > 2. **Primary metric:** Checkout conversion rate (users who start checkout → complete purchase).
 > 3. **Guardrail metrics:** Revenue per user, page load time, error rates.
-> 4. **Sample size:** Calculate using power analysis — baseline 30% conversion, want to detect 2pp lift, \(\alpha = 0.05\), power = 0.80 → compute required \(n\) per group.
+> 4. **Sample size:** Calculate using power analysis — baseline 30% conversion, want to detect 2pp lift, $\alpha = 0.05$, power = 0.80 → compute required $n$ per group.
 > 5. **Randomization:** Hash-based on user ID. Ensure new and returning users are balanced (stratified).
 > 6. **Duration:** At least 2 full weeks to capture weekday/weekend effects.
 > 7. **Pre-checks:** SRM validation to ensure 50/50 split.
@@ -2291,21 +2291,21 @@ E\left[(y - \hat{f}(x))^2\right] = \text{Bias}^2[\hat{f}(x)] + \text{Var}[\hat{f
 ## Q3: "What is the difference between Type I and Type II errors?"
 
 > **Answer:**  
-> - **Type I (False Positive):** Rejecting the null when it's true. Controlled by \(\alpha\) (significance level). Example: Declaring a new feature improves conversion when it actually doesn't.
-> - **Type II (False Negative):** Failing to reject the null when it's false. Related to power (\(1 - \beta\)). Example: Missing a real improvement because the test was underpowered.
-> - The tradeoff: lowering \(\alpha\) reduces Type I errors but increases Type II errors. The only way to reduce both is to increase sample size.
+> - **Type I (False Positive):** Rejecting the null when it's true. Controlled by $\alpha$ (significance level). Example: Declaring a new feature improves conversion when it actually doesn't.
+> - **Type II (False Negative):** Failing to reject the null when it's false. Related to power ($1 - \beta$). Example: Missing a real improvement because the test was underpowered.
+> - The tradeoff: lowering $\alpha$ reduces Type I errors but increases Type II errors. The only way to reduce both is to increase sample size.
 
 ---
 
 ## Q4: "What is the Central Limit Theorem and why does it matter?"
 
-> **Answer:** "The CLT states that the distribution of the sample mean approaches a normal distribution as sample size increases, regardless of the underlying population distribution (as long as it has finite variance). This is why we can use z-tests and t-tests for A/B testing even when the underlying data is not normal — we're testing the sample mean, which IS approximately normal for large \(n\). It's the theoretical foundation of most frequentist hypothesis tests."
+> **Answer:** "The CLT states that the distribution of the sample mean approaches a normal distribution as sample size increases, regardless of the underlying population distribution (as long as it has finite variance). This is why we can use z-tests and t-tests for A/B testing even when the underlying data is not normal — we're testing the sample mean, which IS approximately normal for large $n$. It's the theoretical foundation of most frequentist hypothesis tests."
 
 ---
 
 ## Q5: "How do you determine sample size for an A/B test?"
 
-> **Answer:** "I use a power analysis with four inputs: (1) the baseline metric value, (2) the minimum detectable effect (MDE) — the smallest change worth detecting, (3) significance level \(\alpha\) (usually 0.05), and (4) desired power (usually 80%). The key tradeoff is that detecting smaller effects requires much larger samples — halving the MDE requires roughly 4x the sample size. I use Python's `statsmodels` power analysis functions to compute this."
+> **Answer:** "I use a power analysis with four inputs: (1) the baseline metric value, (2) the minimum detectable effect (MDE) — the smallest change worth detecting, (3) significance level $\alpha$ (usually 0.05), and (4) desired power (usually 80%). The key tradeoff is that detecting smaller effects requires much larger samples — halving the MDE requires roughly 4x the sample size. I use Python's `statsmodels` power analysis functions to compute this."
 
 ---
 
@@ -2326,8 +2326,8 @@ E\left[(y - \hat{f}(x))^2\right] = \text{Bias}^2[\hat{f}(x)] + \text{Var}[\hat{f
 
 ## Q8: "How do you handle multiple comparisons?"
 
-> **Answer:** "When testing multiple hypotheses simultaneously (e.g., 10 metrics in an A/B test), the probability of at least one false positive increases dramatically. With 20 independent tests at \(\alpha = 0.05\), the family-wise error rate is about 64%. Solutions:
-> - **Bonferroni correction:** Divide \(\alpha\) by the number of tests. Simple but very conservative.
+> **Answer:** "When testing multiple hypotheses simultaneously (e.g., 10 metrics in an A/B test), the probability of at least one false positive increases dramatically. With 20 independent tests at $\alpha = 0.05$, the family-wise error rate is about 64%. Solutions:
+> - **Bonferroni correction:** Divide $\alpha$ by the number of tests. Simple but very conservative.
 > - **Holm-Bonferroni:** Step-down procedure — less conservative than Bonferroni while still controlling FWER.
 > - **Benjamini-Hochberg:** Controls the false discovery rate (FDR) instead of FWER — more powerful, appropriate for exploratory analyses.
 > - **Pre-specify one primary metric:** The cleanest approach — one OEC doesn't need correction."
@@ -2348,13 +2348,13 @@ E\left[(y - \hat{f}(x))^2\right] = \text{Bias}^2[\hat{f}(x)] + \text{Var}[\hat{f
 > 3. Consider whether the test was adequately powered — if underpowered, I might extend the test.
 > 4. Look at segment-level data for patterns (while being careful about multiple testing).
 > 5. If the effect size is potentially meaningful and the test was underpowered, I'd recommend running a follow-up experiment with a larger sample.
-> 6. I would never lower \(\alpha\) post-hoc to make results significant."
+> 6. I would never lower $\alpha$ post-hoc to make results significant."
 
 ---
 
 ## Q11: "What is the Law of Large Numbers and how is it different from CLT?"
 
-> **Answer:** "The Law of Large Numbers (LLN) says the sample mean converges to the true population mean as \(n\) increases — it guarantees accuracy. The CLT goes further by specifying that the distribution of the sample mean is approximately normal and quantifies how fast the convergence happens (\(\sigma/\sqrt{n}\)). LLN tells you WHERE the sample mean goes, CLT tells you what SHAPE the distribution of sample means takes."
+> **Answer:** "The Law of Large Numbers (LLN) says the sample mean converges to the true population mean as $n$ increases — it guarantees accuracy. The CLT goes further by specifying that the distribution of the sample mean is approximately normal and quantifies how fast the convergence happens ($\sigma/\sqrt{n}$). LLN tells you WHERE the sample mean goes, CLT tells you what SHAPE the distribution of sample means takes."
 
 ---
 
@@ -2381,7 +2381,7 @@ E\left[(y - \hat{f}(x))^2\right] = \text{Bias}^2[\hat{f}(x)] + \text{Var}[\hat{f
 
 ### Hypothesis Testing
 
-- p-value is NOT the probability of \(H_0\) being true — drill this.
+- p-value is NOT the probability of $H_0$ being true — drill this.
 - Always report effect sizes and confidence intervals alongside p-values.
 - Know the test selection flowchart: type of data × number of groups × parametric or not.
 

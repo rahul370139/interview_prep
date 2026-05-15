@@ -71,7 +71,7 @@ The fix is **not** statistical correction. It's **changing the unit of randomiza
 1. **No interference** — unit i's outcome depends only on unit i's treatment.
 2. **No hidden variations** — each treatment has a single, well-defined version.
 
-When SUTVA holds, the potential outcomes \(Y_i(0)\) and \(Y_i(1)\) are well-defined and ATE estimation is clean.
+When SUTVA holds, the potential outcomes $Y_i(0)$ and $Y_i(1)$ are well-defined and ATE estimation is clean.
 
 ## 2.2 When SUTVA Fails
 
@@ -121,17 +121,17 @@ USER-LEVEL A/B               CLUSTER A/B
 
 Within a cluster, users are **correlated**. The effective sample size is:
 
-\[
+$$
 n_{\text{eff}} = \frac{n}{1 + (\bar{m} - 1) \cdot \text{ICC}}
-\]
+$$
 
 | Symbol | Meaning |
 |--------|---------|
-| \(n\) | Total users |
-| \(\bar{m}\) | Average cluster size |
+| $n$ | Total users |
+| $\bar{m}$ | Average cluster size |
 | **ICC** | Intra-cluster correlation (0 = independent, 1 = perfectly correlated) |
 
-> **Example:** 100k users in 100 clusters (1k each) with ICC=0.05 → \(n_{\text{eff}} = 100{,}000 / (1 + 999 \cdot 0.05) \approx 1{,}960\). Effective sample is ~50× smaller!
+> **Example:** 100k users in 100 clusters (1k each) with ICC=0.05 → $n_{\text{eff}} = 100{,}000 / (1 + 999 \cdot 0.05) \approx 1{,}960$. Effective sample is ~50× smaller!
 
 **Implication:** cluster designs need more total users than user-level A/B for the same power.
 
@@ -139,11 +139,11 @@ n_{\text{eff}} = \frac{n}{1 + (\bar{m} - 1) \cdot \text{ICC}}
 
 The standard analysis is **cluster-robust standard errors**:
 
-\[
+$$
 \hat{\tau} = \bar{Y}_T - \bar{Y}_C, \quad \text{SE}_{\text{cluster}} = \sqrt{\frac{\sigma_T^2/k_T + \sigma_C^2/k_C}{k}}
-\]
+$$
 
-where \(k_T, k_C\) are the **number of clusters** in each arm (not users!), and \(\sigma^2\) is the variance of cluster means.
+where $k_T, k_C$ are the **number of clusters** in each arm (not users!), and $\sigma^2$ is the variance of cluster means.
 
 ```python
 import numpy as np
@@ -215,11 +215,11 @@ This is what Google's `GeoX` package does.
 
 For matched pairs (k pairs, one treated each):
 
-\[
+$$
 \hat{\tau} = \frac{1}{k}\sum_{i=1}^{k}(Y_{i,T} - Y_{i,C}), \quad \text{SE} = \frac{s_d}{\sqrt{k}}
-\]
+$$
 
-where \(s_d\) is the standard deviation of pair-wise differences.
+where $s_d$ is the standard deviation of pair-wise differences.
 
 ---
 
@@ -275,26 +275,26 @@ A treatment in slot t can affect outcomes in slot t+1 (e.g., a driver matched in
 
 ### Diff-in-means by slot
 
-\[
+$$
 \hat{\tau} = \bar{Y}_{\text{slots with T}} - \bar{Y}_{\text{slots with C}}
-\]
+$$
 
 Variance: across slots, not across individual events. This is critical — **the slot is the unit**, not the rider/order.
 
 ### Fixed-effects regression
 
-\[
+$$
 Y_{rt} = \alpha_r + \gamma_t + \tau D_t + \varepsilon_{rt}
-\]
+$$
 
 | Symbol | Meaning |
 |--------|---------|
-| \(r\) | Region (if multi-city) |
-| \(t\) | Slot |
-| \(\alpha_r\) | Region fixed effect (controls for permanent regional differences) |
-| \(\gamma_t\) | Time fixed effect (controls for hour-of-day, day-of-week) |
-| \(D_t\) | Treatment indicator for slot t |
-| \(\tau\) | Treatment effect |
+| $r$ | Region (if multi-city) |
+| $t$ | Slot |
+| $\alpha_r$ | Region fixed effect (controls for permanent regional differences) |
+| $\gamma_t$ | Time fixed effect (controls for hour-of-day, day-of-week) |
+| $D_t$ | Treatment indicator for slot t |
+| $\tau$ | Treatment effect |
 
 ## 5.7 Switchback Pitfalls
 
@@ -339,14 +339,14 @@ Sometimes you launch a feature in **one city** (no control geo). Or a policy cha
 
 ## 7.2 The Method (Brief)
 
-1. **One treated unit** (e.g., city A gets a new pricing policy on date \(t_0\)).
+1. **One treated unit** (e.g., city A gets a new pricing policy on date $t_0$).
 2. **Many candidate control units** (other cities, same period).
 3. **Build a weighted average** of control units that closely matches the treated unit's pre-period trajectory.
 4. **Post-period gap** between actual treated and synthetic control = treatment effect.
 
-\[
+$$
 Y^{\text{synth}}_t = \sum_i w_i \cdot Y_i^{(C)}_t, \quad w_i \geq 0, \quad \sum w_i = 1
-\]
+$$
 
 with weights chosen to minimize pre-period prediction error.
 
@@ -375,9 +375,9 @@ Treating individual observations as independent → **standard errors too small*
 
 The "Liang-Zeger" sandwich estimator:
 
-\[
+$$
 \hat{V}_{\text{cluster}} = (X'X)^{-1} \left( \sum_{g=1}^{G} X_g' \hat{u}_g \hat{u}_g' X_g \right) (X'X)^{-1}
-\]
+$$
 
 | Variant | When to use |
 |---------|------------|
@@ -393,8 +393,8 @@ When clusters are very few (G < 20), the asymptotic CR-SE breaks. Use **wild clu
 
 1. Fit the model, get residuals.
 2. For each bootstrap iteration b:
-   - For each cluster g, draw \(w_g \in \{-1, +1\}\) (Rademacher).
-   - Multiply cluster's residuals by \(w_g\).
+   - For each cluster g, draw $w_g \in \{-1, +1\}$ (Rademacher).
+   - Multiply cluster's residuals by $w_g$.
    - Refit and store coefficient.
 3. Use bootstrap distribution for inference.
 
@@ -421,15 +421,15 @@ print(model.summary())
 
 The "design effect" tells you how much sample size to inflate:
 
-\[
+$$
 \text{DE} = 1 + (\bar{m} - 1) \cdot \text{ICC}
-\]
+$$
 
 Required sample size for cluster design:
 
-\[
+$$
 n_{\text{cluster}} = n_{\text{individual}} \cdot \text{DE}
-\]
+$$
 
 | ICC | Cluster size | Design effect | Sample inflation |
 |-----|-------------|---------------|------------------|
@@ -444,9 +444,9 @@ n_{\text{cluster}} = n_{\text{individual}} \cdot \text{DE}
 
 From pre-experiment data:
 
-\[
+$$
 \text{ICC} = \frac{\sigma^2_{\text{between cluster}}}{\sigma^2_{\text{between}} + \sigma^2_{\text{within}}}
-\]
+$$
 
 Fit a random-effects model with cluster as the grouping variable; ICC is part of the output.
 
@@ -523,11 +523,11 @@ So when designing a geo experiment, prefer **DMAs over states**, and **states ov
 
 ## Q3: "What is the design effect and why does it matter?"
 
-> The design effect quantifies the loss of statistical power when you randomize clusters instead of individuals. Formula: \(\text{DE} = 1 + (\bar{m}-1) \cdot \text{ICC}\) where \(\bar{m}\) is the average cluster size and ICC is the intra-cluster correlation. If you randomize 100 users in clusters of size 10 with ICC=0.05, your effective sample size isn't 100, it's \(100 / [1 + 9 \cdot 0.05] = 69\). At DMA-level geo experiments with thousands of users per cluster, the design effect can be 50× or more, meaning you need 50× more total users for the same power. This is why geo designs trade bias for variance — they're unbiased under interference but very expensive in sample. You can mitigate by using **more, smaller clusters** rather than fewer big ones.
+> The design effect quantifies the loss of statistical power when you randomize clusters instead of individuals. Formula: $\text{DE} = 1 + (\bar{m}-1) \cdot \text{ICC}$ where $\bar{m}$ is the average cluster size and ICC is the intra-cluster correlation. If you randomize 100 users in clusters of size 10 with ICC=0.05, your effective sample size isn't 100, it's $100 / [1 + 9 \cdot 0.05] = 69$. At DMA-level geo experiments with thousands of users per cluster, the design effect can be 50× or more, meaning you need 50× more total users for the same power. This is why geo designs trade bias for variance — they're unbiased under interference but very expensive in sample. You can mitigate by using **more, smaller clusters** rather than fewer big ones.
 
 ## Q4: "How do you handle carryover in a switchback experiment?"
 
-> Three layers. **First, washout windows** — exclude the first N minutes of each slot from analysis. For ride-sharing, rides in progress at the moment of switch persist for ~15 minutes, so the first 15 minutes after a switch are tossed. **Second, slot length** — make slots long enough (~1 hour) that the carryover region is a small fraction of the slot. **Third, explicit modeling** — include a lagged variant indicator in the regression: \(Y_t = \alpha + \tau D_t + \beta D_{t-1} + \gamma_t + \varepsilon\). The coefficient \(\tau\) is the contemporaneous effect; \(\beta\) measures spillover. If \(\beta\) is large, the design is breaking and you need longer slots or longer washouts. We continuously monitor \(\beta\) as a diagnostic on the platform.
+> Three layers. **First, washout windows** — exclude the first N minutes of each slot from analysis. For ride-sharing, rides in progress at the moment of switch persist for ~15 minutes, so the first 15 minutes after a switch are tossed. **Second, slot length** — make slots long enough (~1 hour) that the carryover region is a small fraction of the slot. **Third, explicit modeling** — include a lagged variant indicator in the regression: $Y_t = \alpha + \tau D_t + \beta D_{t-1} + \gamma_t + \varepsilon$. The coefficient $\tau$ is the contemporaneous effect; $\beta$ measures spillover. If $\beta$ is large, the design is breaking and you need longer slots or longer washouts. We continuously monitor $\beta$ as a diagnostic on the platform.
 
 ## Q5: "Geo experiments have few clusters — how do you get reliable inference with G=20 DMAs?"
 
@@ -551,7 +551,7 @@ So when designing a geo experiment, prefer **DMAs over states**, and **states ov
 
 ## Q10: "What's the biggest pitfall you've seen in cluster designs?"
 
-> Underestimating ICC. Teams often see "100k users across 100 clusters" and assume their power is set; in reality the effective sample is much smaller. The first deliverable from an analyst doing a geo design should be **ICC estimation from historical data** — fit a random-effects model on the candidate metric pre-experiment and report \(\sigma^2_{\text{between}} / \sigma^2_{\text{total}}\). For typical marketplace metrics (orders, GMV, sessions), ICC at city level is often 0.05–0.20, which translates to massive design effects when clusters are large. The platform should require an ICC report as a gate to launching any cluster experiment, the same way it requires a power calc for user-level tests.
+> Underestimating ICC. Teams often see "100k users across 100 clusters" and assume their power is set; in reality the effective sample is much smaller. The first deliverable from an analyst doing a geo design should be **ICC estimation from historical data** — fit a random-effects model on the candidate metric pre-experiment and report $\sigma^2_{\text{between}} / \sigma^2_{\text{total}}$. For typical marketplace metrics (orders, GMV, sessions), ICC at city level is often 0.05–0.20, which translates to massive design effects when clusters are large. The platform should require an ICC report as a gate to launching any cluster experiment, the same way it requires a power calc for user-level tests.
 
 ---
 

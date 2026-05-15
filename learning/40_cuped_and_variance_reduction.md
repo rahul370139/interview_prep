@@ -40,19 +40,19 @@ Variance reduction is the only one that *scales experimentation capacity* withou
 
 ## 1.2 The Sensitivity Equation
 
-Required sample size for a two-sided test with significance \(\alpha\) and power \(1-\beta\) is approximately:
+Required sample size for a two-sided test with significance $\alpha$ and power $1-\beta$ is approximately:
 
-\[
+$$
 n \;\approx\; \frac{2 \cdot (z_{\alpha/2} + z_\beta)^2 \cdot \sigma^2}{\Delta^2}
-\]
+$$
 
 | Symbol | Meaning |
 |--------|---------|
-| \(\sigma^2\) | Variance of the metric |
-| \(\Delta\) | Minimum detectable effect (MDE) |
-| \(z\) | Normal quantile |
+| $\sigma^2$ | Variance of the metric |
+| $\Delta$ | Minimum detectable effect (MDE) |
+| $z$ | Normal quantile |
 
-**Cut \(\sigma^2\) by 50% → cut required sample size by 50%.** Variance reduction is a multiplier on every experiment your platform ever runs.
+**Cut $\sigma^2$ by 50% → cut required sample size by 50%.** Variance reduction is a multiplier on every experiment your platform ever runs.
 
 ## 1.3 A Mental Picture
 
@@ -80,18 +80,18 @@ n \;\approx\; \frac{2 \cdot (z_{\alpha/2} + z_\beta)^2 \cdot \sigma^2}{\Delta^2}
 
 # 2. The Mean and its Variance — Where the Noise Comes From
 
-For a metric \(Y\) with sample mean \(\bar{Y}\):
+For a metric $Y$ with sample mean $\bar{Y}$:
 
-\[
+$$
 \text{Var}(\bar{Y}_T - \bar{Y}_C) = \frac{\sigma_T^2}{n_T} + \frac{\sigma_C^2}{n_C}
-\]
+$$
 
 The variance of the **difference** is what determines confidence intervals and p-values. There are exactly **three levers** to shrink it:
 
 | Lever | How |
 |-------|-----|
 | **Increase n** | Run more traffic / longer (slow, expensive) |
-| **Shrink \(\sigma^2\)** | Variance reduction (CUPED, stratification, regression adjustment) |
+| **Shrink $\sigma^2$** | Variance reduction (CUPED, stratification, regression adjustment) |
 | **Use a more sensitive estimator** | E.g., trimmed mean, transformed outcome |
 
 CUPED works on lever #2 by **subtracting predictable variation** from the outcome.
@@ -130,7 +130,7 @@ This-week sessions = (baseline self) + (noise) + (treatment effect)
 CUPED removes "baseline self" → leaves noise + treatment effect.
 ```
 
-**Why is this unbiased?** Because \(X\) is pre-experiment, treatment assignment is independent of \(X\), so subtracting \(\theta(X - \bar{X})\) does not bias the estimate — it just removes noise common to both arms.
+**Why is this unbiased?** Because $X$ is pre-experiment, treatment assignment is independent of $X$, so subtracting $\theta(X - \bar{X})$ does not bias the estimate — it just removes noise common to both arms.
 
 ---
 
@@ -138,29 +138,29 @@ CUPED removes "baseline self" → leaves noise + treatment effect.
 
 ## 4.1 Variance of an Adjusted Estimator
 
-For the adjusted outcome \(Y^* = Y - \theta X\) (centering omitted — it's a constant shift):
+For the adjusted outcome $Y^* = Y - \theta X$ (centering omitted — it's a constant shift):
 
-\[
+$$
 \text{Var}(Y^*) = \text{Var}(Y) - 2\theta\,\text{Cov}(Y, X) + \theta^2 \text{Var}(X)
-\]
+$$
 
-Differentiate w.r.t. \(\theta\) and set to zero:
+Differentiate w.r.t. $\theta$ and set to zero:
 
-\[
+$$
 \theta^* = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}
-\]
+$$
 
-This is just the **OLS slope** of \(Y\) regressed on \(X\). Substituting back:
+This is just the **OLS slope** of $Y$ regressed on $X$. Substituting back:
 
-\[
+$$
 \text{Var}(Y^*) = \text{Var}(Y) \cdot (1 - \rho^2)
-\]
+$$
 
-where \(\rho = \text{Corr}(Y, X)\).
+where $\rho = \text{Corr}(Y, X)$.
 
-## 4.2 The Magic Number: \(\rho^2\)
+## 4.2 The Magic Number: $\rho^2$
 
-| \(\rho\) (correlation) | Variance reduction | Effective sample multiplier |
+| $\rho$ (correlation) | Variance reduction | Effective sample multiplier |
 |---|---|---|
 | 0.0 | 0% | 1.0× |
 | 0.3 | 9% | 1.1× |
@@ -169,15 +169,15 @@ where \(\rho = \text{Corr}(Y, X)\).
 | 0.8 | 64% | ~2.8× |
 | 0.9 | 81% | ~5.3× |
 
-**Rule of thumb:** A pre-period covariate with **\(\rho \geq 0.5\)** typically halves your runtime. This is why platforms invest heavily in finding strong pre-period covariates.
+**Rule of thumb:** A pre-period covariate with **$\rho \geq 0.5$** typically halves your runtime. This is why platforms invest heavily in finding strong pre-period covariates.
 
 ## 4.3 Why CUPED is Unbiased
 
-Treatment assignment \(T\) is random and independent of \(X\) (since \(X\) is pre-experiment), so:
+Treatment assignment $T$ is random and independent of $X$ (since $X$ is pre-experiment), so:
 
-\[
+$$
 \mathbb{E}[\bar{Y}^*_T - \bar{Y}^*_C] = \mathbb{E}[\bar{Y}_T - \bar{Y}_C] - \theta \cdot \underbrace{\mathbb{E}[\bar{X}_T - \bar{X}_C]}_{=0 \text{ by randomization}}
-\]
+$$
 
 > **Interview soundbite:** *"CUPED is unbiased because randomization guarantees X is balanced in expectation across arms. We only subtract predictable variation, not signal."*
 
@@ -220,7 +220,7 @@ def cuped_estimate(df, outcome_col, covariate_col, treatment_col):
     }
 ```
 
-> **Production note:** Many teams estimate \(\theta\) on **the control arm only** to avoid any chance that treatment effects leak into the slope. This is a small bias-variance trade-off; pooled is fine if randomization is clean.
+> **Production note:** Many teams estimate $\theta$ on **the control arm only** to avoid any chance that treatment effects leak into the slope. This is a small bias-variance trade-off; pooled is fine if randomization is clean.
 
 ---
 
@@ -255,35 +255,35 @@ include a binary indicator. Document the choice; don't switch silently.
 ## 5.4 Cold Start
 
 For new users with no pre-period:
-- **Option A:** Set \(X = \bar{X}\) (the mean — contributes 0 to adjustment)
-- **Option B:** Include a "new user" indicator alongside \(X\) (multi-covariate CUPED)
+- **Option A:** Set $X = \bar{X}$ (the mean — contributes 0 to adjustment)
+- **Option B:** Include a "new user" indicator alongside $X$ (multi-covariate CUPED)
 - **Option C:** Drop them from analysis (only if you also document the population)
 
 ---
 
 # 6. Multi-Covariate CUPED
 
-Single-covariate CUPED uses one \(X\). **CUPED++ / regression adjustment** uses many:
+Single-covariate CUPED uses one $X$. **CUPED++ / regression adjustment** uses many:
 
-\[
+$$
 Y^* = Y - \mathbf{X}^\top \hat{\boldsymbol{\theta}}
-\]
+$$
 
-where \(\mathbf{X}\) is a vector of pre-period covariates (pre-revenue, pre-sessions, country dummies, device dummies, tenure...) and \(\hat{\boldsymbol{\theta}}\) is the OLS coefficient vector.
+where $\mathbf{X}$ is a vector of pre-period covariates (pre-revenue, pre-sessions, country dummies, device dummies, tenure...) and $\hat{\boldsymbol{\theta}}$ is the OLS coefficient vector.
 
 ## 6.1 Equivalence to OLS
 
 This is equivalent to estimating ATE as the treatment coefficient in:
 
-\[
+$$
 Y_i = \alpha + \tau T_i + \mathbf{X}_i^\top \boldsymbol{\beta} + \varepsilon_i
-\]
+$$
 
 > **Important nuance (Lin, 2013):** Plain OLS adjustment can be biased in small samples. Use **fully-interacted regression** (interact each covariate with treatment):
 >
-> \[
+> $$
 > Y_i = \alpha + \tau T_i + \mathbf{X}_i^\top \boldsymbol{\beta} + (T_i \cdot \mathbf{X}_i)^\top \boldsymbol{\gamma} + \varepsilon_i
-> \]
+> $$
 >
 > This is **Lin's estimator** and is the gold standard in modern platforms.
 
@@ -325,19 +325,19 @@ Stratification balances on **categorical** features. Pre-period revenue or sessi
 
 Click-through rate **at the session or query level** is a ratio:
 
-\[
+$$
 \text{CTR} = \frac{\sum \text{clicks}}{\sum \text{impressions}}
-\]
+$$
 
 The **user** is the experimental unit, but the metric averages **events**. Naïve user-mean of session-CTR is wrong, and `total_clicks / total_impressions` per arm needs the **delta method** for variance.
 
 ## 8.2 The Delta Method (Sketch)
 
-For a ratio \(R = \frac{\bar{N}}{\bar{D}}\):
+For a ratio $R = \frac{\bar{N}}{\bar{D}}$:
 
-\[
+$$
 \text{Var}(R) \approx \frac{1}{\bar{D}^2}\,\text{Var}(\bar{N}) + \frac{\bar{N}^2}{\bar{D}^4}\,\text{Var}(\bar{D}) - \frac{2 \bar{N}}{\bar{D}^3}\,\text{Cov}(\bar{N}, \bar{D})
-\]
+$$
 
 This is computed **per arm**, then differences are tested.
 
@@ -361,17 +361,17 @@ This is the Microsoft/LinkedIn pattern for things like search CTR, ad CTR, conve
 
 ## 9.1 The Idea
 
-Instead of a hand-picked linear covariate, train a **flexible ML model** to predict \(Y\) from pre-period features:
+Instead of a hand-picked linear covariate, train a **flexible ML model** to predict $Y$ from pre-period features:
 
-\[
+$$
 \hat{Y}_i = g(\mathbf{X}_i)
-\]
+$$
 
-Then use \(\hat{Y}_i\) as the CUPED covariate:
+Then use $\hat{Y}_i$ as the CUPED covariate:
 
-\[
+$$
 Y_i^* = Y_i - \theta (\hat{Y}_i - \bar{\hat{Y}})
-\]
+$$
 
 ## 9.2 Why It Helps
 
@@ -402,14 +402,14 @@ This is the **double machine learning** pattern (Chernozhukov et al.) applied to
 
 In **observational** studies (or RCTs with non-compliance / missing outcomes), you have:
 
-- A **propensity model** \(\hat{e}(X) = P(T=1 \mid X)\)
-- An **outcome model** \(\hat{m}_t(X) = \mathbb{E}[Y \mid X, T=t]\)
+- A **propensity model** $\hat{e}(X) = P(T=1 \mid X)$
+- An **outcome model** $\hat{m}_t(X) = \mathbb{E}[Y \mid X, T=t]$
 
 The **doubly robust estimator** combines both:
 
-\[
+$$
 \hat{\tau}_{DR} = \frac{1}{n}\sum_i \left[ \hat{m}_1(X_i) - \hat{m}_0(X_i) + \frac{T_i(Y_i - \hat{m}_1(X_i))}{\hat{e}(X_i)} - \frac{(1-T_i)(Y_i - \hat{m}_0(X_i))}{1-\hat{e}(X_i)} \right]
-\]
+$$
 
 ## 10.2 Why "Doubly Robust"
 
@@ -429,11 +429,11 @@ WHY:  It is measured DURING the experiment, so it absorbs the
       treatment effect. Your ATE becomes biased toward zero.
 ```
 
-**Rule:** every byte of \(X\) must be timestamped **strictly before** assignment.
+**Rule:** every byte of $X$ must be timestamped **strictly before** assignment.
 
 ## 11.2 Pitfall: Weak Covariate Inflating Confidence
 
-When \(\rho\) is very small, CUPED reduces variance by ~0%. If you blindly report "CUPED-adjusted CI" people think it's tighter — it isn't. Always log **the estimated variance reduction** alongside the result.
+When $\rho$ is very small, CUPED reduces variance by ~0%. If you blindly report "CUPED-adjusted CI" people think it's tighter — it isn't. Always log **the estimated variance reduction** alongside the result.
 
 ## 11.3 Pitfall: Heavy-Tailed Outcomes
 
@@ -445,17 +445,17 @@ Revenue is often power-law. CUPED reduces variance proportionally but the residu
 
 ## 11.4 Pitfall: Different Theta Per Segment
 
-If \(\theta\) differs strongly by segment, a pooled \(\theta\) is suboptimal. Either:
-- Estimate \(\theta\) per segment and re-aggregate (stratified CUPED).
+If $\theta$ differs strongly by segment, a pooled $\theta$ is suboptimal. Either:
+- Estimate $\theta$ per segment and re-aggregate (stratified CUPED).
 - Use multi-covariate CUPED with segment interactions.
 
 ## 11.5 Pitfall: Mixed Units (User vs Session)
 
-If the experiment randomizes by **user** but the metric is **session-level**, CUPED must operate at the user level (aggregate sessions per user pre-period and post-period). Don't apply user-level \(\theta\) to session-level data — variance estimates will be wrong.
+If the experiment randomizes by **user** but the metric is **session-level**, CUPED must operate at the user level (aggregate sessions per user pre-period and post-period). Don't apply user-level $\theta$ to session-level data — variance estimates will be wrong.
 
 ## 11.6 Pitfall: Estimating Theta on Treatment Arm Only
 
-Estimating \(\theta\) on data that includes a strong treatment effect can bias the slope. **Always estimate \(\theta\) on either pooled data or the control arm.** Document the choice in the platform.
+Estimating $\theta$ on data that includes a strong treatment effect can bias the slope. **Always estimate $\theta$ on either pooled data or the control arm.** Document the choice in the platform.
 
 ---
 
@@ -491,7 +491,7 @@ Estimating \(\theta\) on data that includes a strong treatment effect can bias t
 |---------|----------|
 | **Feature freshness** | Freeze pre-period covariates at assignment moment; never use "as-of-now" tables |
 | **Storage cost** | Maintain pre-period feature tables for ~90 days; archive after |
-| **Compute cost** | Estimate \(\theta\) once per analysis run; cache across metrics |
+| **Compute cost** | Estimate $\theta$ once per analysis run; cache across metrics |
 | **Multiple metrics** | Compute CUPED per metric; share covariates across metrics where possible |
 | **Reproducibility** | Pin covariate snapshots with hashes; never recompute mid-experiment |
 | **Backward compatibility** | Always log both CUPED-adjusted and unadjusted estimates |
@@ -559,11 +559,11 @@ result = panel.groupBy("variant").agg(
 
 ## Q1: "What is CUPED and why does it work?"
 
-> CUPED stands for **Controlled Experiments Using Pre-Experiment Data**. It reduces the variance of the treatment effect estimator by subtracting predictable pre-period variation from the outcome before computing the difference in means. Specifically, you adjust the outcome as \(Y^* = Y - \theta(X - \bar{X})\) where \(X\) is a pre-experiment covariate and \(\theta = \text{Cov}(Y,X)/\text{Var}(X)\). It works because randomization guarantees \(X\) is balanced across arms in expectation, so subtracting a function of \(X\) doesn't bias the estimate — it just removes noise common to both arms. The variance of the adjusted outcome is \((1-\rho^2)\) times the original, so a covariate with correlation 0.7 cuts your variance in half, doubling the effective sample size.
+> CUPED stands for **Controlled Experiments Using Pre-Experiment Data**. It reduces the variance of the treatment effect estimator by subtracting predictable pre-period variation from the outcome before computing the difference in means. Specifically, you adjust the outcome as $Y^* = Y - \theta(X - \bar{X})$ where $X$ is a pre-experiment covariate and $\theta = \text{Cov}(Y,X)/\text{Var}(X)$. It works because randomization guarantees $X$ is balanced across arms in expectation, so subtracting a function of $X$ doesn't bias the estimate — it just removes noise common to both arms. The variance of the adjusted outcome is $(1-\rho^2)$ times the original, so a covariate with correlation 0.7 cuts your variance in half, doubling the effective sample size.
 
 ## Q2: "What makes a good CUPED covariate?"
 
-> Three things: it must be **pre-experiment** (no post-treatment information), **highly correlated** with the outcome (typically \(\rho \geq 0.3\) to be worth the engineering), and **available for most units** (otherwise cold-start dominates). The standard choice is the *same metric* measured in the *pre-experiment window* at the *same granularity* as the experimental unit. For example, if you randomize by user and measure weekly revenue, your covariate is per-user revenue in the prior 4 weeks. If correlation is weak, look for richer covariates: pre-period engagement composite, ML-predicted outcome (MLRATE), or multi-covariate regression adjustment.
+> Three things: it must be **pre-experiment** (no post-treatment information), **highly correlated** with the outcome (typically $\rho \geq 0.3$ to be worth the engineering), and **available for most units** (otherwise cold-start dominates). The standard choice is the *same metric* measured in the *pre-experiment window* at the *same granularity* as the experimental unit. For example, if you randomize by user and measure weekly revenue, your covariate is per-user revenue in the prior 4 weeks. If correlation is weak, look for richer covariates: pre-period engagement composite, ML-predicted outcome (MLRATE), or multi-covariate regression adjustment.
 
 ## Q3: "What if the pre-period covariate is missing for new users?"
 
@@ -571,11 +571,11 @@ result = panel.groupBy("variant").agg(
 
 ## Q4: "Why estimate theta on pooled data instead of just control?"
 
-> Pooled estimation is more efficient (uses more data) and is unbiased *in expectation* under randomization because the treatment effect averages out in the covariance. However, if there's a strong treatment effect, \(\theta_{\text{pooled}}\) can be slightly biased in finite samples. Microsoft's original CUPED paper uses pooled; some platforms use **control-only** for an extra layer of conservatism — at the cost of higher variance in \(\theta\). The sensible default for high-traffic experiments is **pooled**; for small samples or risky launches, control-only.
+> Pooled estimation is more efficient (uses more data) and is unbiased *in expectation* under randomization because the treatment effect averages out in the covariance. However, if there's a strong treatment effect, $\theta_{\text{pooled}}$ can be slightly biased in finite samples. Microsoft's original CUPED paper uses pooled; some platforms use **control-only** for an extra layer of conservatism — at the cost of higher variance in $\theta$. The sensible default for high-traffic experiments is **pooled**; for small samples or risky launches, control-only.
 
 ## Q5: "Can CUPED bias the treatment effect estimate?"
 
-> Properly applied, no. CUPED is provably unbiased because \(X\) is pre-experiment and independent of \(T\). Bias creeps in when: (a) the "pre-period" covariate accidentally includes post-assignment data — a common data engineering bug; (b) the analyst peeks at the outcome before choosing the covariate — a form of garden-of-forking-paths; (c) \(\theta\) is estimated from one arm only and that arm has a strong effect that contaminates the slope. Defenses: freeze covariate tables at assignment time, pre-register the covariate, and prefer pooled theta.
+> Properly applied, no. CUPED is provably unbiased because $X$ is pre-experiment and independent of $T$. Bias creeps in when: (a) the "pre-period" covariate accidentally includes post-assignment data — a common data engineering bug; (b) the analyst peeks at the outcome before choosing the covariate — a form of garden-of-forking-paths; (c) $\theta$ is estimated from one arm only and that arm has a strong effect that contaminates the slope. Defenses: freeze covariate tables at assignment time, pre-register the covariate, and prefer pooled theta.
 
 ## Q6: "How does CUPED compare to stratified randomization?"
 
@@ -583,19 +583,19 @@ result = panel.groupBy("variant").agg(
 
 ## Q7: "Walk me through implementing CUPED in a Spark pipeline at scale."
 
-> Five stages: (1) **Pre-period feature build** — for each user, compute the pre-experiment covariate (e.g., 28-day revenue) frozen at assignment timestamp; this becomes a table joined on user_id and experiment_id. (2) **Post-period outcome build** — same shape, but for the experiment window. (3) **Theta estimation** — compute \(\text{Cov}(Y,X)/\text{Var}(X)\) via `covar_samp` and `var_samp` aggregates in Spark; this is one shuffle. (4) **Outcome adjustment** — apply `Y - theta * (X - mean(X))` as a column expression. (5) **Standard analysis** on the adjusted column. The engineering challenges are freezing covariates correctly (no leakage), caching theta per experiment-metric pair, and handling cold-start cleanly. I'd also log the realized variance reduction so we can detect when CUPED is silently doing nothing.
+> Five stages: (1) **Pre-period feature build** — for each user, compute the pre-experiment covariate (e.g., 28-day revenue) frozen at assignment timestamp; this becomes a table joined on user_id and experiment_id. (2) **Post-period outcome build** — same shape, but for the experiment window. (3) **Theta estimation** — compute $\text{Cov}(Y,X)/\text{Var}(X)$ via `covar_samp` and `var_samp` aggregates in Spark; this is one shuffle. (4) **Outcome adjustment** — apply `Y - theta * (X - mean(X))` as a column expression. (5) **Standard analysis** on the adjusted column. The engineering challenges are freezing covariates correctly (no leakage), caching theta per experiment-metric pair, and handling cold-start cleanly. I'd also log the realized variance reduction so we can detect when CUPED is silently doing nothing.
 
 ## Q8: "When does CUPED fail or underperform?"
 
-> Several failure modes. First, **weak correlation** (\(\rho < 0.2\)) — variance reduction is minimal and the engineering cost may not be worth it. Second, **heavy-tailed outcomes** — CUPED reduces variance proportionally, but a single whale user still dominates; combine with winsorization. Third, **non-linear relationships** — single-covariate CUPED only captures linear structure; use MLRATE or polynomial features. Fourth, **distribution shifts** between pre and post periods — if the world changed (seasonality, holiday), \(\theta\) estimated on old data doesn't generalize. Fifth, **leakage** — the covariate accidentally includes post-treatment info, biasing the estimate. The platform should monitor realized \(\rho\) per experiment and alert when CUPED contributes less than expected.
+> Several failure modes. First, **weak correlation** ($\rho < 0.2$) — variance reduction is minimal and the engineering cost may not be worth it. Second, **heavy-tailed outcomes** — CUPED reduces variance proportionally, but a single whale user still dominates; combine with winsorization. Third, **non-linear relationships** — single-covariate CUPED only captures linear structure; use MLRATE or polynomial features. Fourth, **distribution shifts** between pre and post periods — if the world changed (seasonality, holiday), $\theta$ estimated on old data doesn't generalize. Fifth, **leakage** — the covariate accidentally includes post-treatment info, biasing the estimate. The platform should monitor realized $\rho$ per experiment and alert when CUPED contributes less than expected.
 
 ## Q9: "How would you extend CUPED to ratio metrics like CTR?"
 
-> Ratio metrics need the **delta method** for variance because the user is the unit but the metric averages events. The pattern: (1) define the metric as \(R = \mathbb{E}[N]/\mathbb{E}[D]\) for user-level numerator \(N\) (clicks) and denominator \(D\) (impressions); (2) apply CUPED to \(N\) and \(D\) separately using their own pre-period covariates — typically \(N_{\text{pre}}\) and \(D_{\text{pre}}\); (3) compute \(R^* = \bar{N}^*/\bar{D}^*\) per arm; (4) compute the variance using the delta method on the adjusted moments. This is the standard pattern in Microsoft's ExP platform and LinkedIn's XLNT, and it can give substantial reduction (50–70%) for search and ads ratio metrics where both clicks and impressions are predictable from history.
+> Ratio metrics need the **delta method** for variance because the user is the unit but the metric averages events. The pattern: (1) define the metric as $R = \mathbb{E}[N]/\mathbb{E}[D]$ for user-level numerator $N$ (clicks) and denominator $D$ (impressions); (2) apply CUPED to $N$ and $D$ separately using their own pre-period covariates — typically $N_{\text{pre}}$ and $D_{\text{pre}}$; (3) compute $R^* = \bar{N}^*/\bar{D}^*$ per arm; (4) compute the variance using the delta method on the adjusted moments. This is the standard pattern in Microsoft's ExP platform and LinkedIn's XLNT, and it can give substantial reduction (50–70%) for search and ads ratio metrics where both clicks and impressions are predictable from history.
 
 ## Q10: "What's the difference between CUPED and regression adjustment?"
 
-> Single-covariate CUPED **is** a regression adjustment — specifically, OLS of \(Y\) on \(X\) with the slope used to residualize \(Y\). The term "CUPED" emphasizes the pre-experiment timing constraint and the operational pattern in experimentation platforms. **Multi-covariate regression adjustment** (sometimes called CUPED++) generalizes to many covariates. The state-of-the-art is **Lin's estimator** — fit a regression with treatment, covariates, and treatment×covariate interactions, then take the treatment coefficient. Lin's estimator is **never worse** asymptotically than the unadjusted ATE and is **strictly better** when covariates are predictive. Most modern platforms default to Lin-style adjustment under the hood.
+> Single-covariate CUPED **is** a regression adjustment — specifically, OLS of $Y$ on $X$ with the slope used to residualize $Y$. The term "CUPED" emphasizes the pre-experiment timing constraint and the operational pattern in experimentation platforms. **Multi-covariate regression adjustment** (sometimes called CUPED++) generalizes to many covariates. The state-of-the-art is **Lin's estimator** — fit a regression with treatment, covariates, and treatment×covariate interactions, then take the treatment coefficient. Lin's estimator is **never worse** asymptotically than the unadjusted ATE and is **strictly better** when covariates are predictive. Most modern platforms default to Lin-style adjustment under the hood.
 
 ---
 
