@@ -784,17 +784,17 @@ ROUGE (Recall-Oriented Understudy for Gisting Evaluation) measures overlap betwe
 
 Measures individual word overlap:
 
-\[
+$$
 \text{ROUGE-1}_{recall} = \frac{|\text{unigrams}_{generated} \cap \text{unigrams}_{reference}|}{|\text{unigrams}_{reference}|}
-\]
+$$
 
-\[
+$$
 \text{ROUGE-1}_{precision} = \frac{|\text{unigrams}_{generated} \cap \text{unigrams}_{reference}|}{|\text{unigrams}_{generated}|}
-\]
+$$
 
-\[
+$$
 \text{ROUGE-1}_{F1} = 2 \cdot \frac{\text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}}
-\]
+$$
 
 **Example:**
 ```
@@ -814,9 +814,9 @@ ROUGE-1_F1        = 2 × (0.50 × 0.57) / (0.50 + 0.57) = 0.533
 
 Measures consecutive word-pair overlap (captures fluency and phrase-level accuracy):
 
-\[
+$$
 \text{ROUGE-2}_{recall} = \frac{|\text{bigrams}_{generated} \cap \text{bigrams}_{reference}|}{|\text{bigrams}_{reference}|}
-\]
+$$
 
 **Example:**
 ```
@@ -833,23 +833,23 @@ ROUGE-2_recall = 1/7 = 0.143
 
 Based on the Longest Common Subsequence (LCS) — captures sentence-level structure:
 
-\[
+$$
 R_{lcs} = \frac{LCS(X, Y)}{m} \quad \text{(recall)}
-\]
+$$
 
-\[
+$$
 P_{lcs} = \frac{LCS(X, Y)}{n} \quad \text{(precision)}
-\]
+$$
 
-\[
+$$
 F_{lcs} = \frac{(1 + \beta^2) \cdot R_{lcs} \cdot P_{lcs}}{R_{lcs} + \beta^2 \cdot P_{lcs}}
-\]
+$$
 
 Where:
-- \( X \) = reference summary (length \( m \))
-- \( Y \) = generated summary (length \( n \))
-- \( LCS(X, Y) \) = length of longest common subsequence
-- \( \beta = P_{lcs} / R_{lcs} \) (typically \( \beta = 1.2 \) so recall weighted higher)
+- $ X $ = reference summary (length $ m $)
+- $ Y $ = generated summary (length $ n $)
+- $ LCS(X, Y) $ = length of longest common subsequence
+- $ \beta = P_{lcs} / R_{lcs} $ (typically $ \beta = 1.2 $ so recall weighted higher)
 
 **Why LCS over n-grams?**
 - LCS captures in-order word matches even with gaps
@@ -1003,13 +1003,13 @@ BART combines a **bidirectional encoder** (like BERT) with an **autoregressive d
 
 **Cross-Attention Mechanism:**
 
-\[
+$$
 \text{CrossAttn}(Q, K, V) = \text{softmax}\left(\frac{Q_{\text{decoder}} \cdot K_{\text{encoder}}^T}{\sqrt{d_k}}\right) \cdot V_{\text{encoder}}
-\]
+$$
 
 Where:
-- \( Q \) comes from the decoder's hidden states
-- \( K, V \) come from the encoder's final hidden states
+- $ Q $ comes from the decoder's hidden states
+- $ K, V $ come from the encoder's final hidden states
 - This is how the decoder "reads" the input document while generating the summary
 
 #### Pre-training Objectives (5 Corruption Schemes)
@@ -1053,35 +1053,35 @@ config = {
 
 **Bahdanau (Additive) Attention:**
 
-\[
+$$
 e_{ij} = v^T \tanh(W_1 h_i^{\text{dec}} + W_2 h_j^{\text{enc}})
-\]
+$$
 
-\[
+$$
 \alpha_{ij} = \frac{\exp(e_{ij})}{\sum_k \exp(e_{ik})}
-\]
+$$
 
-\[
+$$
 c_i = \sum_j \alpha_{ij} h_j^{\text{enc}}
-\]
+$$
 
 **Luong (Multiplicative/Dot-Product) Attention:**
 
-\[
+$$
 e_{ij} = h_i^{\text{dec}} \cdot W \cdot h_j^{\text{enc}} \quad \text{(general)}
-\]
+$$
 
-\[
+$$
 e_{ij} = h_i^{\text{dec}} \cdot h_j^{\text{enc}} \quad \text{(dot product — used in Transformers)}
-\]
+$$
 
 **Scaled Dot-Product (Transformer):**
 
-\[
+$$
 \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
-\]
+$$
 
-Scaling by \( \sqrt{d_k} \) prevents dot products from growing too large in high dimensions, which would push softmax into saturation regions with vanishing gradients.
+Scaling by $ \sqrt{d_k} $ prevents dot products from growing too large in high dimensions, which would push softmax into saturation regions with vanishing gradients.
 
 #### Beam Search Decoding
 
@@ -1126,11 +1126,11 @@ TextRank adapts PageRank to sentences:
 2. **Run PageRank**: Iteratively compute importance scores
 3. **Select top-K sentences**: Rank by score, select top-K
 
-\[
+$$
 WS(V_i) = (1 - d) + d \cdot \sum_{V_j \in \text{In}(V_i)} \frac{w_{ji}}{\sum_{V_k \in \text{Out}(V_j)} w_{jk}} \cdot WS(V_j)
-\]
+$$
 
-Where \( d = 0.85 \) (damping factor, same as PageRank)
+Where $ d = 0.85 $ (damping factor, same as PageRank)
 
 #### Lead-N Baseline
 
@@ -1147,13 +1147,13 @@ Simply take the first N sentences. Surprisingly effective for news (inverted pyr
 
 Conditional Random Fields (CRF) model the probability of a **label sequence** given an input sequence, enforcing valid transitions:
 
-\[
+$$
 P(y | x) = \frac{1}{Z(x)} \exp\left(\sum_{i=1}^{n} \psi(y_{i-1}, y_i, x, i)\right)
-\]
+$$
 
-\[
+$$
 Z(x) = \sum_{y'} \exp\left(\sum_{i=1}^{n} \psi(y'_{i-1}, y'_i, x, i)\right)
-\]
+$$
 
 **Why CRF on top of BiLSTM/Transformer for NER?**
 - Without CRF: model might predict `I-PERSON` after `B-ORG` (invalid transition)

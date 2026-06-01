@@ -363,11 +363,11 @@ LLaVA (Large Language and Vision Assistant) is a family of vision-language model
 | Context Window | 8,192 tokens (sliding window: 4,096) |
 
 **Sliding Window Attention (SWA):**
-- Standard attention: \( O(n^2) \) memory for sequence length \( n \)
-- SWA: each token attends to only the last \( W = 4096 \) tokens
-- Reduces memory from \( O(n^2) \) to \( O(n \times W) \)
-- Information still propagates through layers (token at position \( i \) in layer \( k \) can attend to tokens up to \( i - k \times W \) in the original sequence)
-- Effective receptive field: \( k \times W \) tokens after \( k \) layers
+- Standard attention: $ O(n^2) $ memory for sequence length $ n $
+- SWA: each token attends to only the last $ W = 4096 $ tokens
+- Reduces memory from $ O(n^2) $ to $ O(n \times W) $
+- Information still propagates through layers (token at position $ i $ in layer $ k $ can attend to tokens up to $ i - k \times W $ in the original sequence)
+- Effective receptive field: $ k \times W $ tokens after $ k $ layers
 
 **Grouped Query Attention (GQA):**
 - Standard Multi-Head Attention: 32 Q heads, 32 K heads, 32 V heads
@@ -393,21 +393,21 @@ Q₃₂ K₃₂ V₃₂                    Q₆ ─┼── K₂ V₂
 **SwiGLU FFN (Feed-Forward Network):**
 
 Standard FFN:
-\[
+$$
 \text{FFN}(x) = W_2 \cdot \text{ReLU}(W_1 \cdot x)
-\]
+$$
 
 SwiGLU FFN (Mistral):
-\[
+$$
 \text{FFN}(x) = W_{\text{down}} \cdot (\text{SiLU}(W_{\text{gate}} \cdot x) \odot W_{\text{up}} \cdot x)
-\]
+$$
 
 Where:
-- \( W_{\text{gate}} \): gating projection (14,336 x 4096)
-- \( W_{\text{up}} \): value projection (14,336 x 4096)
-- \( W_{\text{down}} \): output projection (4096 x 14,336)
-- \( \odot \): element-wise multiplication
-- SiLU = Sigmoid Linear Unit = \( x \cdot \sigma(x) \)
+- $ W_{\text{gate}} $: gating projection (14,336 x 4096)
+- $ W_{\text{up}} $: value projection (14,336 x 4096)
+- $ W_{\text{down}} $: output projection (4096 x 14,336)
+- $ \odot $: element-wise multiplication
+- SiLU = Sigmoid Linear Unit = $ x \cdot \sigma(x) $
 
 This is why LoRA targets `gate_proj`, `up_proj`, `down_proj` -- they are the FFN weights in SwiGLU.
 
@@ -419,19 +419,19 @@ This is why LoRA targets `gate_proj`, `up_proj`, `down_proj` -- they are the FFN
 LoRA (Low-Rank Adaptation of Large Language Models, Hu et al., 2021) is a parameter-efficient fine-tuning method that freezes the pre-trained model weights and injects trainable low-rank decomposition matrices into each target layer.
 
 **The Core Idea:**
-Instead of updating a weight matrix \( W_0 \in \mathbb{R}^{d \times k} \) directly, LoRA decomposes the update into two low-rank matrices:
+Instead of updating a weight matrix $ W_0 \in \mathbb{R}^{d \times k} $ directly, LoRA decomposes the update into two low-rank matrices:
 
-\[
+$$
 W = W_0 + \Delta W = W_0 + \frac{\alpha}{r} \cdot B \cdot A
-\]
+$$
 
 Where:
-- \( W_0 \): frozen pre-trained weight (e.g., 4096 x 4096)
-- \( A \in \mathbb{R}^{r \times k} \): down-projection (initialized with Gaussian)
-- \( B \in \mathbb{R}^{d \times r} \): up-projection (initialized with zeros)
-- \( r \): rank (our config: **16**)
-- \( \alpha \): scaling factor (our config: **32**)
-- Scaling: \( \frac{\alpha}{r} = \frac{32}{16} = 2.0 \)
+- $ W_0 $: frozen pre-trained weight (e.g., 4096 x 4096)
+- $ A \in \mathbb{R}^{r \times k} $: down-projection (initialized with Gaussian)
+- $ B \in \mathbb{R}^{d \times r} $: up-projection (initialized with zeros)
+- $ r $: rank (our config: **16**)
+- $ \alpha $: scaling factor (our config: **32**)
+- Scaling: $ \frac{\alpha}{r} = \frac{32}{16} = 2.0 $
 
 ```
                     Input x
@@ -755,13 +755,13 @@ total_loss = base_loss + 4.0 * chexpert_loss + 3.0 * icd_loss
 ```
 
 **Focal Loss for Class Imbalance:**
-\[
+$$
 \text{FL}(p_t) = -\alpha_t (1 - p_t)^\gamma \log(p_t)
-\]
+$$
 
 Where:
-- \( \gamma = 1.0 \): focusing parameter (down-weights easy negatives)
-- \( \text{pos\_weight} = 5.0 \): up-weights rare positives
+- $ \gamma = 1.0 $: focusing parameter (down-weights easy negatives)
+- $ \text{pos\_weight} = 5.0 $: up-weights rare positives
 - This addresses the severe class imbalance (e.g., Fracture only 2% positive)
 
 **Why Auxiliary Heads + Generative Loss:**
@@ -787,10 +787,10 @@ Where:
 
 | Metric | Formula | What It Measures |
 |--------|---------|-----------------|
-| Micro-F1 | \( \frac{2 \cdot \sum TP_i}{2 \cdot \sum TP_i + \sum FP_i + \sum FN_i} \) | Overall label accuracy (weighted by support) |
-| Macro-F1 | \( \frac{1}{C} \sum_{i=1}^{C} F1_i \) | Average F1 across classes (treats rare = common) |
-| Per-class F1 | \( \frac{2 \cdot P_i \cdot R_i}{P_i + R_i} \) | Individual disease detection accuracy |
-| JSON Validity | \( \frac{\text{valid JSON outputs}}{\text{total outputs}} \) | Structural correctness |
+| Micro-F1 | $ \frac{2 \cdot \sum TP_i}{2 \cdot \sum TP_i + \sum FP_i + \sum FN_i} $ | Overall label accuracy (weighted by support) |
+| Macro-F1 | $ \frac{1}{C} \sum_{i=1}^{C} F1_i $ | Average F1 across classes (treats rare = common) |
+| Per-class F1 | $ \frac{2 \cdot P_i \cdot R_i}{P_i + R_i} $ | Individual disease detection accuracy |
+| JSON Validity | $ \frac{\text{valid JSON outputs}}{\text{total outputs}} $ | Structural correctness |
 
 **Why Both Micro and Macro F1?**
 - **Micro-F1** gives a single accuracy number but is dominated by common classes (Lung Opacity, Support Devices)
@@ -954,13 +954,13 @@ IMPRESSION:
 ### 4.6 LoRA Complete Reference
 
 **Formula:**
-\[
+$$
 h = W_0 x + \frac{\alpha}{r} B A x
-\]
+$$
 
 **Initialization:**
-- \( A \sim \mathcal{N}(0, \sigma^2) \): random Gaussian
-- \( B = 0 \): zero matrix (so \( \Delta W = 0 \) at start)
+- $ A \sim \mathcal{N}(0, \sigma^2) $: random Gaussian
+- $ B = 0 $: zero matrix (so $ \Delta W = 0 $ at start)
 - This means training starts from the pre-trained model exactly
 
 **Hyperparameter Guide:**
@@ -1007,17 +1007,17 @@ h = W_0 x + \frac{\alpha}{r} B A x
 **Image-Text Alignment:**
 The core challenge: vision encoders and LLMs operate in different embedding spaces. The projector must learn a mapping:
 
-\[
+$$
 f: \mathbb{R}^{d_{\text{vision}}} \rightarrow \mathbb{R}^{d_{\text{text}}}
-\]
+$$
 
-In our case: \( f: \mathbb{R}^{1024} \rightarrow \mathbb{R}^{4096} \) (CLIP -> Mistral)
+In our case: $ f: \mathbb{R}^{1024} \rightarrow \mathbb{R}^{4096} $ (CLIP -> Mistral)
 
 **Contrastive Pre-training (CLIP):**
 CLIP learns aligned image-text embeddings by:
-\[
+$$
 \mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \left[ \log \frac{\exp(\text{sim}(I_i, T_i)/\tau)}{\sum_{j=1}^{N} \exp(\text{sim}(I_i, T_j)/\tau)} \right]
-\]
+$$
 
 This pre-training is why CLIP features transfer well to medical imaging -- they encode semantic visual concepts that map to text.
 

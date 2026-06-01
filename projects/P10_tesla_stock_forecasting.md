@@ -224,18 +224,18 @@ Uses 2x IQR (wider than the standard 1.5x) because financial data has legitimate
 
 | Indicator | Formula/Logic | What It Captures |
 |-----------|--------------|-----------------|
-| **RSI (14)** | \( RSI = 100 - \frac{100}{1 + RS} \), where \( RS = \frac{avg\_gain}{avg\_loss} \) | Overbought (>70) / oversold (<30) momentum |
-| **MACD** | \( EMA_{12} - EMA_{26} \), Signal = \( EMA_9(MACD) \) | Trend direction and momentum crossovers |
-| **Bollinger Bands** | \( \mu_{20} \pm 2\sigma_{20} \) | Volatility squeeze/expansion, mean reversion |
-| **ATR (14)** | \( avg(max(H-L, |H-C_{prev}|, |L-C_{prev}|)) \) | True range volatility, position sizing signal |
-| **OBV** | \( \sum_{t} sign(\Delta C_t) \times V_t \) | Volume-price confirmation of trends |
-| **Chaikin Oscillator** | \( SMA_3(MF \times V) - SMA_{10}(MF \times V) \) | Money flow momentum (accumulation/distribution) |
-| **Williams %R (14)** | \( -100 \times \frac{HH - C}{HH - LL} \) | Similar to RSI but inverted, range-bound oscillator |
-| **Stochastic K/D** | \( K = 100 \times \frac{C - LL_{14}}{HH_{14} - LL_{14}} \), \( D = SMA_3(K) \) | Closing price position within recent range |
-| **GARCH(1,1)** | \( \sigma_t^2 = \omega + \alpha \epsilon_{t-1}^2 + \beta \sigma_{t-1}^2 \) | Conditional volatility clustering |
+| **RSI (14)** | $ RSI = 100 - \frac{100}{1 + RS} $, where $ RS = \frac{avg\_gain}{avg\_loss} $ | Overbought (>70) / oversold (<30) momentum |
+| **MACD** | $ EMA_{12} - EMA_{26} $, Signal = $ EMA_9(MACD) $ | Trend direction and momentum crossovers |
+| **Bollinger Bands** | $ \mu_{20} \pm 2\sigma_{20} $ | Volatility squeeze/expansion, mean reversion |
+| **ATR (14)** | $ avg(max(H-L, |H-C_{prev}|, |L-C_{prev}|)) $ | True range volatility, position sizing signal |
+| **OBV** | $ \sum_{t} sign(\Delta C_t) \times V_t $ | Volume-price confirmation of trends |
+| **Chaikin Oscillator** | $ SMA_3(MF \times V) - SMA_{10}(MF \times V) $ | Money flow momentum (accumulation/distribution) |
+| **Williams %R (14)** | $ -100 \times \frac{HH - C}{HH - LL} $ | Similar to RSI but inverted, range-bound oscillator |
+| **Stochastic K/D** | $ K = 100 \times \frac{C - LL_{14}}{HH_{14} - LL_{14}} $, $ D = SMA_3(K) $ | Closing price position within recent range |
+| **GARCH(1,1)** | $ \sigma_t^2 = \omega + \alpha \epsilon_{t-1}^2 + \beta \sigma_{t-1}^2 $ | Conditional volatility clustering |
 | **MA7 / MA20** | Rolling mean of Close over 7 / 20 days | Short-term vs medium-term trend |
-| **7-day Volatility** | \( \sigma_{7d} = std(Close_{7d}) \) | Recent price dispersion |
-| **Returns** | \( r_t = \frac{C_t - C_{t-1}}{C_{t-1}} \) | Daily percentage change |
+| **7-day Volatility** | $ \sigma_{7d} = std(Close_{7d}) $ | Recent price dispersion |
+| **Returns** | $ r_t = \frac{C_t - C_{t-1}}{C_{t-1}} $ | Daily percentage change |
 
 #### Wavelet Feature Extraction
 
@@ -244,14 +244,14 @@ Wavelets are mathematical functions that decompose a signal into components at d
 
 **Discrete Wavelet Transform (DWT):**
 
-\[
+$$
 X(t) = \sum_k c_{J,k} \phi_{J,k}(t) + \sum_{j=1}^{J} \sum_k d_{j,k} \psi_{j,k}(t)
-\]
+$$
 
 Where:
-- \( \phi \) = scaling function (approximation coefficients -- low-frequency trend)
-- \( \psi \) = wavelet function (detail coefficients -- high-frequency noise/patterns)
-- \( J \) = decomposition level
+- $ \phi $ = scaling function (approximation coefficients -- low-frequency trend)
+- $ \psi $ = wavelet function (detail coefficients -- high-frequency noise/patterns)
+- $ J $ = decomposition level
 
 **Why wavelets for stock prediction:**
 
@@ -533,24 +533,24 @@ xgb = MultiOutputRegressor(
 
 **XGBoost gradient boosting mechanics:**
 
-\[
+$$
 \hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + \eta \cdot f_t(x_i)
-\]
+$$
 
-Where \( f_t \) minimizes:
+Where $ f_t $ minimizes:
 
-\[
+$$
 \mathcal{L}^{(t)} = \sum_{i} l(y_i, \hat{y}_i^{(t-1)} + f_t(x_i)) + \Omega(f_t)
-\]
+$$
 
-\[
+$$
 \Omega(f) = \gamma T + \frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
-\]
+$$
 
-- \( \eta \): learning rate (shrinkage)
-- \( T \): number of leaves (controlled by `max_depth`)
-- \( \lambda \): L2 regularization on leaf weights
-- \( \gamma \): minimum loss reduction for a split
+- $ \eta $: learning rate (shrinkage)
+- $ T $: number of leaves (controlled by `max_depth`)
+- $ \lambda $: L2 regularization on leaf weights
+- $ \gamma $: minimum loss reduction for a split
 
 #### Model C: Random Forest (Baseline)
 
@@ -725,9 +725,9 @@ t_scaler = RobustScaler()  # For targets (needed for inverse_transform)
 
 | Scaler | Formula | When to Use | Issue with Financial Data |
 |--------|---------|-------------|--------------------------|
-| **MinMaxScaler** | \( \frac{x - x_{min}}{x_{max} - x_{min}} \) | Bounded data | Outliers compress the entire range; stock crashes distort scaling |
-| **StandardScaler** | \( \frac{x - \mu}{\sigma} \) | Gaussian-distributed data | Stock returns have fat tails; mean and std are heavily influenced by outliers |
-| **RobustScaler** | \( \frac{x - median}{IQR} \) | Data with outliers | Uses median and IQR, which are robust to extreme values |
+| **MinMaxScaler** | $ \frac{x - x_{min}}{x_{max} - x_{min}} $ | Bounded data | Outliers compress the entire range; stock crashes distort scaling |
+| **StandardScaler** | $ \frac{x - \mu}{\sigma} $ | Gaussian-distributed data | Stock returns have fat tails; mean and std are heavily influenced by outliers |
+| **RobustScaler** | $ \frac{x - median}{IQR} $ | Data with outliers | Uses median and IQR, which are robust to extreme values |
 
 Financial data has fat-tailed distributions (Black Monday, COVID crash, meme-stock spikes). RobustScaler's use of median/IQR means a single extreme event doesn't warp the entire feature distribution.
 
@@ -765,10 +765,10 @@ y_pred_dollars = t_scaler.inverse_transform(y_pred_scaled)
 
 | Metric | Formula | Interpretation |
 |--------|---------|---------------|
-| **RMSE** | \( \sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2} \) | Penalizes large errors more; in dollar units |
-| **MAE** | \( \frac{1}{n}\sum|y_i - \hat{y}_i| \) | Average absolute error in dollars |
-| **MAPE** | \( \frac{100}{n}\sum\left|\frac{y_i - \hat{y}_i}{y_i}\right| \) | Scale-independent percentage error |
-| **Directional Accuracy** | \( \frac{1}{n-1}\sum \mathbb{1}[sign(\Delta y) = sign(\Delta \hat{y})] \) | % of correctly predicted up/down movements |
+| **RMSE** | $ \sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2} $ | Penalizes large errors more; in dollar units |
+| **MAE** | $ \frac{1}{n}\sum|y_i - \hat{y}_i| $ | Average absolute error in dollars |
+| **MAPE** | $ \frac{100}{n}\sum\left|\frac{y_i - \hat{y}_i}{y_i}\right| $ | Scale-independent percentage error |
+| **Directional Accuracy** | $ \frac{1}{n-1}\sum \mathbb{1}[sign(\Delta y) = sign(\Delta \hat{y})] $ | % of correctly predicted up/down movements |
 
 ### What These Numbers Mean
 
@@ -793,15 +793,15 @@ y_pred_dollars = t_scaler.inverse_transform(y_pred_scaled)
 **Vanishing Gradient Problem:**
 In vanilla RNNs, gradients during backpropagation through time (BPTT) multiply through many time steps:
 
-\[
+$$
 \frac{\partial L}{\partial W} = \sum_{t=1}^{T} \frac{\partial L_t}{\partial W} = \sum_{t=1}^{T} \frac{\partial L_t}{\partial h_t} \prod_{k=1}^{t} \frac{\partial h_k}{\partial h_{k-1}}
-\]
+$$
 
-If \( \left\|\frac{\partial h_k}{\partial h_{k-1}}\right\| < 1 \), gradients vanish exponentially. If > 1, they explode.
+If $ \left\|\frac{\partial h_k}{\partial h_{k-1}}\right\| < 1 $, gradients vanish exponentially. If > 1, they explode.
 
-**LSTM solution:** The cell state \( C_t \) provides a "highway" for gradients. The forget gate's additive update (\( C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t \)) means gradients flow through addition (not multiplication), preventing vanishing.
+**LSTM solution:** The cell state $ C_t $ provides a "highway" for gradients. The forget gate's additive update ($ C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t $) means gradients flow through addition (not multiplication), preventing vanishing.
 
-**GRU solution:** The update gate interpolation (\( h_t = (1-z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t \)) similarly provides a linear path for gradients when \( z_t \approx 0 \).
+**GRU solution:** The update gate interpolation ($ h_t = (1-z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t $) similarly provides a linear path for gradients when $ z_t \approx 0 $.
 
 **Bidirectional processing:** For a lookback window of 20 days, the forward pass processes day 1→20 (capturing "momentum"), while the backward pass processes day 20→1 (capturing "mean reversion from recent levels"). Both representations are concatenated, giving the model richer temporal context.
 
@@ -813,13 +813,13 @@ If \( \left\|\frac{\partial h_k}{\partial h_{k-1}}\right\| < 1 \), gradients van
 
 **Core algorithm (simplified):**
 1. Initialize with constant prediction (mean of targets)
-2. For each boosting round \( t = 1, ..., T \):
-   a. Compute residuals: \( r_i^{(t)} = y_i - \hat{y}_i^{(t-1)} \)
-   b. Fit a new tree \( f_t \) to the residuals
-   c. Update: \( \hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + \eta \cdot f_t(x_i) \)
+2. For each boosting round $ t = 1, ..., T $:
+   a. Compute residuals: $ r_i^{(t)} = y_i - \hat{y}_i^{(t-1)} $
+   b. Fit a new tree $ f_t $ to the residuals
+   c. Update: $ \hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + \eta \cdot f_t(x_i) $
 
 **XGBoost-specific innovations:**
-- **Second-order Taylor expansion** of the loss: uses both gradient \( g_i \) and Hessian \( h_i \) for better split decisions
+- **Second-order Taylor expansion** of the loss: uses both gradient $ g_i $ and Hessian $ h_i $ for better split decisions
 - **L1/L2 regularization** on leaf weights: prevents overfitting
 - **Column subsampling:** Like random forests, adds diversity to trees
 - **Sparsity-aware splits:** Handles missing values natively by learning optimal default directions
@@ -827,11 +827,11 @@ If \( \left\|\frac{\partial h_k}{\partial h_{k-1}}\right\| < 1 \), gradients van
 **SHAP (SHapley Additive exPlanations):**
 SHAP values decompose each prediction into contributions from each feature:
 
-\[
+$$
 \hat{y}(x) = \phi_0 + \sum_{j=1}^{M} \phi_j(x)
-\]
+$$
 
-Where \( \phi_j \) is the Shapley value of feature \( j \) -- the average marginal contribution across all possible feature coalitions. This provides both global feature importance and local prediction explanations.
+Where $ \phi_j $ is the Shapley value of feature $ j $ -- the average marginal contribution across all possible feature coalitions. This provides both global feature importance and local prediction explanations.
 
 ---
 
@@ -943,13 +943,13 @@ Ensemble Methods
 ### 4.7 Time Series Fundamentals
 
 **Stationarity:**
-A time series is stationary if its statistical properties (mean, variance, autocorrelation) don't change over time. Stock prices are **non-stationary** (trending upward/downward). Returns \( r_t = \frac{P_t - P_{t-1}}{P_{t-1}} \) are approximately stationary.
+A time series is stationary if its statistical properties (mean, variance, autocorrelation) don't change over time. Stock prices are **non-stationary** (trending upward/downward). Returns $ r_t = \frac{P_t - P_{t-1}}{P_{t-1}} $ are approximately stationary.
 
 **Test for stationarity:** Augmented Dickey-Fuller (ADF) test.
 - Null hypothesis: series has a unit root (non-stationary)
 - If p-value < 0.05: reject null → series is stationary
 
-**Differencing:** Taking \( \Delta y_t = y_t - y_{t-1} \) makes non-stationary series stationary. First-difference of prices ≈ returns.
+**Differencing:** Taking $ \Delta y_t = y_t - y_{t-1} $ makes non-stationary series stationary. First-difference of prices ≈ returns.
 
 **Autocorrelation:** Correlation of a series with its own lagged values. In stock returns:
 - ACF at lag 1 is often near zero (weak-form efficiency)
@@ -965,7 +965,7 @@ A time series is stationary if its statistical properties (mean, variance, autoc
 - **Strong form:** Prices reflect all information, including insider knowledge
 
 **Random Walk Hypothesis:**
-Stock prices follow a random walk: \( P_t = P_{t-1} + \epsilon_t \), where \( \epsilon_t \) is random noise. The best prediction for tomorrow's price is today's price.
+Stock prices follow a random walk: $ P_t = P_{t-1} + \epsilon_t $, where $ \epsilon_t $ is random noise. The best prediction for tomorrow's price is today's price.
 
 **Why ML may still work (counterarguments):**
 1. Markets are "mostly" efficient but have exploitable **microstructure inefficiencies**
@@ -1211,9 +1211,9 @@ This gives much more realistic evaluation than a single train/test split, which 
 
 First, **error decorrelation.** LSTM errors and XGBoost errors are not perfectly correlated -- they make mistakes on different types of market conditions. LSTM struggles with sudden regime changes (new patterns not in its training sequences), while XGBoost struggles with strong temporal momentum (it sees features independently, not as sequences). Combining them reduces the total error variance.
 
-Mathematically, if two models have errors with correlation \( \rho < 1 \), the ensemble error variance is:
-\( \sigma_{ens}^2 = w_1^2\sigma_1^2 + w_2^2\sigma_2^2 + 2w_1w_2\rho\sigma_1\sigma_2 \)
-Which is less than either individual model's variance when \( \rho < 1 \).
+Mathematically, if two models have errors with correlation $ \rho < 1 $, the ensemble error variance is:
+$ \sigma_{ens}^2 = w_1^2\sigma_1^2 + w_2^2\sigma_2^2 + 2w_1w_2\rho\sigma_1\sigma_2 $
+Which is less than either individual model's variance when $ \rho < 1 $.
 
 Second, the **meta-learner adapts weights** implicitly. During volatile periods, the XGBoost model (which captures GARCH-like volatility features) may get higher implicit weight. During trending periods, the LSTM (which captures sequential momentum) dominates. Simple averaging can't do this."
 
@@ -1260,15 +1260,15 @@ Second, the **meta-learner adapts weights** implicitly. During volatile periods,
 **Answer:** "GARCH (Generalized Autoregressive Conditional Heteroskedasticity) models the fact that financial volatility clusters -- periods of high volatility tend to be followed by high volatility, and calm periods follow calm periods.
 
 The GARCH(1,1) model:
-\( \sigma_t^2 = \omega + \alpha \epsilon_{t-1}^2 + \beta \sigma_{t-1}^2 \)
+$ \sigma_t^2 = \omega + \alpha \epsilon_{t-1}^2 + \beta \sigma_{t-1}^2 $
 
 Where:
-- \( \sigma_t^2 \): conditional variance at time t
-- \( \omega \): baseline variance (constant)
-- \( \alpha \epsilon_{t-1}^2 \): impact of yesterday's squared shock (news effect)
-- \( \beta \sigma_{t-1}^2 \): persistence of past volatility (clustering)
+- $ \sigma_t^2 $: conditional variance at time t
+- $ \omega $: baseline variance (constant)
+- $ \alpha \epsilon_{t-1}^2 $: impact of yesterday's squared shock (news effect)
+- $ \beta \sigma_{t-1}^2 $: persistence of past volatility (clustering)
 
-Typically, \( \alpha + \beta \approx 0.97-0.99 \) for daily stock data, meaning volatility is highly persistent.
+Typically, $ \alpha + \beta \approx 0.97-0.99 $ for daily stock data, meaning volatility is highly persistent.
 
 I used the GARCH conditional volatility as a feature because:
 1. It captures the current volatility regime, which affects the expected price range (High - Low)

@@ -765,7 +765,7 @@ The chi-squared test measures whether there is a statistically significant assoc
 
 $$\chi^2 = \sum_{i=1}^{r} \sum_{j=1}^{c} \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$$
 
-Where \(O_{ij}\) = observed frequency, \(E_{ij}\) = expected frequency under independence.
+Where $O_{ij}$ = observed frequency, $E_{ij}$ = expected frequency under independence.
 
 ```python
 from sklearn.feature_selection import chi2, SelectKBest
@@ -1283,13 +1283,13 @@ $$OCF_{lending} = \text{Interest Income Collected} - \text{Operating Expenses} -
 
 | Metric | Formula | Business Meaning |
 |--------|---------|-----------------|
-| **Collection Efficiency** | \(\frac{\text{Actual Collections}}{\text{Expected Collections}} \times 100\) | How much of expected EMI payments are actually received |
-| **Provision Coverage Ratio** | \(\frac{\text{Provisions}}{\text{Gross NPAs}}\) | How well loan losses are covered by provisions |
-| **Net Interest Margin** | \(\frac{\text{Interest Income} - \text{Interest Expense}}{\text{Average Earning Assets}}\) | Core profitability of lending operations |
-| **Cost-to-Income Ratio** | \(\frac{\text{Operating Expenses}}{\text{Operating Income}}\) | Operational efficiency |
-| **Portfolio at Risk (PAR30)** | \(\frac{\text{Outstanding of Loans 30+ DPD}}{\text{Total Outstanding Portfolio}}\) | Proportion of portfolio showing stress |
-| **Yield on Portfolio** | \(\frac{\text{Total Interest Earned}}{\text{Average Portfolio Outstanding}}\) | Effective return on lending |
-| **OCF/Disbursement Ratio** | \(\frac{\text{Operating Cash Flow}}{\text{New Disbursements}}\) | Whether operations generate enough cash to fund new lending |
+| **Collection Efficiency** | $\frac{\text{Actual Collections}}{\text{Expected Collections}} \times 100$ | How much of expected EMI payments are actually received |
+| **Provision Coverage Ratio** | $\frac{\text{Provisions}}{\text{Gross NPAs}}$ | How well loan losses are covered by provisions |
+| **Net Interest Margin** | $\frac{\text{Interest Income} - \text{Interest Expense}}{\text{Average Earning Assets}}$ | Core profitability of lending operations |
+| **Cost-to-Income Ratio** | $\frac{\text{Operating Expenses}}{\text{Operating Income}}$ | Operational efficiency |
+| **Portfolio at Risk (PAR30)** | $\frac{\text{Outstanding of Loans 30+ DPD}}{\text{Total Outstanding Portfolio}}$ | Proportion of portfolio showing stress |
+| **Yield on Portfolio** | $\frac{\text{Total Interest Earned}}{\text{Average Portfolio Outstanding}}$ | Effective return on lending |
+| **OCF/Disbursement Ratio** | $\frac{\text{Operating Cash Flow}}{\text{New Disbursements}}$ | Whether operations generate enough cash to fund new lending |
 
 ### OCF Metrics Computation
 
@@ -1569,7 +1569,7 @@ df['bounce_rate_pre_loan'] = df['bounces_before_application'] / df['payments_bef
 
 $$s(i) = \frac{b(i) - a(i)}{\max(a(i), b(i))}$$
 
-Where \(a(i)\) = average distance to points in the same cluster, \(b(i)\) = average distance to points in the nearest other cluster.
+Where $a(i)$ = average distance to points in the same cluster, $b(i)$ = average distance to points in the nearest other cluster.
 
 ---
 
@@ -1577,10 +1577,10 @@ Where \(a(i)\) = average distance to points in the same cluster, \(b(i)\) = aver
 
 | Metric | Formula | When to Prioritize |
 |--------|---------|-------------------|
-| **Precision** | \(\frac{TP}{TP + FP}\) | When false positives are costly (e.g., fraud investigation costs) |
-| **Recall** | \(\frac{TP}{TP + FN}\) | When false negatives are costly (e.g., approving a defaulter) |
-| **F1 Score** | \(\frac{2 \cdot P \cdot R}{P + R}\) | When both errors matter (balanced cost) |
-| **F-beta** | \(\frac{(1+\beta^2) \cdot P \cdot R}{\beta^2 \cdot P + R}\) | When you want to weight precision vs recall (β>1 favors recall) |
+| **Precision** | $\frac{TP}{TP + FP}$ | When false positives are costly (e.g., fraud investigation costs) |
+| **Recall** | $\frac{TP}{TP + FN}$ | When false negatives are costly (e.g., approving a defaulter) |
+| **F1 Score** | $\frac{2 \cdot P \cdot R}{P + R}$ | When both errors matter (balanced cost) |
+| **F-beta** | $\frac{(1+\beta^2) \cdot P \cdot R}{\beta^2 \cdot P + R}$ | When you want to weight precision vs recall (β>1 favors recall) |
 | **ROC-AUC** | Area under ROC curve | Overall model discrimination, threshold-independent |
 | **PR-AUC** | Area under Precision-Recall curve | Better than ROC-AUC for imbalanced datasets |
 

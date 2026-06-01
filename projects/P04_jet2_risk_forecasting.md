@@ -319,25 +319,25 @@ def validate_and_load(raw_records: List[dict]) -> pd.DataFrame:
 
 **Formula:**
 
-\[
+$$
 \text{ROS}(t) = \frac{\text{Bookings in window } [t - w,\ t]}{\text{Window size } w}
-\]
+$$
 
 For example, with a 7-day window:
 
-\[
+$$
 \text{ROS}_{\text{7d}}(t) = \frac{\text{Bookings in last 7 days}}{7}
-\]
+$$
 
 **Derived features:**
 
-\[
+$$
 \text{ROS Acceleration} = \text{ROS}_{\text{7d}}(t) - \text{ROS}_{\text{7d}}(t - 7)
-\]
+$$
 
-\[
+$$
 \text{ROS Ratio} = \frac{\text{ROS}_{\text{current}}}{\text{ROS}_{\text{same period last year}}}
-\]
+$$
 
 **Why it matters for airline pricing:**
 - **High ROS (selling fast):** Opportunity to raise prices — demand is strong
@@ -525,17 +525,17 @@ The Interquartile Range (IQR) method is a robust, non-parametric approach to out
 
 **Formula:**
 
-\[
+$$
 \text{IQR} = Q_3 - Q_1
-\]
+$$
 
-\[
+$$
 \text{Lower Bound} = Q_1 - 1.5 \times \text{IQR}
-\]
+$$
 
-\[
+$$
 \text{Upper Bound} = Q_3 + 1.5 \times \text{IQR}
-\]
+$$
 
 Any value below the lower bound or above the upper bound is flagged as an outlier. The 1.5 multiplier covers approximately 99.3% of normally distributed data.
 
@@ -578,11 +578,11 @@ The z-score measures how many standard deviations a data point is from the mean.
 
 **Formula:**
 
-\[
+$$
 z = \frac{x - \mu}{\sigma}
-\]
+$$
 
-Typical threshold: \(|z| > 3\) (only 0.27% of normal data exceeds this).
+Typical threshold: $|z| > 3$ (only 0.27% of normal data exceeds this).
 
 ```python
 from scipy import stats
@@ -636,7 +636,7 @@ def detect_outliers_zscore(df: pd.DataFrame, column: str, threshold: float = 3.0
 
 **Key concepts:**
 - **Bootstrap aggregating (bagging):** Each tree trained on a random subset of rows (with replacement)
-- **Feature randomness:** At each split, only a random subset of features considered (\(\sqrt{p}\) for classification, \(p/3\) for regression)
+- **Feature randomness:** At each split, only a random subset of features considered ($\sqrt{p}$ for classification, $p/3$ for regression)
 - **Reduces variance** without increasing bias
 - **Out-of-Bag (OOB) error:** Each tree hasn't seen ~37% of data — use this as a free validation set
 
@@ -698,7 +698,7 @@ top_features = importances.nlargest(15)
 ```
 
 **XGBoost innovations over plain gradient boosting:**
-1. **Regularization:** L1 (\(\alpha\)) and L2 (\(\lambda\)) penalties on leaf weights
+1. **Regularization:** L1 ($\alpha$) and L2 ($\lambda$) penalties on leaf weights
 2. **Second-order gradients:** Uses both gradient and Hessian for better splits
 3. **Column subsampling:** Random feature subset per tree (like RF)
 4. **Weighted quantile sketch:** Efficient approximate split finding
@@ -776,12 +776,12 @@ shap.summary_plot(shap_values, X_test, plot_type='bar')
 
 | Gate | Formula | Purpose |
 |------|---------|---------|
-| **Forget** | \(f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)\) | What to discard from cell state (e.g., an old seasonal pattern that is no longer relevant) |
-| **Input** | \(i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)\) | What new information to store (e.g., a sudden demand spike) |
-| **Candidate** | \(\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)\) | New candidate values to add to cell state |
-| **Cell update** | \(C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t\) | Combine old (filtered) + new information |
-| **Output** | \(o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)\) | What part of cell state to expose as output |
-| **Hidden state** | \(h_t = o_t \odot \tanh(C_t)\) | Output / passed to next timestep |
+| **Forget** | $f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$ | What to discard from cell state (e.g., an old seasonal pattern that is no longer relevant) |
+| **Input** | $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$ | What new information to store (e.g., a sudden demand spike) |
+| **Candidate** | $\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$ | New candidate values to add to cell state |
+| **Cell update** | $C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t$ | Combine old (filtered) + new information |
+| **Output** | $o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$ | What part of cell state to expose as output |
+| **Hidden state** | $h_t = o_t \odot \tanh(C_t)$ | Output / passed to next timestep |
 
 **GRU (Gated Recurrent Unit):**
 
@@ -789,9 +789,9 @@ Simplified version of LSTM with **2 gates** instead of 3:
 
 | Gate | Formula | Maps to LSTM |
 |------|---------|-------------|
-| **Update** | \(z_t = \sigma(W_z \cdot [h_{t-1}, x_t])\) | Combined forget + input gate |
-| **Reset** | \(r_t = \sigma(W_r \cdot [h_{t-1}, x_t])\) | Controls how much past info to forget |
-| **Hidden** | \(h_t = (1-z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t\) | Simplified cell update |
+| **Update** | $z_t = \sigma(W_z \cdot [h_{t-1}, x_t])$ | Combined forget + input gate |
+| **Reset** | $r_t = \sigma(W_r \cdot [h_{t-1}, x_t])$ | Controls how much past info to forget |
+| **Hidden** | $h_t = (1-z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t$ | Simplified cell update |
 
 **GRU advantages:** Fewer parameters (faster training, less overfitting on smaller datasets), comparable performance to LSTM for many tasks.
 
@@ -1039,7 +1039,7 @@ Optuna is a next-generation hyperparameter optimization framework that uses **Ba
 
 | Method | Trials Needed | Finds Optimum | Handles Interactions | Adaptive |
 |--------|--------------|---------------|---------------------|----------|
-| Grid Search | \(O(k^n)\) exponential | Exhaustive but slow | No | No |
+| Grid Search | $O(k^n)$ exponential | Exhaustive but slow | No | No |
 | Random Search | ~60 for 95% coverage | Good for low-dimensional | Partially | No |
 | **TPE (Optuna)** | ~30-100 typically | Focuses on promising regions | **Yes** | **Yes** |
 
@@ -1244,13 +1244,13 @@ PSI quantifies how much a feature's distribution has shifted between a reference
 
 **Formula:**
 
-\[
+$$
 \text{PSI} = \sum_{i=1}^{n} (p_i - q_i) \times \ln\left(\frac{p_i}{q_i}\right)
-\]
+$$
 
 Where:
-- \(p_i\) = proportion of observations in bin \(i\) for the **current** period
-- \(q_i\) = proportion of observations in bin \(i\) for the **reference** period
+- $p_i$ = proportion of observations in bin $i$ for the **current** period
+- $q_i$ = proportion of observations in bin $i$ for the **reference** period
 
 **Interpretation:**
 
@@ -1338,16 +1338,16 @@ The "< 2% drift" refers to keeping feature PSI values below 0.02 on average acro
 
 **Formula:**
 
-\[
+$$
 \text{MAPE} = \frac{100\%}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
-\]
+$$
 
 **Why MAPE:**
 - **Scale-independent:** Can compare across routes with different booking volumes
 - **Business-intuitive:** "Our forecast is off by X%" is understandable to operations team
 - **Industry standard** for demand forecasting in aviation
 
-**Limitation:** Undefined when \(y_i = 0\); asymmetric (penalizes overestimates less than underestimates for small values). We mitigated this by filtering out near-zero actuals and also tracking symmetric MAPE (sMAPE).
+**Limitation:** Undefined when $y_i = 0$; asymmetric (penalizes overestimates less than underestimates for small values). We mitigated this by filtering out near-zero actuals and also tracking symmetric MAPE (sMAPE).
 
 ## 3.2 Results Summary
 
@@ -1392,7 +1392,7 @@ A time series is **stationary** if its statistical properties (mean, variance, a
 - **ADF (Augmented Dickey-Fuller):** Tests null hypothesis of unit root (non-stationarity). p < 0.05 → stationary.
 - **KPSS:** Tests null hypothesis of stationarity. p < 0.05 → non-stationary.
 
-**Making data stationary:** Differencing (\(y'_t = y_t - y_{t-1}\)), log transform, seasonal differencing.
+**Making data stationary:** Differencing ($y'_t = y_t - y_{t-1}$), log transform, seasonal differencing.
 
 ### Seasonality, Trend, Decomposition
 
@@ -1430,8 +1430,8 @@ A time series is **stationary** if its statistical properties (mean, variance, a
 
 ### Autocorrelation
 
-- **ACF (Autocorrelation Function):** Correlation between \(y_t\) and \(y_{t-k}\) at lag \(k\). Includes indirect effects.
-- **PACF (Partial ACF):** Direct correlation between \(y_t\) and \(y_{t-k}\), removing effects of intermediate lags.
+- **ACF (Autocorrelation Function):** Correlation between $y_t$ and $y_{t-k}$ at lag $k$. Includes indirect effects.
+- **PACF (Partial ACF):** Direct correlation between $y_t$ and $y_{t-k}$, removing effects of intermediate lags.
 - Used to determine ARIMA parameters: PACF cutoff → AR order (p); ACF cutoff → MA order (q).
 
 ---
@@ -1452,11 +1452,11 @@ A time series is **stationary** if its statistical properties (mean, variance, a
 
 | Metric | Formula | When to Use | Pros | Cons |
 |--------|---------|-------------|------|------|
-| **MAE** | \(\frac{1}{n}\sum\|y_i - \hat{y}_i\|\) | Robust metric, all values similar scale | Intuitive, robust to outliers | Not differentiable at 0, scale-dependent |
-| **RMSE** | \(\sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}\) | When large errors are especially costly | Penalizes large errors more | Sensitive to outliers, same units as target |
-| **MAPE** | \(\frac{100}{n}\sum\left\|\frac{y_i-\hat{y}_i}{y_i}\right\|\) | Comparing across different scales | Scale-independent, business-intuitive | Undefined at \(y=0\), asymmetric |
-| **sMAPE** | \(\frac{100}{n}\sum\frac{2\|y_i-\hat{y}_i\|}{\|y_i\|+\|\hat{y}_i\|}\) | When MAPE's asymmetry is a problem | Bounded [0,200], symmetric | Less intuitive |
-| **R²** | \(1 - \frac{\sum(y_i-\hat{y}_i)^2}{\sum(y_i-\bar{y})^2}\) | Explained variance | Normalized, easy to compare | Can be negative, misleading for non-linear |
+| **MAE** | $\frac{1}{n}\sum\|y_i - \hat{y}_i\|$ | Robust metric, all values similar scale | Intuitive, robust to outliers | Not differentiable at 0, scale-dependent |
+| **RMSE** | $\sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}$ | When large errors are especially costly | Penalizes large errors more | Sensitive to outliers, same units as target |
+| **MAPE** | $\frac{100}{n}\sum\left\|\frac{y_i-\hat{y}_i}{y_i}\right\|$ | Comparing across different scales | Scale-independent, business-intuitive | Undefined at $y=0$, asymmetric |
+| **sMAPE** | $\frac{100}{n}\sum\frac{2\|y_i-\hat{y}_i\|}{\|y_i\|+\|\hat{y}_i\|}$ | When MAPE's asymmetry is a problem | Bounded [0,200], symmetric | Less intuitive |
+| **R²** | $1 - \frac{\sum(y_i-\hat{y}_i)^2}{\sum(y_i-\bar{y})^2}$ | Explained variance | Normalized, easy to compare | Can be negative, misleading for non-linear |
 
 ---
 
@@ -1464,11 +1464,11 @@ A time series is **stationary** if its statistical properties (mean, variance, a
 
 **Objective function:**
 
-\[
+$$
 \mathcal{L}(\phi) = \sum_{i=1}^{n} l(y_i, \hat{y}_i) + \sum_{k=1}^{K} \Omega(f_k)
-\]
+$$
 
-Where \(\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2\) is the regularization term (\(T\) = number of leaves, \(w\) = leaf weights).
+Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization term ($T$ = number of leaves, $w$ = leaf weights).
 
 **Key hyperparameters:**
 
@@ -1490,7 +1490,7 @@ Where \(\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2\) is the regularizatio
 **Bootstrap Aggregating (Bagging):**
 1. Draw N bootstrap samples (with replacement) from training data
 2. Train a decision tree on each sample
-3. At each split, randomly select \(m\) features from \(p\) total (\(m \approx \sqrt{p}\) for classification, \(m \approx p/3\) for regression)
+3. At each split, randomly select $m$ features from $p$ total ($m \approx \sqrt{p}$ for classification, $m \approx p/3$ for regression)
 4. Average predictions (regression) or majority vote (classification)
 
 **Out-of-Bag (OOB) Error:**
@@ -1594,8 +1594,8 @@ Where \(\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2\) is the regularizatio
 
 **Key concepts:**
 - **Yield management:** Dynamically adjusting prices based on demand, time-to-departure, competitor prices
-- **Load factor:** Percentage of available seats filled: \(\text{LF} = \frac{\text{Passengers}}{\text{Capacity}}\)
-- **Revenue per Available Seat Kilometer (RASK):** \(\frac{\text{Revenue}}{\text{Seats} \times \text{Distance}}\) — key airline KPI
+- **Load factor:** Percentage of available seats filled: $\text{LF} = \frac{\text{Passengers}}{\text{Capacity}}$
+- **Revenue per Available Seat Kilometer (RASK):** $\frac{\text{Revenue}}{\text{Seats} \times \text{Distance}}$ — key airline KPI
 - **Fare classes:** Economy, premium, business — different price points for same seat depending on booking conditions (flexibility, advance purchase)
 - **Demand curve:** Typically: slow build → acceleration → last-minute surge (or drop for leisure routes)
 - **Overbooking:** Airlines intentionally sell more tickets than seats, using no-show prediction models

@@ -188,22 +188,22 @@ CLIP (Contrastive Language-Image Pre-training) is OpenAI's dual-encoder model th
 
 **InfoNCE Loss (Normalized Temperature-scaled Cross Entropy):**
 
-\[
+$$
 \mathcal{L}_{\text{image}} = -\frac{1}{N} \sum_{i=1}^{N} \log \frac{\exp(\text{sim}(I_i, T_i) / \tau)}{\sum_{j=1}^{N} \exp(\text{sim}(I_i, T_j) / \tau)}
-\]
+$$
 
-\[
+$$
 \mathcal{L}_{\text{text}} = -\frac{1}{N} \sum_{i=1}^{N} \log \frac{\exp(\text{sim}(T_i, I_i) / \tau)}{\sum_{j=1}^{N} \exp(\text{sim}(T_i, I_j) / \tau)}
-\]
+$$
 
-\[
+$$
 \mathcal{L}_{\text{CLIP}} = \frac{1}{2}(\mathcal{L}_{\text{image}} + \mathcal{L}_{\text{text}})
-\]
+$$
 
 Where:
-- \(\text{sim}(I, T) = \frac{I \cdot T}{\|I\| \|T\|}\) is cosine similarity
-- \(\tau = 0.07\) is the learnable temperature parameter
-- \(N\) is the batch size
+- $\text{sim}(I, T) = \frac{I \cdot T}{\|I\| \|T\|}$ is cosine similarity
+- $\tau = 0.07$ is the learnable temperature parameter
+- $N$ is the batch size
 - Diagonal entries are positive pairs; off-diagonals are negatives
 
 **Implementation from the project:**
@@ -251,15 +251,15 @@ loss = (loss_i + loss_t) / 2
 
 Instead of updating all parameters, LoRA freezes the pretrained weights and injects trainable low-rank decomposition matrices into each attention layer:
 
-\[
+$$
 W' = W_0 + \Delta W = W_0 + B \cdot A
-\]
+$$
 
 Where:
-- \(W_0 \in \mathbb{R}^{d \times d}\) — frozen pretrained weights
-- \(A \in \mathbb{R}^{r \times d}\) — trainable down-projection (r << d)
-- \(B \in \mathbb{R}^{d \times r}\) — trainable up-projection
-- \(r = 16\) — LoRA rank (compression factor)
+- $W_0 \in \mathbb{R}^{d \times d}$ — frozen pretrained weights
+- $A \in \mathbb{R}^{r \times d}$ — trainable down-projection (r << d)
+- $B \in \mathbb{R}^{d \times r}$ — trainable up-projection
+- $r = 16$ — LoRA rank (compression factor)
 
 ```
 Original Layer:        LoRA Augmented Layer:
@@ -771,9 +771,9 @@ Mean Opinion Score is a subjective quality metric where human evaluators rate th
 
 | Loss | Formula | Used In |
 |------|---------|---------|
-| **InfoNCE** | \(-\log \frac{e^{s_{+}/\tau}}{\sum_j e^{s_j/\tau}}\) | CLIP, this project |
+| **InfoNCE** | $-\log \frac{e^{s_{+}/\tau}}{\sum_j e^{s_j/\tau}}$ | CLIP, this project |
 | **NT-Xent** | Same as InfoNCE with symmetric formulation | SimCLR |
-| **Triplet** | \(\max(0, d_{+} - d_{-} + m)\) | FaceNet |
+| **Triplet** | $\max(0, d_{+} - d_{-} + m)$ | FaceNet |
 | **N-pairs** | Generalization of triplet to N negatives | N-pair loss |
 
 **Why Contrastive > Classification for Multimodal:**
@@ -873,7 +873,7 @@ Mean Opinion Score is a subjective quality metric where human evaluators rate th
 | **IVF+PQ** | Approximate | O(nd) train | O(nd/(nlist·m)) | O(n·m) | 90-98% |
 
 **Inner Product vs. L2 Distance:**
-- For L2-normalized vectors: \(\|a-b\|^2 = 2 - 2\langle a,b\rangle\)
+- For L2-normalized vectors: $\|a-b\|^2 = 2 - 2\langle a,b\rangle$
 - So `IndexFlatIP` on normalized vectors is equivalent to cosine similarity
 - CLIP embeddings are L2-normalized → inner product = cosine similarity
 
@@ -895,7 +895,7 @@ gpu_index = faiss.index_cpu_to_gpu(faiss.StandardGpuResources(), 0, cpu_index)
 | **Late fusion** | Separate processing, combine at decision | Ensemble methods |
 
 **Embedding Space Properties:**
-- **Alignment:** Matched pairs should be close (\(\text{sim}(I_i, T_i) \approx 1\))
+- **Alignment:** Matched pairs should be close ($\text{sim}(I_i, T_i) \approx 1$)
 - **Uniformity:** Embeddings should be spread across the hypersphere (avoid collapse)
 - **Trade-off:** Too much alignment focus → representation collapse; too much uniformity → poor matching
 
@@ -924,15 +924,15 @@ gpu_index = faiss.index_cpu_to_gpu(faiss.StandardGpuResources(), 0, cpu_index)
 ### 4.10 Embedding Space: Alignment & Uniformity
 
 **Alignment Loss:**
-\[
+$$
 \mathcal{L}_{\text{align}} = \mathbb{E}_{(x,y) \sim p_{\text{pos}}} \|f(x) - g(y)\|^2
-\]
+$$
 Minimizes distance between positive pairs.
 
 **Uniformity Loss:**
-\[
+$$
 \mathcal{L}_{\text{uniform}} = \log \mathbb{E}_{(x,x') \sim p_{\text{data}}} e^{-2\|f(x) - f(x')\|^2}
-\]
+$$
 Encourages embeddings to spread on the hypersphere.
 
 **InfoNCE implicitly optimizes both:** The numerator promotes alignment; the denominator (sum over negatives) promotes uniformity.

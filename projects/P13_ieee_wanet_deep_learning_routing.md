@@ -235,7 +235,7 @@ Time:    t-4     t-3     t-2     t-1      t      → t+1 (predicted)
 
 **MSE formula from the paper:**
 
-\[ \text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2 \]
+$$ \text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2 $$
 
 Where y_i is actual network metric value and ŷ_i is the CNN-LSTM predicted value.
 

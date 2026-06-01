@@ -385,7 +385,7 @@ display_topics(nmf, feature_names)
 | 11 | storm, weather, delay, divert, wind, rain | Severe weather |
 | 14 | covid, test, pcr, quarantine, restriction, travel | Pandemic restrictions |
 
-### 2.2.4 Topic Coherence (Hyperparameter Tuning for \(k\))
+### 2.2.4 Topic Coherence (Hyperparameter Tuning for $k$)
 
 **Coherence score** measures how semantically similar the top words in each topic are. Higher coherence = more interpretable topics.
 
@@ -422,7 +422,7 @@ best_k = max(coherence_scores, key=coherence_scores.get)
 # Result: best_k ≈ 15 (plateau region with high coherence)
 ```
 
-> **Interview note:** "I tuned the number of topics by plotting coherence scores (c_v metric) across a range of \(k\) values. I picked \(k\) in the plateau region where coherence was high and topics remained interpretable to the operations team — around 15 topics."
+> **Interview note:** "I tuned the number of topics by plotting coherence scores (c_v metric) across a range of $k$ values. I picked $k$ in the plateau region where coherence was high and topics remained interpretable to the operations team — around 15 topics."
 
 ---
 
@@ -450,17 +450,17 @@ def create_time_windows(df, freq="30min"):
 
 **Simple Moving Average (SMA):**
 
-\[
+$$
 \text{SMA}_t = \frac{1}{n} \sum_{i=0}^{n-1} x_{t-i}
-\]
+$$
 
 **Exponential Moving Average (EMA):**
 
-\[
+$$
 \text{EMA}_t = \alpha \cdot x_t + (1 - \alpha) \cdot \text{EMA}_{t-1}
-\]
+$$
 
-where \(\alpha = \frac{2}{n+1}\) (smoothing factor for window size \(n\)).
+where $\alpha = \frac{2}{n+1}$ (smoothing factor for window size $n$).
 
 | Property | SMA | EMA |
 |:---------|:----|:----|
@@ -490,16 +490,16 @@ df_windows["volcano_sma"], df_windows["volcano_ema"] = compute_moving_averages(
 
 **Formula:**
 
-\[
+$$
 z_t = \frac{x_t - \mu_{\text{window}}}{\sigma_{\text{window}}}
-\]
+$$
 
-where \(\mu_{\text{window}}\) and \(\sigma_{\text{window}}\) are the mean and standard deviation of a rolling window.
+where $\mu_{\text{window}}$ and $\sigma_{\text{window}}$ are the mean and standard deviation of a rolling window.
 
 **Interpretation:**
-- \(|z| > 2\): Unusual (≈ 5% chance under normal distribution)
-- \(|z| > 3\): Highly unusual (≈ 0.3% chance)
-- For disaster detection, we flag \(z > 3\) as a strong signal
+- $|z| > 2$: Unusual (≈ 5% chance under normal distribution)
+- $|z| > 3$: Highly unusual (≈ 0.3% chance)
+- For disaster detection, we flag $z > 3$ as a strong signal
 
 ```python
 def compute_rolling_zscore(series, window=48):
@@ -530,9 +530,9 @@ for col in keyword_columns:
 
 ### 2.3.4 Percentage Change from Baseline
 
-\[
+$$
 \text{\% Change}_t = \frac{x_t - \text{baseline}_t}{\text{baseline}_t} \times 100
-\]
+$$
 
 where baseline is typically the SMA or a historical average for the same time-of-day/day-of-week.
 
@@ -553,15 +553,15 @@ df_windows["volume_pct_change"] = compute_pct_change(
 
 ### 2.3.5 IQR-Based Outlier Detection
 
-\[
+$$
 \text{IQR} = Q_3 - Q_1
-\]
-\[
+$$
+$$
 \text{Lower fence} = Q_1 - 1.5 \times \text{IQR}
-\]
-\[
+$$
+$$
 \text{Upper fence} = Q_3 + 1.5 \times \text{IQR}
-\]
+$$
 
 ```python
 def iqr_outlier_flags(series, multiplier=1.5):
@@ -598,19 +598,19 @@ df_windows["volume_iqr_outlier"] = iqr_outlier_flags(df_windows["chat_volume"])
 
 3. **Anomaly score:**
 
-\[
+$$
 s(x, n) = 2^{-\frac{E[h(x)]}{c(n)}}
-\]
+$$
 
 where:
-- \(E[h(x)]\) = average path length of point \(x\) across all trees
-- \(c(n)\) = average path length of unsuccessful search in a Binary Search Tree (normalization factor)
-- \(c(n) = 2H(n-1) - \frac{2(n-1)}{n}\), where \(H(i) \approx \ln(i) + 0.5772\) (Euler's constant)
+- $E[h(x)]$ = average path length of point $x$ across all trees
+- $c(n)$ = average path length of unsuccessful search in a Binary Search Tree (normalization factor)
+- $c(n) = 2H(n-1) - \frac{2(n-1)}{n}$, where $H(i) \approx \ln(i) + 0.5772$ (Euler's constant)
 
 **Score interpretation:**
-- \(s \approx 1\): Strong anomaly (very short path)
-- \(s \approx 0.5\): Normal point (average path)
-- \(s \approx 0\): Dense cluster point (very long path)
+- $s \approx 1$: Strong anomaly (very short path)
+- $s \approx 0.5$: Normal point (average path)
+- $s \approx 0$: Dense cluster point (very long path)
 
 ```
 Normal point (long path):          Anomaly (short path):
@@ -632,7 +632,7 @@ Normal point (long path):          Anomaly (short path):
 | Method | Pros | Cons | Why Not Chosen |
 |:-------|:-----|:-----|:---------------|
 | **Isolation Forest** | ✅ Scales to large datasets, ✅ No distance metric needed, ✅ Handles mixed features, ✅ Few hyperparameters | Struggles with high-dim data | **Chosen** — best fit for tabular feature set |
-| **Local Outlier Factor (LOF)** | Good for local density anomalies | Slow on large data (\(O(n^2)\)), sensitive to \(k\) | Too slow for near-real-time micro-batches |
+| **Local Outlier Factor (LOF)** | Good for local density anomalies | Slow on large data ($O(n^2)$), sensitive to $k$ | Too slow for near-real-time micro-batches |
 | **One-Class SVM** | Robust with kernel trick | Very slow to train, memory-heavy, needs feature scaling | Doesn't scale to our data volume |
 | **DBSCAN** | Finds clusters and outliers together | Sensitive to `eps` and `min_samples`, not designed for scoring | Clustering tool, not a scoring anomaly detector |
 | **Statistical only (z-score)** | Simple, interpretable | Univariate — misses multi-feature interactions | Used as features, but alone insufficient |
@@ -834,17 +834,17 @@ Actual  Event       TP            FN
 
 **Formulas:**
 
-\[
+$$
 \text{Specificity} = \frac{TN}{TN + FP} = \frac{\text{True Normals Correctly Identified}}{\text{All Actual Normals}}
-\]
+$$
 
-\[
+$$
 \text{Sensitivity (Recall)} = \frac{TP}{TP + FN} = \frac{\text{Events Detected}}{\text{All Actual Events}}
-\]
+$$
 
-\[
+$$
 \text{Precision} = \frac{TP}{TP + FP} = \frac{\text{True Events Among Alerts}}{\text{All Alerts}}
-\]
+$$
 
 ### 2.6.2 Why Specificity Was Prioritized
 
@@ -908,17 +908,17 @@ The detected event type (from topic modeling) informed **which playbook** to act
 ### 4.1.1 Isolation Forest (Deep Dive)
 
 **Algorithm steps:**
-1. Sample a subset of data (\(\text{max\_samples}\))
+1. Sample a subset of data ($\text{max\_samples}$)
 2. Randomly select a feature
 3. Randomly select a split value between feature min and max
-4. Recursively split until point is isolated or max depth (\(\lceil \log_2 n \rceil\))
-5. Record path length \(h(x)\)
-6. Repeat for \(\text{n\_estimators}\) trees
+4. Recursively split until point is isolated or max depth ($\lceil \log_2 n \rceil$)
+5. Record path length $h(x)$
+6. Repeat for $\text{n\_estimators}$ trees
 7. Average path lengths → anomaly score
 
 **Key properties:**
-- **Time complexity:** \(O(t \cdot n \cdot \log n)\) where \(t\) = number of trees, \(n\) = sample size
-- **Space complexity:** \(O(t \cdot n)\)
+- **Time complexity:** $O(t \cdot n \cdot \log n)$ where $t$ = number of trees, $n$ = sample size
+- **Space complexity:** $O(t \cdot n)$
 - **No distance metric required** — works on raw feature space
 - **Linear time** — much faster than LOF or OCSVM
 
@@ -938,21 +938,21 @@ The detected event type (from topic modeling) informed **which playbook** to act
 ### 4.1.2 Local Outlier Factor (LOF)
 
 **How it works:**
-- Computes local density for each point based on \(k\)-nearest neighbors
+- Computes local density for each point based on $k$-nearest neighbors
 - Compares each point's density to its neighbors' density
 - Points with significantly lower density than neighbors → anomalies
 
-\[
+$$
 \text{LOF}(x) = \frac{\sum_{o \in N_k(x)} \frac{\text{lrd}(o)}{\text{lrd}(x)}}{|N_k(x)|}
-\]
+$$
 
-where \(\text{lrd}(x)\) = local reachability density.
+where $\text{lrd}(x)$ = local reachability density.
 
 - LOF > 1: less dense than neighbors (potential outlier)
 - LOF ≈ 1: similar density to neighbors (normal)
 - LOF < 1: denser than neighbors (inlier)
 
-**vs Isolation Forest:** LOF is better at detecting **local anomalies** (unusual relative to their neighborhood) but is \(O(n^2)\) — too slow for our use case.
+**vs Isolation Forest:** LOF is better at detecting **local anomalies** (unusual relative to their neighborhood) but is $O(n^2)$ — too slow for our use case.
 
 ### 4.1.3 One-Class SVM
 
@@ -963,7 +963,7 @@ where \(\text{lrd}(x)\) = local reachability density.
 
 **Key hyperparameters:** `nu` (upper bound on fraction of outliers), `kernel` (rbf, poly), `gamma`
 
-**vs Isolation Forest:** Powerful with kernel trick but \(O(n^2)\) to \(O(n^3)\) training time. Not practical for our data size.
+**vs Isolation Forest:** Powerful with kernel trick but $O(n^2)$ to $O(n^3)$ training time. Not practical for our data size.
 
 ### 4.1.4 DBSCAN for Outlier Detection
 
@@ -981,14 +981,14 @@ where \(\text{lrd}(x)\) = local reachability density.
 ### 4.2.1 LDA (Latent Dirichlet Allocation)
 
 **Generative model:**
-1. For each document, draw a topic distribution \(\theta_d \sim \text{Dir}(\alpha)\)
+1. For each document, draw a topic distribution $\theta_d \sim \text{Dir}(\alpha)$
 2. For each word in the document:
-   - Draw a topic \(z \sim \text{Multinomial}(\theta_d)\)
-   - Draw a word \(w \sim \text{Multinomial}(\beta_z)\)
+   - Draw a topic $z \sim \text{Multinomial}(\theta_d)$
+   - Draw a word $w \sim \text{Multinomial}(\beta_z)$
 
 **Key concepts:**
-- \(\alpha\): Dirichlet prior on per-document topic distribution (low → documents have few topics)
-- \(\beta\): Dirichlet prior on per-topic word distribution (low → topics have few dominant words)
+- $\alpha$: Dirichlet prior on per-document topic distribution (low → documents have few topics)
+- $\beta$: Dirichlet prior on per-topic word distribution (low → topics have few dominant words)
 - Inference: Variational Bayes or Gibbs sampling
 
 **Strengths:** Principled probabilistic model, well-understood.  
@@ -998,17 +998,17 @@ where \(\text{lrd}(x)\) = local reachability density.
 
 **Matrix decomposition:**
 
-\[
+$$
 V \approx W \cdot H
-\]
+$$
 
 where:
-- \(V\): document-term matrix (\(n \times m\)) — TF-IDF weighted
-- \(W\): document-topic matrix (\(n \times k\))
-- \(H\): topic-term matrix (\(k \times m\))
+- $V$: document-term matrix ($n \times m$) — TF-IDF weighted
+- $W$: document-topic matrix ($n \times k$)
+- $H$: topic-term matrix ($k \times m$)
 - All entries non-negative (natural for word frequencies)
 
-**Optimization:** Minimize \(\|V - WH\|_F^2\) subject to \(W, H \geq 0\)
+**Optimization:** Minimize $\|V - WH\|_F^2$ subject to $W, H \geq 0$
 
 **Strengths:** Fast, deterministic (given initialization), produces crisp topics.  
 **Weaknesses:** Not probabilistic, sensitive to initialization, topics can be less coherent than LDA for long documents.
@@ -1032,14 +1032,14 @@ where:
 
 **Z-score** standardizes a value relative to its distribution:
 
-\[
+$$
 z = \frac{x - \mu}{\sigma}
-\]
+$$
 
 **Control charts** (Shewhart charts) plot a metric over time with:
-- Center line: \(\mu\)
-- Upper control limit (UCL): \(\mu + 3\sigma\)
-- Lower control limit (LCL): \(\mu - 3\sigma\)
+- Center line: $\mu$
+- Upper control limit (UCL): $\mu + 3\sigma$
+- Lower control limit (LCL): $\mu - 3\sigma$
 
 Points outside UCL/LCL → process is "out of control" → alert.
 
@@ -1047,19 +1047,19 @@ Points outside UCL/LCL → process is "out of control" → alert.
 
 More sensitive to small persistent shifts than Shewhart charts:
 
-\[
+$$
 Z_t = \lambda x_t + (1 - \lambda) Z_{t-1}
-\]
+$$
 
-where \(\lambda \in (0, 1]\) is the weighting factor (typically 0.05–0.25).
+where $\lambda \in (0, 1]$ is the weighting factor (typically 0.05–0.25).
 
 **Control limits:**
 
-\[
+$$
 \text{UCL/LCL} = \mu \pm L \cdot \sigma \sqrt{\frac{\lambda}{2 - \lambda}\left[1 - (1-\lambda)^{2t}\right]}
-\]
+$$
 
-where \(L\) is a width parameter (typically 2.7–3.0).
+where $L$ is a width parameter (typically 2.7–3.0).
 
 **Relevance to project:** EWMA is essentially the statistical foundation of our EMA-based baseline tracking.
 
@@ -1069,7 +1069,7 @@ where \(L\) is a width parameter (typically 2.7–3.0).
 
 | Method | Type | How It Works |
 |:-------|:-----|:-------------|
-| **Z-score (rolling)** | Statistical | Flag points beyond \(n\sigma\) from rolling mean |
+| **Z-score (rolling)** | Statistical | Flag points beyond $n\sigma$ from rolling mean |
 | **EWMA control chart** | Statistical | Detect mean shifts with exponential smoothing |
 | **Isolation Forest** | ML | Random partitioning, path length scoring |
 | **Prophet anomaly** | Decomposition | Facebook Prophet decomposes trend + seasonality, flags residuals |
@@ -1082,11 +1082,11 @@ where \(L\) is a width parameter (typically 2.7–3.0).
 
 | Metric | Formula | Question It Answers |
 |:-------|:--------|:-------------------|
-| **Precision** | \(\frac{TP}{TP+FP}\) | Of all things I flagged, how many were real? |
-| **Recall (Sensitivity)** | \(\frac{TP}{TP+FN}\) | Of all real events, how many did I catch? |
-| **Specificity** | \(\frac{TN}{TN+FP}\) | Of all non-events, how many did I correctly ignore? |
-| **F1 Score** | \(\frac{2 \cdot P \cdot R}{P + R}\) | Harmonic mean of precision and recall |
-| **FPR** | \(\frac{FP}{FP+TN} = 1 - \text{Specificity}\) | False alarm rate |
+| **Precision** | $\frac{TP}{TP+FP}$ | Of all things I flagged, how many were real? |
+| **Recall (Sensitivity)** | $\frac{TP}{TP+FN}$ | Of all real events, how many did I catch? |
+| **Specificity** | $\frac{TN}{TN+FP}$ | Of all non-events, how many did I correctly ignore? |
+| **F1 Score** | $\frac{2 \cdot P \cdot R}{P + R}$ | Harmonic mean of precision and recall |
+| **FPR** | $\frac{FP}{FP+TN} = 1 - \text{Specificity}$ | False alarm rate |
 
 **Full confusion matrix:**
 
@@ -1120,8 +1120,8 @@ FPR         = FP / (FP + TN)        = 1 - Specificity
 
 | Property | SMA | EMA |
 |:---------|:----|:----|
-| **Formula** | \(\frac{1}{n}\sum_{i=0}^{n-1}x_{t-i}\) | \(\alpha x_t + (1-\alpha)\text{EMA}_{t-1}\) |
-| **Weight distribution** | Equal weight to all \(n\) points | Exponentially decaying weights |
+| **Formula** | $\frac{1}{n}\sum_{i=0}^{n-1}x_{t-i}$ | $\alpha x_t + (1-\alpha)\text{EMA}_{t-1}$ |
+| **Weight distribution** | Equal weight to all $n$ points | Exponentially decaying weights |
 | **Lag** | Higher lag (all points equal) | Lower lag (more recent = more weight) |
 | **Smoothness** | Smoother | Less smooth but more responsive |
 | **Use case** | Stable baseline estimation | Quick detection of trend changes |
@@ -1184,7 +1184,7 @@ FPR         = FP / (FP + TN)        = 1 - Specificity
 >
 > The algorithm builds an ensemble of isolation trees. Each tree randomly selects a feature and a random split value, recursively partitioning the data until each point is isolated. Anomalies, being rare and distinct, get isolated in fewer splits — they have shorter path lengths. Normal points, being in dense clusters, require many more splits.
 >
-> The anomaly score is computed as \(s(x, n) = 2^{-E[h(x)]/c(n)}\), where \(E[h(x)]\) is the average path length across all trees and \(c(n)\) is a normalization factor. A score near 1 indicates a strong anomaly; near 0.5 is normal.
+> The anomaly score is computed as $s(x, n) = 2^{-E[h(x)]/c(n)}$, where $E[h(x)]$ is the average path length across all trees and $c(n)$ is a normalization factor. A score near 1 indicates a strong anomaly; near 0.5 is normal.
 >
 > The key hyperparameters are: `n_estimators` (number of trees), `max_samples` (data fraction per tree), `contamination` (expected anomaly proportion), and `max_features` (feature fraction per tree). In our case, we used 200 trees with 0.75 sample fraction and 1% contamination rate, tuned via grid search."
 
@@ -1194,7 +1194,7 @@ FPR         = FP / (FP + TN)        = 1 - Specificity
 
 > **Answer:** "Three main reasons:
 >
-> First, **scalability**: we were processing frequent micro-batches of chat data. LOF is \(O(n^2)\) and One-Class SVM is \(O(n^2)\) to \(O(n^3)\) — both too slow. Isolation Forest is \(O(n \log n)\) per tree, making it practical.
+> First, **scalability**: we were processing frequent micro-batches of chat data. LOF is $O(n^2)$ and One-Class SVM is $O(n^2)$ to $O(n^3)$ — both too slow. Isolation Forest is $O(n \log n)$ per tree, making it practical.
 >
 > Second, **feature flexibility**: our feature set was mixed — topic proportions, z-scores, counts, binary flags. IF doesn't require a distance metric and works directly on the feature space, unlike LOF which is distance-dependent.
 >
@@ -1392,7 +1392,7 @@ FPR         = FP / (FP + TN)        = 1 - Specificity
 >
 > I used the c_v coherence metric, which measures word co-occurrence patterns in a sliding window over the corpus. A topic with words like 'volcano, eruption, ash, airspace' has high coherence. A topic with 'volcano, booking, morning, please' has low coherence.
 >
-> It matters for two reasons: first, as a hyperparameter tuning criterion — I plotted coherence across different numbers of topics to find the optimal \(k\). Second, for operational utility — the topics needed to be interpretable by non-technical ops leaders who would use them to understand what kind of event was happening."
+> It matters for two reasons: first, as a hyperparameter tuning criterion — I plotted coherence across different numbers of topics to find the optimal $k$. Second, for operational utility — the topics needed to be interpretable by non-technical ops leaders who would use them to understand what kind of event was happening."
 
 ---
 
@@ -1472,17 +1472,17 @@ FPR         = FP / (FP + TN)        = 1 - Specificity
 
 > **Answer:** "The anomaly score formula is:
 >
-> \[s(x, n) = 2^{-\frac{E[h(x)]}{c(n)}}\]
+> $$s(x, n) = 2^{-\frac{E[h(x)]}{c(n)}}$$
 >
-> Where \(E[h(x)]\) is the average path length for point \(x\) across all trees. Path length is the number of edges traversed from the root to the terminal node where \(x\) is isolated.
+> Where $E[h(x)]$ is the average path length for point $x$ across all trees. Path length is the number of edges traversed from the root to the terminal node where $x$ is isolated.
 >
-> \(c(n)\) is the average path length of an unsuccessful search in a Binary Search Tree with \(n\) nodes, serving as a normalization factor:
+> $c(n)$ is the average path length of an unsuccessful search in a Binary Search Tree with $n$ nodes, serving as a normalization factor:
 >
-> \[c(n) = 2H(n-1) - \frac{2(n-1)}{n}\]
+> $$c(n) = 2H(n-1) - \frac{2(n-1)}{n}$$
 >
-> where \(H(i) = \ln(i) + \gamma\) (\(\gamma \approx 0.5772\) is Euler-Mascheroni constant).
+> where $H(i) = \ln(i) + \gamma$ ($\gamma \approx 0.5772$ is Euler-Mascheroni constant).
 >
-> Intuitively: if \(E[h(x)] \ll c(n)\), the exponent is very negative, so \(s \to 1\) — strong anomaly. If \(E[h(x)] \approx c(n)\), \(s \approx 0.5\) — normal. The score elegantly captures how much easier a point is to isolate compared to what you'd expect by chance."
+> Intuitively: if $E[h(x)] \ll c(n)$, the exponent is very negative, so $s \to 1$ — strong anomaly. If $E[h(x)] \approx c(n)$, $s \approx 0.5$ — normal. The score elegantly captures how much easier a point is to isolate compared to what you'd expect by chance."
 
 ---
 
