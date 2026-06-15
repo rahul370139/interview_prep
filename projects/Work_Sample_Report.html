@@ -113,6 +113,13 @@
       text-decoration: none;
       word-break: break-all;
     }
+    code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.8em;
+      background: #eef3ff;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
     .diagram-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -182,7 +189,7 @@
     <section class="section">
       <h2>Report Scope and Portfolio Context</h2>
       <ul>
-        <li>This report highlights three flagship hosted systems: AI Cargo, Doc2Data, and SkillSpring.</li>
+        <li>This report highlights three flagship hosted systems: AI Cargo, Doc2Data, and PathWise.</li>
         <li>These projects were selected to represent applied AI delivery across operations, healthcare, and learning products.</li>
         <li>Additional projects are available in the portfolio repository, including Streamlit-hosted prototypes and research-focused implementations.</li>
         <li>The structure below is designed for recruiter and hiring-manager scanability: problem, scope, architecture, links, and impact.</li>
@@ -192,12 +199,13 @@
     <section class="section">
       <h2>Project 01 - AI Cargo</h2>
       <div class="pill-row">
+        <span class="pill">Smith Challenge · 1st Prize ($4K)</span>
         <span class="pill">Agentic Operations</span>
         <span class="pill">Cold-chain Risk</span>
         <span class="pill">Compliance AI</span>
       </div>
       <h3>Overview</h3>
-      <p>AI Cargo is an agentic risk intelligence platform for pharmaceutical cold-chain shipments. It combines deterministic compliance rules and ML predictions, then orchestrates mitigation workflows through tool-using agents with human-in-the-loop controls.</p>
+      <p>AI Cargo is an agentic risk intelligence platform for pharmaceutical cold-chain shipments. It combines deterministic compliance rules and ML predictions, then orchestrates mitigation workflows through tool-using agents with human-in-the-loop controls. <strong>Winner of first prize ($4,000) in the Smith Agentic AI Challenge.</strong></p>
       <h3>Problem Solved</h3>
       <p>Temperature-sensitive logistics requires immediate, compliant, and auditable decisions. Manual intervention is often slow and inconsistent for medium/high risk events.</p>
       <h3>End-to-End System Scope</h3>
@@ -272,53 +280,64 @@
     </section>
 
     <section class="section">
-      <h2>Project 03 - SkillSpring (TrainPI)</h2>
+      <h2>Project 03 - PathWise</h2>
       <div class="pill-row">
-        <span class="pill">Full-stack GenAI</span>
-        <span class="pill">Learning Intelligence</span>
-        <span class="pill">Career Planning</span>
+        <span class="pill">Microsoft Foundry IQ</span>
+        <span class="pill">Career Simulator</span>
+        <span class="pill">Multi-Agent RAG</span>
+        <span class="pill">GitHub Copilot</span>
       </div>
       <h3>Overview</h3>
-      <p>SkillSpring is a full-stack AI learning and career guidance platform that helps users turn unstructured learning material into actionable outcomes. It includes content distillation, assessment generation, mastery tracking, career matching, and roadmap planning.</p>
+      <p>PathWise is a full-stack AI learning and career-readiness platform built for the <strong>Agents League · Creative Apps (GitHub Copilot)</strong> track. Drop in a PDF or job posting and PathWise turns it into personalized learning content, a citation-backed <strong>Career Simulator</strong> interview, and a shareable readiness report. Grounding runs through <strong>Microsoft Foundry IQ</strong> (Azure AI Search) with automatic failover to Supabase pgvector.</p>
       <h3>Problem Solved</h3>
-      <p>Learners and career switchers often have fragmented material and no reliable path from "learning content" to "role-ready action plan." SkillSpring addresses this gap through integrated learning + career intelligence.</p>
+      <p>Learners and career switchers have fragmented material and no reliable path from “study content” to “role-ready in an interview.” PathWise closes that gap with integrated learning intelligence, O*NET-backed career matching, and a visible multi-agent loop (plan → retrieve → generate → verify) that judges and hiring managers can inspect in real time.</p>
       <h3>End-to-End System Scope</h3>
       <ol>
-        <li>Learner uploads PDF and interacts with chat/distiller APIs.</li>
-        <li>Backend performs chunking, retrieval, and structured generation.</li>
-        <li>User receives summaries, quizzes, flashcards, lessons, and diagnostics.</li>
-        <li>Career layer parses resume, maps skills to O*NET roles, and generates upgrade plans.</li>
-        <li>Dashboard tracks progress, recommendations, and mastery state over time.</li>
+        <li>Learner uploads a PDF or pastes a job description on the Learn or Career Simulator surfaces.</li>
+        <li><strong>Foundry IQ</strong> retrieves citation-backed evidence from an Azure AI Search knowledge base; Supabase pgvector serves as transparent failover.</li>
+        <li>Distiller generates summaries, quizzes, flashcards, micro-lessons, and diagnostics grounded in retrieved context.</li>
+        <li><strong>Career Simulator</strong> orchestrates Planner, Retrieval, Interviewer, Scorer, Remediation, and Report agents over resume + target role.</li>
+        <li>Agent Thinking panel streams SSE timeline events with citation chips; Readiness Report exports 30/60/90 plans and top skill gaps.</li>
+        <li>Dashboard tracks progress, mastery, and offline eval metrics (groundedness, refusal correctness, p95 latency).</li>
       </ol>
+      <h3>Microsoft IQ Integration</h3>
+      <ul>
+        <li><strong>Foundry IQ</strong> (Azure AI Search index <code>prepkb-index</code>) is the primary retrieval layer for Learn chat and the Career Simulator.</li>
+        <li>Hybrid keyword + vector search with semantic reranking; every chunk carries source metadata for citations in the UI.</li>
+        <li>Built with <strong>GitHub Copilot</strong> in VS Code — orchestrator, Foundry client, FastAPI routes, SSE timeline, and eval harness.</li>
+      </ul>
       <h3>Architecture Diagram</h3>
       <div class="links">
-        <span>High-level architecture: <a href="https://rahul370139.github.io/git_portfolio/assets/artitecture_diagram/skillspring_sa_hl.pdf">View link</a></span>
-        <span>System architecture: <a href="https://rahul370139.github.io/git_portfolio/assets/artitecture_diagram/skillspring_sa.pdf">View link</a></span>
+        <span>High-level architecture: <a href="https://rahul370139.github.io/git_portfolio/assets/artitecture_diagram/pathwise_sa_hl.pdf">View link</a></span>
+        <span>System architecture: <a href="https://rahul370139.github.io/git_portfolio/assets/artitecture_diagram/pathwise_sa.pdf">View link</a></span>
       </div>
       <div class="diagram-grid">
         <div class="diagram-card">
           <h4>High-Level Architecture</h4>
-          <img src="artitecture_diagram/previews/skillspring_sa_hl.png" alt="SkillSpring high-level architecture diagram preview" />
+          <img src="artitecture_diagram/previews/pathwise_sa_hl.png" alt="PathWise high-level architecture — Vercel, Foundry IQ, Career Simulator" />
         </div>
         <div class="diagram-card">
           <h4>System Architecture</h4>
-          <img src="artitecture_diagram/previews/skillspring_sa.png" alt="SkillSpring system architecture diagram preview" />
+          <img src="artitecture_diagram/previews/pathwise_sa.png" alt="PathWise backend system architecture — pathwise package and APIs" />
         </div>
       </div>
       <h3>Demo</h3>
-      <div class="links"><span>Live demo: <a href="https://skillspring001.vercel.app/">Open application</a></span></div>
+      <div class="links">
+        <span>Live app: <a href="https://pathwise-jade.vercel.app/">Open PathWise</a></span>
+        <span>Career Simulator: <a href="https://pathwise-jade.vercel.app/simulator">Open simulator</a></span>
+      </div>
       <h3>GitHub</h3>
-      <div class="links"><span>Source code: <a href="https://github.com/rahul370139/easylearn">View repository</a></span></div>
+      <div class="links"><span>Source code: <a href="https://github.com/rahul370139/PathWise">View repository</a></span></div>
       <h3>Tech Stack</h3>
-      <p>Next.js, FastAPI, Groq, Cohere embeddings, Supabase Postgres/pgvector, Docker, Vercel.</p>
-      <div class="impact"><strong>Business Impact Narrative:</strong> Converts passive content consumption into guided learning plans, bridges education and employability using role-based skill-gap workflows, and provides recruiter-friendly proof of practical AI system design and deployment.</div>
+      <p>Next.js 14, FastAPI, Groq (llama-3.3-70b), Cohere embeddings, <strong>Microsoft Foundry IQ</strong> (Azure AI Search), Supabase (auth + pgvector fallback), Docker on Hostinger VPS, Vercel frontend.</p>
+      <div class="impact"><strong>Business Impact Narrative:</strong> Converts passive content into guided, citation-backed learning; runs a demo-ready Career Simulator that chains interview, gap analysis, and roadmap in one flow; demonstrates production AI patterns (Foundry IQ grounding, provider failover, grounding guard, eval harness) suitable for enterprise and competition review.</div>
     </section>
 
     <section class="section">
       <h2>Comparative Strength Across Work Samples</h2>
       <ul>
-        <li><strong>SkillSpring:</strong> Product-oriented full-stack GenAI with learning + career intelligence.</li>
-        <li><strong>AI Cargo:</strong> Agentic operations and compliance under real-world risk constraints.</li>
+        <li><strong>PathWise:</strong> Foundry IQ–grounded learning + multi-agent Career Simulator (GitHub Copilot, Agents League).</li>
+        <li><strong>AI Cargo:</strong> Agentic operations and compliance under real-world risk constraints; first prize ($4K), Smith Agentic AI Challenge.</li>
         <li><strong>Doc2Data:</strong> Multimodal document AI with robust extraction and quality controls.</li>
       </ul>
       <p>Together, these projects show system design depth across user-facing UX, AI orchestration, data pipelines, and production delivery.</p>
