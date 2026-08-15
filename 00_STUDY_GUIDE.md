@@ -20,9 +20,18 @@ interview_prep/
 │   │          marketplace, ads, statistical reasoning)
 │   └── 48     Practical interview question bank  ← the drill sheet
 └── projects/
+    ├── 00_FLAGSHIP_PROJECTS_STUDY_GUIDE.md  ← how to master the 3 flagships
     ├── P01–P14  One doc per resume project (STAR + architecture + Q&A)
+    ├── P15–P17  Flagship deep-dives: AI Cargo · Doc2Data · PathWise
     └── FusionSpan_Python_Coding_Questions.md  (coding drills)
 ```
+
+**Your 3 flagship (deep-dive round) projects** — the ones an interviewer will drill for 30–45 min:
+- [`P15_ai_cargo_agentic_risk_platform`](projects/P15_ai_cargo_agentic_risk_platform.md) — agentic AI / AI platform
+- [`P16_doc2data_healthcare_extraction`](projects/P16_doc2data_healthcare_extraction.md) — multimodal / CV / systems
+- [`P17_pathwise_career_simulator`](projects/P17_pathwise_career_simulator.md) — GenAI / RAG / eval (evolution of P08)
+
+Start with [`projects/00_FLAGSHIP_PROJECTS_STUDY_GUIDE.md`](projects/00_FLAGSHIP_PROJECTS_STUDY_GUIDE.md) for the 4-layer mastery model and a 2-week plan.
 
 **Two kinds of files, two kinds of study:**
 - **Learning docs** = reference depth. Read actively (see §4), don't binge.
@@ -42,14 +51,14 @@ Read in order; ★ = must, ○ = if time. `48` is always first — it tells you 
 5. ★ `26_system_design_for_ml` + `15_fastapi_and_backend`
 6. ★ `04_transformers_and_attention` → `07_fine_tuning_and_peft` → `30_prompt_engineering_patterns`
 7. ○ `13_quantization`, `31_ai_safety_guardrails`, `23_cloud_mlops_deployment`, `11_a2a_and_mcp_protocols`
-8. **Projects to rehearse:** Doc2Data, AI Cargo, P07 (Medical RAG), P08 (SkillSpring)
+8. **Projects to rehearse:** P16 (Doc2Data), P15 (AI Cargo), P17 (PathWise), P07 (Medical RAG), P08 (SkillSpring)
 
 ### Forward Deployed Engineer
 1. ★ `48` §6 (decomposition script) — practice the case study format 3× out loud
 2. ★ Everything in the AI Engineer path (FDE = AI engineer + customer judgment)
 3. ★ `22_data_engineering_and_sql` (Palantir-style loops lean on data)
 4. ○ `28_terraform_iac`, `23_cloud_mlops` (on-prem/VPC constraints come up)
-5. **Projects:** pick ONE flagship (Doc2Data or AI Cargo) for the deep-dive round; P05b for the "messy client data" story
+5. **Projects:** pick ONE flagship (P16 Doc2Data, P15 AI Cargo, or P17 PathWise) for the deep-dive round; P05b for the "messy client data" story
 
 ### Data Scientist (product / experimentation)
 1. ★ `48` §7, §9

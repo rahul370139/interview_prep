@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Builder Note - Rahul Sharma</title>
+  <style>
+    :root {
+      --bg: #f5f7fc;
+      --card: #ffffff;
+      --ink: #12223d;
+      --muted: #43536f;
+      --brand: #1f4bd8;
+      --brand-dark: #12296e;
+      --line: #dbe4f3;
+      --soft: #eef3ff;
+    }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.28;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 860px; margin: 10px auto; padding: 0 14px 10px; }
+    .hero {
+      background: #17358f;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 10px 15px;
+      margin-bottom: 6px;
+    }
+    .hero h1 {
+      margin: 0 0 2px;
+      font-size: 1.24rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.1px;
+    }
+    .hero .sub { margin: 0; font-size: 0.78rem; color: #eaf0ff; font-style: italic; }
+    .hero .links { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 7px; font-size: 0.75rem; }
+    .hero .links a {
+      color: #17358f;
+      background: #ffffff;
+      border: 1px solid #ffffff;
+      border-radius: 999px;
+      padding: 3px 12px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 6px 12px 5px;
+      margin: 5px 0;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    h2 {
+      margin: 0 0 3px;
+      color: var(--brand);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px; height: 18px;
+      background: var(--brand);
+      color: #fff;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+    p { margin: 2px 0 3px; font-size: 0.745rem; color: var(--muted); }
+    strong { color: var(--ink); }
+    ul, ol { margin: 2px 0 3px; padding-left: 16px; color: var(--muted); font-size: 0.745rem; }
+    li { margin: 1.5px 0; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 5px; margin: 1px 0 4px; }
+    .pill {
+      background: var(--soft);
+      color: #294a97;
+      border: 1px solid #cfd9f7;
+      border-radius: 999px;
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 2px 8px;
+    }
+    code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.8em;
+      background: var(--soft);
+      padding: 0 4px;
+      border-radius: 4px;
+      color: #1a305e;
+    }
+    a { color: var(--brand); word-break: break-word; }
+    .footer {
+      text-align: center;
+      font-size: 0.73rem;
+      color: var(--muted);
+      font-style: italic;
+      margin: 6px 4px 0;
+    }
+    .lead { color: var(--ink); font-weight: 500; }
+    @media print {
+      @page { size: A4; margin: 8mm; }
+      body { background: #fff; }
+      .page { margin: 0 auto; max-width: 100%; padding: 0; }
+      .section { box-shadow: none; }
+      a { color: var(--brand) !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>Builder Note &mdash; Rahul Sharma</h1>
+      <p class="sub">One thing I built, what I owned, a rabbit hole I actually fell into, and how I decide whether an AI result is real.</p>
+      <div class="links">
+        <a href="https://ai-cargo-monitor-prod.vercel.app/">Live demo</a>
+        <a href="https://github.com/rahul370139/SmithAgenticAIChallenge">Source code</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2><span class="num">1</span>The thing I built</h2>
+      <div class="pill-row">
+        <span class="pill">Agentic Orchestration</span>
+        <span class="pill">LangGraph</span>
+        <span class="pill">Hybrid ML + Rules</span>
+        <span class="pill">Human-in-the-Loop</span>
+      </div>
+      <p><strong>AI Cargo</strong> &mdash; an agentic risk system for pharmaceutical cold-chain shipments. A shipment streams temperature/telemetry windows; the system scores spoilage risk with a hybrid rules + ML engine, then hands medium-and-up events to a <strong>LangGraph agent</strong> that plans and runs eight specialized tools (compliance, cold-storage, rerouting, scheduling, insurance, notification, triage, approvals), reflects on what actually happened, and stops at a human-review gate before anything consequential ships. Every decision writes an immutable, SHAP-annotated audit record.</p>
+      <p class="lead">I picked this project because it's the same problem shape as the product here: <strong>large numbers of tool-using agents that have to be fast, reproducible, and trustworthy &mdash; ending in a call of "is this result real or nonsense?"</strong></p>
+      <p style="font-size:0.71rem;"><strong>Stack:</strong> Python, FastAPI, LangGraph, XGBoost + Optuna + SHAP, Supabase (pgvector), React / Vite / Tailwind.</p>
+    </section>
+
+    <section class="section">
+      <h2><span class="num">2</span>What I owned</h2>
+      <p>I owned my slice end to end and worked across every layer of the system:</p>
+      <ul>
+        <li><strong>The scoring engine.</strong> 14 engineered features, 8 deterministic safety rules, and an XGBoost model tuned with Optuna (30 trials, optimized for <strong>PR-AUC</strong> because spoilage is rare &mdash; <code>scale_pos_weight &asymp; 5</code>). Split by shipment, not by row, so I wasn't leaking the future into training.</li>
+        <li><strong>The fusion layer</strong> that combines rules and ML into one score and risk tier (see section 4).</li>
+        <li><strong>The orchestration graph</strong> &mdash; interpret &rarr; plan &rarr; execute &rarr; observe &rarr; reflect &rarr; revise &rarr; human-review &mdash; with a deterministic fallback path so the system still runs with <strong>zero LLM</strong> if a provider is down.</li>
+        <li><strong>The agent tools and cascade</strong> that passes one tool's output into the next, plus the FastAPI backend (25 endpoints + WebSocket) and the React dashboard a non-technical ops user actually clicks through.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2><span class="num">3</span>A recent technical rabbit hole</h2>
+      <p>My reflect &rarr; revise loop kept <strong>re-triggering tools that had already succeeded</strong>, and occasionally proposing tools that were never needed. On the dashboard it looked like the agent was "doing something," so it was easy to miss &mdash; classic <em>technically functional but untrustworthy</em>. I instrumented every node's input/output and traced it: the LLM reflection step was flagging <strong>optional</strong> tools (rerouting, triage) as "gaps," and revise dutifully re-planned them. The model wasn't wrong exactly &mdash; it was helpfully hallucinating work. Two fixes:</p>
+      <ol>
+        <li><strong>A hard filter in code, not in the prompt.</strong> Revise can only emit tools in <code>mandatory_set &cup; failed_set</code>; anything else is rejected before execution. I stopped trusting the prompt to constrain behavior the code could guarantee.</li>
+        <li><strong>Redesigned to "act-first, always-review."</strong> Medium-and-up events execute once, then <em>observe</em> the real results, then reflect on those &mdash; and the human gate fires every time. That killed the phantom re-execution loop and made runs reproducible.</li>
+      </ol>
+      <p>The lesson I keep relearning: <strong>an agent that looks busy is not the same as an agent that's correct</strong>, and the cheapest guardrail is usually deterministic code wrapping the model, not a longer prompt.</p>
+    </section>
+
+    <section class="section">
+      <h2><span class="num">4</span>How I'd sanity-check an AI result</h2>
+      <p>This is the part I care about most, and it's baked into AI Cargo rather than bolted on:</p>
+      <ol>
+        <li><strong>Never let the model be the only vote.</strong> Final risk = <code>0.4&middot;rules + 0.6&middot;ML</code>, with a <strong>deterministic veto</strong>: if a hard safety rule fires above threshold, no benign ML prediction can talk the score back down.</li>
+        <li><strong>Make "unknown" loud, not silent.</strong> A missing/NaN score doesn't default to "safe" &mdash; it defaults to <strong>MEDIUM (escalate)</strong>. The dangerous failure is confident silence.</li>
+        <li><strong>Demand an explanation you can inspect.</strong> Every prediction logs its <strong>top-5 SHAP drivers</strong>. If the "why" is nonsense, I distrust the "what," even when the number looks plausible.</li>
+        <li><strong>Ask whether the effect could be noise.</strong> I read <strong>PR-AUC and recall-at-fixed-precision</strong>, not accuracy, and split by entity to rule out leakage. Applied to conversion work: an apparent lift gets the same treatment &mdash; check power/MDE, segment it, and rule out an instrumentation or assignment bug <em>before</em> believing the number.</li>
+        <li><strong>Constrain the generative parts.</strong> LLM tool-calls are schema-validated and hard-filtered; a malformed or out-of-scope response is rejected and retried, never executed blindly.</li>
+        <li><strong>Put a human on the consequential path.</strong> Anything medium-and-up pauses for review with the full reasoning trace attached &mdash; automation earns autonomy by being right over time, not by default.</li>
+      </ol>
+      <p class="lead">I use AI tools aggressively every day &mdash; but the moment a result would <em>act</em> on the world, I want a rule, a metric, or a human between the model and the consequence.</p>
+    </section>
+
+    <p class="footer">Happy to walk any of this live &mdash; the demo is up, and I can screen-share the orchestration trace for a real shipment.</p>
+  </main>
+</body>
+</html>
