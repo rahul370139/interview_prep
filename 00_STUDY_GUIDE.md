@@ -70,7 +70,8 @@ Read in order; ★ = must, ○ = if time. `48` is always first — it tells you 
 8. ★ `26_system_design_for_ml` + `15_fastapi_and_backend`
 9. ★ `04_transformers_and_attention` → `07_fine_tuning_and_peft` → `08_knowledge_distillation` (your Jet2 70B→7B story)
 10. ○ `13_quantization`, `31_ai_safety_guardrails`, `23_cloud_mlops_deployment`, `11_a2a_and_mcp_protocols`, `30_prompt_engineering_patterns`
-11. **Projects to rehearse, in order:** **P07 (Bilbo — your job)**, P15 (AI Cargo), P16 (Doc2Data), P17 (PathWise), P02 (distillation)
+11. ○ **`25_python_for_interviews` §0, §7.0–§7.3, §10–§12** if the loop has a live coding round (pattern recognition, not language trivia)
+12. **Projects to rehearse, in order:** **P07 (Bilbo — your job)**, P15 (AI Cargo), P16 (Doc2Data), P17 (PathWise), P02 (distillation)
 
 ### Forward Deployed Engineer
 1. ★ `48` §6 (decomposition script) — practice the case study format 3× out loud
@@ -139,7 +140,7 @@ Reading feels productive; **retrieval practice is what sticks.** Weekly cadence:
 | Mon | Pick 10 questions from `48` for your target role. Answer out loud, 90s each, **before** checking references. Grade yourself 0–3 (the rubric in `48` §2). |
 | Tue | Backfill: read the referenced sections for every question you scored ≤1. |
 | Wed | One system-design prompt from `48` §5.2 — 30 min whiteboard, out loud, phone recording. |
-| Thu | Coding: 3 problems from `FusionSpan_Python_Coding_Questions.md` or `25_python_for_interviews`; for DE roles, 3 SQL problems instead. |
+| Thu | Coding: start `25_python_for_interviews.md` **§0 then §11**, then 3 problems from §7 / §10 (two-sum both ways, window, RRF or entity-split). Extra bank: `FusionSpan_Python_Coding_Questions.md`. DE roles: 3 SQL problems instead. |
 | Fri | One project deep-dive rehearsal: present a P-doc for 10 min, then answer its own Q&A section without looking. |
 | Weekend | One full mock (see §5) or rest. |
 

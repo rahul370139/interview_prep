@@ -2,14 +2,17 @@
 
 **Candidate:** Rahul Sharma | **Level:** Advanced Python | **Experience:** 4+ years  
 **Education:** MS Data Science, University of Maryland (4.0 GPA)  
-**Focus:** Data Scientist — Python, ML Engineering, Backend Development, Data Pipelines  
+**Focus:** AI Engineer / Data Scientist — Python, ML Engineering, Backend Development, Data Pipelines  
 **Core Skills:** Python 3.10+, NumPy, Pandas, Scikit-learn, FastAPI, AsyncIO, OOP, Functional Programming  
-**Document Scope:** Complete Python mastery guide — fundamentals through advanced patterns, data science libraries, coding challenges, and interview strategy
+**Document Scope:** Complete Python mastery guide — fundamentals through advanced patterns, data science libraries, coding challenges, and interview strategy. **If coding is your weak round, start at §0, then §7.0–§7.3, then §10–§12. Do not binge §1–§6 the night before a live coding loop.**
+
+**Companion drills:** `projects/FusionSpan_Python_Coding_Questions.md` (30+ extra problems) · `projects/practice_coding.py` (scratch pad)
 
 ---
 
 ## Table of Contents
 
+0. [**Start here — how the coding round actually works**](#0-start-here--how-the-coding-round-actually-works)
 1. [Python Fundamentals](#1-python-fundamentals)
 2. [Data Structures](#2-data-structures)
 3. [Object-Oriented Programming](#3-object-oriented-programming)
@@ -17,9 +20,78 @@
 5. [Advanced Concepts](#5-advanced-concepts)
 6. [Data Science Python](#6-data-science-python)
 7. [Common Coding Patterns](#7-common-coding-patterns)
+   - 7.0 [The 60-second pattern test](#70-the-60-second-pattern-test)
+   - 7.1 [Two Pointers](#71-two-pointers)
+   - 7.2 [Sliding Window](#72-sliding-window)
+   - 7.3 [Hash Map Frequency Counting](#73-hash-map-frequency-counting)
+   - 7.4 [Matrix Traversal](#74-matrix-traversal)
+   - 7.5 [BFS / DFS Basics](#75-bfs--dfs-basics)
+   - 7.6 [Prefix sums](#76-prefix-sums)
+   - 7.7 [Binary search (including on the answer)](#77-binary-search-including-on-the-answer)
+   - 7.8 [Heaps and Top-K](#78-heaps-and-top-k)
+   - 7.9 [Intervals and merge](#79-intervals-and-merge)
+   - 7.10 [Stack / monotonic](#710-stack--monotonic)
 8. [Python Best Practices](#8-python-best-practices)
 9. [Common Interview Coding Questions (10+)](#9-common-interview-coding-questions)
-10. [Key Takeaways](#10-key-takeaways)
+10. [**What each role actually codes**](#10-what-each-role-actually-codes)
+11. [**The 6-step brainstorm (say it out loud)**](#11-the-6-step-brainstorm-say-it-out-loud)
+12. [**Pocket complexity + 14-day drill**](#12-pocket-complexity--14-day-drill)
+13. [Key Takeaways](#13-key-takeaways)
+
+---
+
+# 0. Start here — how the coding round actually works
+
+This is the section to re-read the morning of a coding loop. Sections 1–6 are language depth. **The live round is pattern recognition under talking.** You already know Python. The failure mode is freezing, then jumping into code before the problem is pinned.
+
+## 0.1 What they are testing (not LeetCode rank)
+
+| Role you are targeting | Typical coding ask | What a pass looks like | What a fail looks like |
+|---|---|---|---|
+| **AI Engineer / GenAI** | Parse messy JSON, chunk text, merge intervals, LRU/rate-limit, BFS on a small graph, implement a 20-line retriever helper (RRF, unique-by-id) | Clear types, edge cases, you mention complexity, you ask about duplicates / empty / streaming | Silent coding; O(n²) on "unique docs"; no tests |
+| **Data Scientist** | Two-sum / frequency / group-by in pure Python, sliding window, pandas transform, entity-aware split, a tiny metric (precision@k) | Correct on a hand example; you say train-only fit; you don't leak | `for` over a DataFrame; shuffle then split when IDs repeat |
+| **Forward Deployed** | Dirty strings, windowed counts, "make this CSV usable" | You ask about encoding, nulls, late events | Assume clean input |
+| **Data Engineer** | Two pointers on sorted logs, hash join sketch, generator over a file, deque window | O(n) streaming mindset | `list(file)` then process |
+
+You will **not** be asked a hard DP contest problem for these roles. You **will** be asked something that looks easy and dies on duplicates, empty input, or off-by-one.
+
+## 0.2 The only four structures you must retrieve under pressure
+
+Write these on scratch paper before they finish the prompt.
+
+| Structure | Python | O(1) superpower | Default problem |
+|---|---|---|---|
+| **Hash map** | `dict` / `Counter` / `defaultdict(list)` | lookup, count, group, complement | two-sum, anagrams, first duplicate, prefix-sum index |
+| **Two pointers** | `left`, `right` or `read`/`write` | O(n) on sorted / in-place | pair sum (sorted), palindrome, compact uniques, merge two lists |
+| **Sliding window** | `left` + running state | longest/shortest contiguous | max sum of k, longest unique substring, moving average |
+| **Heap** | `heapq` | top-k without full sort | k most frequent, merge k lists, streaming median (two heaps) |
+
+Backup: **stack** (parens, undo, monotonic next-greater), **deque** (BFS, bounded window), **set** (seen / uniqueness).
+
+If the prompt has the word **contiguous**, reach for a window or Kadane/prefix. If it has **pair / two numbers / anagram / frequency**, reach for a hash map. If it says **sorted** and **in-place**, reach for two pointers.
+
+## 0.3 The 6-step loop (say each step out loud)
+
+Full script with phrases is **§11**. The skeleton:
+
+1. **Restate** — one sentence in your words.
+2. **Ask** — sorted? duplicates? in-place? n up to? streaming or fits in RAM?
+3. **Tiny example** — 5–7 items, including an empty / one-element / all-duplicates case.
+4. **Name the pattern** — "hash map of value → index" / "left-right on sorted" / …
+5. **Code happy path** — then edges.
+6. **Complexity + one test** — time, extra space, run the example.
+
+Until step 4 is spoken, **do not type**. Interviewers grade the narration.
+
+## 0.4 20-minute warm-up (do this the morning of)
+
+1. Two-sum unsorted (hash) + two-sum sorted (pointers) — §7.1, §7.3, Q12
+2. Valid parentheses — Q13
+3. Sliding window max-sum of k — §7.2
+4. Group anagrams — §7.3
+5. Merge two sorted lists — Q14
+
+If those five compile from memory, you are ready. Extra drills: FusionSpan file.
 
 ---
 
@@ -2226,6 +2298,35 @@ probabilities = pipeline.predict_proba(X_test)
 
 ---
 
+## 7.0 The 60-second pattern test
+
+Read the prompt. Pick **one** row. If two rows both fit, say both and pick the cheaper one (usually O(n) hash over O(n log n) sort).
+
+| If you hear… | Pattern | First line you write |
+|---|---|---|
+| "two numbers sum to target", array **unsorted** | Hash map `value → index` | `seen = {}` |
+| same, array **sorted**, or "in-place, O(1) extra memory" | Two pointers from ends | `left, right = 0, n-1` |
+| "remove duplicates in-place" / "compact" | Read/write pointers | `write = 1` |
+| "contiguous subarray / substring of length k" | Fixed window | running `total`, add right, drop left |
+| "longest / shortest substring that…" | Variable window | `left = 0`, grow `right`, shrink when invalid |
+| "anagram / frequency / top k frequent" | `Counter` (+ heap if k) | `Counter(nums).most_common(k)` |
+| "group by some key" | `defaultdict(list)` | `key = tuple(sorted(word))` |
+| "subarray sum equals k" (not necessarily contiguous-length-k) | Prefix sum + map | `prefix = 0; seen = {0: 1}` |
+| "kth largest / merge k sorted" | Heap | `heapq.nlargest` / `heappush` |
+| "overlapping meetings / merge ranges" | Sort intervals | `intervals.sort(key=lambda x: x[0])` |
+| "balanced brackets / undo / next greater" | Stack | `stack = []` |
+| "shortest path, unweighted graph / word ladder" | BFS + `deque` | `q = deque([start])` |
+| "all combinations / parse nested" | DFS / recursion | helper with backtrack |
+| "middle of linked list / cycle" | Fast/slow pointers | `slow = fast = head` |
+
+**Hash map vs two pointers for two-sum — the question they love:**
+
+- Unsorted, need **indices**, extra memory OK → **hash**, O(n) time / O(n) space.
+- Sorted, need **values or indices**, extra memory **not** OK → **two pointers**, O(n) time / O(1) space.
+- If you sort first to use two pointers, sorting is O(n log n) and **you lose original indices** unless you store `(value, i)` pairs.
+
+---
+
 ## 7.1 Two Pointers
 
 Used when working with sorted arrays or when searching for pairs/subarrays.
@@ -2264,6 +2365,74 @@ def remove_duplicates(nums: list[int]) -> int:
 # Time: O(n), Space: O(1)
 ```
 
+### How to see "two pointers" (say this)
+
+There are **four families**. Draw two index arrows on the array; if they only move one way and never need a hash, you are in this pattern.
+
+| Family | Arrows | When | Example in this file |
+|---|---|---|---|
+| **Opposite ends** | `left=0`, `right=n-1` | Sorted array, palindrome, container-with-water | `two_sum_sorted` |
+| **Read / write** | `read` scans, `write` places keepers | In-place compact, remove element | `remove_duplicates` |
+| **Same direction (slow/fast on array)** | both start left, `fast` explores, `slow` is boundary | Some windows, partition | sliding window is the cousin |
+| **Fast / slow (linked list)** | `fast = fast.next.next` | Cycle, middle node | below |
+
+**Invariant to speak:** *"left is the smallest unused candidate, right is the largest; the sum tells me which side is impossible."*
+
+```python
+def is_palindrome_two_pointers(s: str) -> bool:
+    """Opposite-ends: skip non-alnum, compare inward."""
+    left, right = 0, len(s) - 1
+    while left < right:
+        while left < right and not s[left].isalnum():
+            left += 1
+        while left < right and not s[right].isalnum():
+            right -= 1
+        if s[left].lower() != s[right].lower():
+            return False
+        left += 1
+        right -= 1
+    return True
+
+
+def move_zeroes(nums: list[int]) -> None:
+    """Read/write: keep non-zeros in order, fill rest with 0. In-place."""
+    write = 0
+    for read in range(len(nums)):
+        if nums[read] != 0:
+            nums[write], nums[read] = nums[read], nums[write]
+            write += 1
+
+
+def has_cycle(head) -> bool:
+    """Fast/slow on a linked list. If they meet, there is a cycle."""
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow is fast:
+            return True
+    return False
+
+
+def merge_two_sorted(a: list[int], b: list[int]) -> list[int]:
+    """Two pointers on TWO arrays — same idea as Q14."""
+    i = j = 0
+    out = []
+    while i < len(a) and j < len(b):
+        if a[i] <= b[j]:
+            out.append(a[i]); i += 1
+        else:
+            out.append(b[j]); j += 1
+    out.extend(a[i:])
+    out.extend(b[j:])
+    return out
+```
+
+**Common bugs (they watch for these):**
+- Off-by-one: `while left <= right` vs `left < right` — for pairs you usually want `left < right` so you don't use the same index twice.
+- Forgetting to **move a pointer on every iteration** → infinite loop.
+- Using two pointers on an **unsorted** two-sum and getting a wrong pair.
+
 ---
 
 ## 7.2 Sliding Window
@@ -2300,6 +2469,26 @@ def longest_unique_substring(s: str) -> int:
 
 # Time: O(n), Space: O(min(n, alphabet_size))
 ```
+
+**Fixed vs variable window:**
+- **Fixed k:** add `nums[right]`, subtract `nums[right-k]`. One loop. (moving average, max sum of k)
+- **Variable:** `right` always grows; `left` grows only when the window **breaks the constraint** (too many uniques, sum too big, etc.). The invariant is "window `[left, right]` is always valid."
+
+```python
+def min_subarray_len(target: int, nums: list[int]) -> int:
+    """Shortest contiguous subarray with sum >= target. Variable window."""
+    left = total = 0
+    best = float("inf")
+    for right, x in enumerate(nums):
+        total += x
+        while total >= target:
+            best = min(best, right - left + 1)
+            total -= nums[left]
+            left += 1
+    return 0 if best == float("inf") else best
+```
+
+Tie to work: Jet2 event detection rolling windows and AI Cargo rolling temp std are the *same idea* — a contiguous time window with a running statistic.
 
 ---
 
@@ -2338,6 +2527,80 @@ def two_sum(nums: list[int], target: int) -> list[int]:
 
 # Time: O(n), Space: O(n)
 ```
+
+### How to see "hash map" (say this)
+
+A hash map is **O(1) memory of the past**. Every time the problem says "have I seen this before?" / "how many times?" / "group equals" / "the complement exists", you store the past instead of scanning it again (which would be O(n²)).
+
+| Job | Python | Key you store |
+|---|---|---|
+| Complement (two-sum) | `dict[value] = index` | the number itself |
+| Frequency | `Counter` or `defaultdict(int)` | the number / char |
+| Group | `defaultdict(list)` | a **canonical** key (`tuple(sorted(word))`, or 26-count tuple) |
+| First index / last index | `dict[value] = i` | update only on first seen if you need earliest |
+| Uniqueness | `set` | same as a map with dummy values |
+| Prefix-sum → count of subarrays | `dict[prefix] = count` | running sum |
+
+**Two-sum walk-through (the one you must not fumble):**
+
+```
+nums = [2, 7, 11, 15], target = 9
+i=0, num=2, need=7, seen={}        → store 2→0
+i=1, num=7, need=2, 2 in seen      → return [0, 1]
+```
+
+Store **after** the lookup so you do not use the same index twice.
+
+```python
+from collections import defaultdict, Counter
+
+def first_duplicate(nums: list[int]) -> int | None:
+    """First value that appears a second time (scan order)."""
+    seen: set[int] = set()
+    for x in nums:
+        if x in seen:
+            return x
+        seen.add(x)
+    return None
+
+
+def longest_consecutive(nums: list[int]) -> int:
+    """Longest run of consecutive values, unsorted. Set, not sort."""
+    s = set(nums)
+    best = 0
+    for x in s:
+        if x - 1 in s:      # only start a run at the beginning
+            continue
+        length = 1
+        while x + length in s:
+            length += 1
+        best = max(best, length)
+    return best
+
+
+def subarray_sum_equals_k(nums: list[int], k: int) -> int:
+    """Count contiguous subarrays whose sum is k. Prefix + hash."""
+    count = 0
+    prefix = 0
+    seen = defaultdict(int)
+    seen[0] = 1
+    for x in nums:
+        prefix += x
+        count += seen[prefix - k]   # how many earlier prefixes make this window = k
+        seen[prefix] += 1
+    return count
+```
+
+**Canonical keys (anagrams and "same bag of chars"):**
+- `tuple(sorted(word))` — simple, O(L log L) per word
+- 26-length count tuple — O(L), better if they ask
+
+**Bugs:**
+- Using a list as a dict key → `TypeError` (unhashable). Use `tuple`.
+- `if complement in seen` then `seen[num] = i` — if you store first, `[3, 3]` target 6 can still work if you lookup before store; **lookup then store** is the safe order.
+- `Counter` equality is the right anagram check; sorting both strings is the slower backup.
+
+**Tie to work:** Amazon Pay feature selection and ATCS DQ lookups are the same mental model — key → value, don't scan the whole table.
 
 ---
 
@@ -2455,6 +2718,137 @@ bfs(graph, "A")  # ['A', 'B', 'C', 'D', 'E', 'F']
 |-----------|---------------|------|-------|----------|
 | BFS | Queue (`deque`) | O(V + E) | O(V) | Shortest path, level-order |
 | DFS | Stack / recursion | O(V + E) | O(V) | Topological sort, cycle detection, path finding |
+
+**BFS vs DFS one-liner:** BFS for *shortest* unweighted path (level by level). DFS for *explore all / detect cycle / topo order*. Recursion DFS needs to mention stack overflow on deep graphs — prefer iterative in interviews if n can be large.
+
+---
+
+## 7.6 Prefix sums
+
+Turn range-sum queries from O(n) into O(1) after an O(n) build. `prefix[i] = nums[0] + … + nums[i-1]` (length n+1, `prefix[0] = 0`).
+
+```python
+def range_sum(nums: list[int], left: int, right: int) -> int:
+    """Sum of nums[left:right+1], 0-based inclusive."""
+    prefix = [0]
+    for x in nums:
+        prefix.append(prefix[-1] + x)
+    return prefix[right + 1] - prefix[left]
+
+
+def max_subarray_kadane(nums: list[int]) -> int:
+    """Best contiguous sum (Kadane). Not prefix — running max of (extend vs restart)."""
+    best = cur = nums[0]
+    for x in nums[1:]:
+        cur = max(x, cur + x)
+        best = max(best, cur)
+    return best
+```
+
+Subarray-sum-equals-k is prefix **plus hash** (§7.3). Kadane is the "best sum" cousin. Do not mix them.
+
+---
+
+## 7.7 Binary search (including on the answer)
+
+On a **sorted** array: standard `bisect`. In DS/ML interviews they also ask **binary search on a monotonic predicate** — "smallest k such that a window of size k works."
+
+```python
+import bisect
+
+def search_insert(nums: list[int], target: int) -> int:
+    """Index of target, or where it would be inserted. Sorted nums."""
+    return bisect.bisect_left(nums, target)
+
+
+def min_capacity_to_ship(weights: list[int], days: int) -> int:
+    """Classic 'search the answer': smallest capacity that ships in `days`."""
+    def feasible(cap: int) -> bool:
+        need, load = 1, 0
+        for w in weights:
+            if load + w > cap:
+                need += 1
+                load = 0
+            load += w
+        return need <= days
+
+    lo, hi = max(weights), sum(weights)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if feasible(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+```
+
+**Template:** `while lo < hi: mid = (lo+hi)//2; if feasible(mid): hi = mid; else: lo = mid+1` → `lo` is the smallest feasible. Draw a T/F array on the number line if you blank.
+
+---
+
+## 7.8 Heaps and Top-K
+
+```python
+import heapq
+from collections import Counter
+
+def top_k_frequent_heap(nums: list[int], k: int) -> list[int]:
+    """When they ban Counter.most_common and want you to show a heap."""
+    freq = Counter(nums)
+    return [x for x, _ in heapq.nlargest(k, freq.items(), key=lambda kv: kv[1])]
+
+
+def kth_largest(nums: list[int], k: int) -> int:
+    """Min-heap of size k — root is the kth largest."""
+    h: list[int] = []
+    for x in nums:
+        if len(h) < k:
+            heapq.heappush(h, x)
+        elif x > h[0]:
+            heapq.heapreplace(h, x)
+    return h[0]
+```
+
+`heapq` is a **min-heap**. Max-heap = push `-x`. nlargest/nsmallest are fine to use if you name the complexity: O(n log k).
+
+---
+
+## 7.9 Intervals and merge
+
+Sort by start. Sweep. This is the "merge overlapping meetings / time windows" problem — also how you merge retrieval score lists conceptually.
+
+```python
+def merge_intervals(intervals: list[list[int]]) -> list[list[int]]:
+    if not intervals:
+        return []
+    intervals = sorted(intervals, key=lambda x: x[0])
+    out = [intervals[0][:]]
+    for start, end in intervals[1:]:
+        if start <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], end)
+        else:
+            out.append([start, end])
+    return out
+```
+
+---
+
+## 7.10 Stack / monotonic
+
+You already have valid parens in Q13. Next-greater is the other stack classic:
+
+```python
+def next_greater(nums: list[int]) -> list[int]:
+    """For each value, next strictly greater to the right, else -1."""
+    n = len(nums)
+    ans = [-1] * n
+    stack: list[int] = []  # indices of increasing candidates
+    for i, x in enumerate(nums):
+        while stack and nums[stack[-1]] < x:
+            ans[stack.pop()] = x
+        stack.append(i)
+    return ans
+```
 
 ---
 
@@ -3188,7 +3582,248 @@ def process_command(command):
 
 ---
 
-# 10. Key Takeaways
+# 10. What each role actually codes
+
+Do **not** grind 200 random LeetCode hards. Grind the column for the role you booked this week.
+
+## 10.1 AI Engineer / GenAI (your primary target)
+
+They are checking: can you write correct Python around retrieval, JSON, windows, and caches — the same muscles as Bilbo / AI Cargo.
+
+| Ask (they may disguise the story) | Pattern | In this doc | Project tie-in |
+|---|---|---|---|
+| Dedup retrieved chunks by `doc_id`, keep highest score | hash map `id → best` | §7.3 | P07 RRF / rerank |
+| Reciprocal rank fusion of two ranked lists | hash map `id → score`, then sort | Q16 below | P07 hybrid retrieval |
+| Chunk text with overlap | sliding index, not a window-sum | Q17 | P07 / P15 RAG |
+| Streaming tokens / moving metric | deque + running sum | Q9 | P04 / P15 windows |
+| Tool-call graph: shortest path to a tool | BFS | §7.5 | P15 LangGraph is the *product*; BFS is the *round* |
+| LRU prompt cache | OrderedDict | Q11 | doc `50` prefix cache is the systems analogue |
+| Merge overlapping citation spans | intervals | §7.9 | P07 citations |
+| Rate-limit an LLM client | deque of timestamps | Q18 | doc `49` budgets |
+| Parse nested KYC-like JSON | recursion / generators | Q10 flatten | P06 JSON flatten |
+
+**You will almost never be asked** to implement attention from scratch in a 45-minute *coding* round. That is a *whiteboard* question from `04`. Coding is helpers around the model.
+
+## 10.2 Data Scientist
+
+| Ask | Pattern | Tie-in |
+|---|---|---|
+| Two-sum / frequency / top-k | hash / heap | P06 chi²/MI is conceptual; the code round is Counter |
+| Group-by in pure Python | `defaultdict(list)` | don't use pandas unless they allow it |
+| Entity-aware split (no leakage) | hash `id → fold` | P15 shipment split, P04 walk-forward |
+| Precision / recall from labels | four counts | P01 / P03 metrics |
+| WOE-style "count good/bad per bin" | `defaultdict` of pairs | P01, doc `51` — they want the dict, not sklearn |
+| Time-based window feature | sliding / prefix | P04 |
+
+**Pandas is fair game** if they say "use pandas." If they say "pure Python," a `.apply(axis=1)` loop is a fail. Vectorize or use dicts.
+
+## 10.3 Forward Deployed / Data Engineer
+
+Dirty strings, generators over files, two-pointer merge of sorted logs, `deque` for late events. FusionSpan file is the extra problem bank.
+
+## 10.4 Worked problems for YOUR stack (code these from memory)
+
+### Q16: Reciprocal Rank Fusion (AI Engineer)
+
+```python
+from collections import defaultdict
+
+def rrf(rank_lists: list[list[str]], k: int = 60) -> list[str]:
+    """
+    rank_lists: each is doc_ids best-first (rank 1 = index 0).
+    score(d) = sum 1/(k + rank). Return doc ids by score desc.
+    """
+    scores: dict[str, float] = defaultdict(float)
+    for ranking in rank_lists:
+        for rank, doc_id in enumerate(ranking, start=1):
+            scores[doc_id] += 1.0 / (k + rank)
+    return [d for d, _ in sorted(scores.items(), key=lambda kv: -kv[1])]
+
+assert rrf([["a", "b"], ["b", "a"]])[0] in {"a", "b"}
+```
+
+> Spoken: *"Same combiner I used on Bilbo for BM25 + dense — here it's a 15-line dict."*
+
+### Q17: Overlapping chunks (RAG)
+
+```python
+def chunk_text(text: str, size: int = 500, overlap: int = 50) -> list[str]:
+    """Word-ish char chunks. Last chunk may be short. overlap < size."""
+    if size <= 0 or overlap >= size:
+        raise ValueError("need size > overlap >= 0")
+    step = size - overlap
+    out = []
+    i = 0
+    n = len(text)
+    while i < n:
+        out.append(text[i : i + size])
+        i += step
+        if i >= n:
+            break
+    return out
+```
+
+### Q18: Sliding-window rate limiter
+
+```python
+from collections import deque
+import time
+
+class RateLimiter:
+    """Allow at most `limit` events in any `window_seconds` span."""
+
+    def __init__(self, limit: int, window_seconds: float):
+        self.limit = limit
+        self.window = window_seconds
+        self.hits: deque[float] = deque()
+
+    def allow(self, now: float | None = None) -> bool:
+        now = time.monotonic() if now is None else now
+        while self.hits and now - self.hits[0] > self.window:
+            self.hits.popleft()
+        if len(self.hits) >= self.limit:
+            return False
+        self.hits.append(now)
+        return True
+```
+
+### Q19: Entity-aware split (Data Scientist — no leakage)
+
+```python
+from collections import defaultdict
+import random
+
+def group_split(ids: list[str], labels: list[int], test_frac: float = 0.2, seed: int = 0):
+    """All rows with the same id stay in train OR test, never both."""
+    rng = random.Random(seed)
+    by_id: dict[str, list[int]] = defaultdict(list)
+    for i, eid in enumerate(ids):
+        by_id[eid].append(i)
+    unique = list(by_id)
+    rng.shuffle(unique)
+    cut = int((1 - test_frac) * len(unique))
+    train_ids, test_ids = set(unique[:cut]), set(unique[cut:])
+    train = [i for eid in train_ids for i in by_id[eid]]
+    test = [i for eid in test_ids for i in by_id[eid]]
+    return train, test
+```
+
+### Q20: Precision@k from ranked IDs
+
+```python
+def precision_at_k(relevant: set[str], ranked: list[str], k: int) -> float:
+    if k <= 0:
+        return 0.0
+    hit = sum(1 for doc in ranked[:k] if doc in relevant)
+    return hit / k
+```
+
+---
+
+# 11. The 6-step brainstorm (say it out loud)
+
+Memorize the **bold** questions. This is the round, not the code.
+
+**Step 1 — Restate (15 s)**  
+*"So I need to return the indices of two numbers that add to target, and I can assume there is at most one valid pair?"*
+
+**Step 2 — Ask constraints (30 s)** — pick the ones that change the algorithm:
+
+| Ask | If they say yes… | Then use |
+|---|---|---|
+| Is the array sorted? | Yes | two pointers, O(1) extra |
+| Can I use extra memory? | No | two pointers / in-place / sort |
+| Duplicates? Multiple answers? | Yes | clarify: any pair vs all pairs |
+| In-place? | Yes | read/write pointers |
+| n? Does it fit in RAM? | Streaming / huge | generator, one pass |
+| Linked list vs array? | List | fast/slow, not index math |
+
+**Step 3 — Example (45 s)**  
+Write `[2, 7, 11, 15], 9 → [0, 1]`. Then `[]`, `[1]`, `[3, 3]` target 6. If your plan dies on `[3, 3]`, fix the plan before coding.
+
+**Step 4 — Pattern name (10 s)**  
+*"Unsorted plus indices → hash map of value to index, one pass."*  
+If you cannot name it, brute force first: *"O(n²) nested loops is correct; I will then replace the inner scan with a dict."* Brute-then-optimize is a **pass**. Silent brute is a fail.
+
+**Step 5 — Code (the rest)**  
+Types on the signature. Happy path. Then edges. Do not optimize names while the logic is wrong.
+
+**Step 6 — Close (20 s)**  
+*"Time O(n), extra space O(n) for the map. Empty list returns []. I stored after lookup so I don't use the same index twice."*
+
+### If you get stuck
+
+1. Say *"I'm going to write the O(n²) version so we have a correct baseline."*
+2. Point at the inner loop: *"this scan is 'have I seen complement?' — that's a dict."*
+3. If still stuck, ask: *"May I sort? If yes I can two-pointer but I lose indices unless I store pairs."*
+
+### If they allow Copilot / ChatGPT in the round
+
+Narrate **before** the model types. *"I want a dict from value to index, lookup complement, store after."* Then debug their output: empty input, duplicates, complexity. They are grading whether you **steer and verify**, not whether you memorize.
+
+### What you can ask them (this looks senior)
+
+- Expected n and value ranges  
+- Duplicate policy  
+- Mutate input or return new  
+- Integer vs float  
+- Follow-up they will ask anyway: *"How would this change if the stream never ends?"* → one-pass hash / deque window, not `list(stream)`
+
+---
+
+# 12. Pocket complexity + 14-day drill
+
+## 12.1 Retrieve in two seconds
+
+| Structure | Access | Search | Insert / delete | Notes |
+|---|---|---|---|---|
+| `list` | O(1) | O(n) | end O(1) amort., middle O(n) | `pop(0)` is O(n) — use `deque` |
+| `deque` | ends O(1) | O(n) | ends O(1) | BFS, sliding window |
+| `dict` / `set` | — | avg O(1) | avg O(1) | worst O(n) if pathological hashes |
+| `heapq` | peek O(1) | — | O(log n) | min-heap |
+| sorted list + `bisect` | O(1) | O(log n) | O(n) | insert still shifts |
+
+Sorting is O(n log n). Two nested loops O(n²). If n is 10⁵, n² is already too slow — say that.
+
+## 12.2 14-day plan (30–40 min/day, not 4 hours of reading §1)
+
+| Day | From-memory (no notes) | Then check |
+|---|---|---|
+| 1 | two-sum hash + two-sum sorted | §7.1, §7.3 |
+| 2 | anagram Counter + group anagrams | §7.3 |
+| 3 | valid parens + merge two sorted | Q13, Q14 |
+| 4 | max sum of k + longest unique substring | §7.2 |
+| 5 | remove dups in-place + move zeroes | §7.1 |
+| 6 | prefix sum + subarray sum = k | §7.6, §7.3 |
+| 7 | **mock 45 min:** two-sum + flatten nested + talk §11** | Q10, Q12 |
+| 8 | LRU OrderedDict | Q11 |
+| 9 | BFS + RRF | §7.5, Q16 |
+| 10 | merge intervals + chunk_text | §7.9, Q17 |
+| 11 | rate limiter + precision@k | Q18, Q20 |
+| 12 | entity split + Kadane | Q19, §7.6 |
+| 13 | heap top-k + binary search template | §7.7, §7.8 |
+| 14 | **mock:** one AI-eng helper + one DS split, out loud | §10 |
+
+After day 7, if still freezing, record yourself on step 1–4 only (no code) until the script is automatic.
+
+## 12.3 Night-before card (screenshot this)
+
+```
+unsorted pair/sum/index     → dict value→i, lookup then store
+sorted pair / in-place      → left/right or read/write
+contiguous constraint       → window (fixed k add/drop, else shrink left)
+frequency / anagram / group → Counter / defaultdict / canonical key
+subarray sum = k            → prefix + dict
+top k                       → heap / Counter.most_common
+overlap ranges              → sort by start, sweep
+brackets / next greater     → stack
+shortest unweighted         → BFS deque
+then: empty, dupes, [3,3], complexity out loud
+```
+
+---
+
+# 13. Key Takeaways
 
 ---
 
@@ -3218,6 +3853,16 @@ def process_command(command):
 
 12. **Testing is not optional.** Know `pytest`, parametrized tests, fixtures, and mocking. Production code requires tests.
 
+13. **The live coding round is a talking pattern-match, not a language exam.** Restate → ask sorted/duplicates/memory → tiny example → name hash vs two-pointers vs window → code → complexity. Until the pattern is named, do not type. Script is §11.
+
+14. **Four structures cover almost every DS/AI-eng screen:** `dict`/`Counter`, two pointers, sliding window, `heapq`. Stack, deque, and BFS are the backups. §0.2 and §7.0.
+
+15. **Unsorted two-sum is a hash map; sorted two-sum is two pointers.** Mixing them is the most common fail. Lookup complement **before** you store the current value.
+
+16. **Code what the job codes.** AI Engineer: RRF, chunking, LRU, rate limit, interval merge, entity-safe split. Data Scientist: group-by dicts, windows, precision@k, no-leak splits. Not 200 LeetCode hards. §10.
+
+17. **Brute force out loud is a pass; silent heroics are a fail.** O(n²) then "the inner scan is a dict" is how you recover when stuck.
+
 ---
 
-*Document prepared for Rahul Sharma — Python for Data Science Interviews. Last updated: February 2026.*
+*Document prepared for Rahul Sharma — Python for AI Engineer / Data Science Interviews. Language core last updated February 2026; coding-round path (§0, §7.0–§7.10, §10–§12) added August 2026.*
