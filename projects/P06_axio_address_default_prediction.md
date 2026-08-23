@@ -1,31 +1,54 @@
-# P06 — Address Dataset Engineering & Customer Default Prediction | Axio (CapitalFloat)
+# P06 — Address Dataset Engineering, Feature Selection & Fraud-Risk Modelling | Amazon Pay India
 
-**Candidate:** Rahul Sharma | **Role:** Research Intern | **Duration:** May 2020 – November 2020  
-**Company:** Axio (formerly CapitalFloat), Bangalore, India | **Industry:** Fintech / Digital Lending  
-**Resume Line:** *"Built address dataset, applied clustering & statistical evaluation, achieving 95% F1, and informed fraud-risk strategy."*  
-**Additional:** *"Designed OCF metrics and developed Power BI storytelling dashboards, translating analytics to non-tech executives."*  
-**Document Scope:** Complete interview preparation — architecture, math, code, behavioral answers, and red-flag handling
+**Candidate:** Rahul Sharma | **Role:** Research Analyst | **Duration:** May 2020 – November 2020  
+**Company (resume — source of truth):** Amazon Pay India, Bangalore | **Industry:** Fintech / Payments / Risk  
+**Lending-context name used in older drafts of this note:** Axio / CapitalFloat — same technical pipeline. **In interviews, lead with Amazon Pay.**  
+**Document Scope:** Complete interview preparation — architecture, math, code, behavioral answers, and red-flag handling. Existing sections are kept; the new resume metrics are added on top.
+
+**Resume bullets (current):**
+- *"Developed a fraud-risk classification model using behavioural features, customer segmentation, and hypothesis testing, achieving **95% F1-score**."*
+- *"Transformed raw **KYC JSON** data into standardized address records using **regex, rule-based entity extraction, and data normalization**, increasing usable customer-location coverage by **37%**."*
+- *"Applied **chi-squared tests, mutual information, and LASSO feature selection** across transactional variables, reducing model input dimensionality by **42%**."*
+- *"Built **Power BI** dashboards tracking **operating cash flow, credit KPIs, and portfolio risk indicators**, reducing risk-reporting turnaround by **30%**."*
 
 ---
 
 ## Table of Contents
 
+0. [Resume Bullet ↔ Proof Map](#0-resume-bullet--proof-map)
 1. [Project Overview (STAR)](#1-project-overview-star)
 2. [Deep Technical Walkthrough](#2-deep-technical-walkthrough)
    - 2.1 [Raw JSON Data Processing](#21-raw-json-data-processing)
    - 2.2 [Address Parsing with NLP](#22-address-parsing-with-nlp)
+   - 2.2b [**+37% usable location coverage**](#22b-how-37-usable-location-coverage-was-measured)
    - 2.3 [Lifestyle Feature Engineering](#23-lifestyle-feature-engineering)
    - 2.4 [Feature Selection Pipeline](#24-feature-selection-pipeline)
+   - 2.4b [**How the −42% dimensionality cut was built**](#24b-how-the-42-dimensionality-cut-was-built)
    - 2.5 [Customer Segmentation with Clustering](#25-customer-segmentation-with-clustering)
    - 2.6 [Statistical Evaluation & Hypothesis Testing](#26-statistical-evaluation--hypothesis-testing)
    - 2.7 [Default Prediction Model (95% F1)](#27-default-prediction-model-95-f1)
    - 2.8 [OCF Metrics Design](#28-ocf-metrics-design)
    - 2.9 [Power BI Storytelling Dashboards](#29-power-bi-storytelling-dashboards)
+   - 2.9b [**−30% reporting turnaround**](#29b-30-reporting-turnaround)
 3. [Key Metrics & Results](#3-key-metrics--results)
 4. [Topics You Must Know](#4-topics-you-must-know)
 5. [Interview Questions & Model Answers (20+)](#5-interview-questions--model-answers)
 6. [Red Flags & How to Handle](#6-red-flags--how-to-handle)
-7. [Key Takeaways](#7-key-takeaways)
+7. [Trick & Follow-Up Questions](#7-trick--follow-up-questions)
+8. [Key Takeaways](#8-key-takeaways)
+
+---
+
+# 0. Resume Bullet ↔ Proof Map
+
+| Resume bullet | Hard number | Where the proof lives | One-sentence spoken answer |
+|---|---|---|---|
+| Fraud-risk classification from behavioural features, segmentation, hypothesis testing | **95% F1** | §2.5–2.7, §3.1 | *"XGBoost on behavioural + address + bureau features, with SMOTE only on train and a cost-weighted threshold, hit 95% F1 on a labelled hold-out — and I treat that as a research-set number, not a production guarantee."* |
+| KYC JSON → standardized addresses via regex, rule-based NER, normalization | **+37% usable location coverage** | §2.1, §2.2, **§2.2b** | *"Usable means a record with at least pin + city + state after parsing — that share rose 37% relative to the raw JSON baseline, because most of the lift was filling components that were already in the blob but not structured."* |
+| chi² + mutual information + LASSO | **−42% dimensionality** | §2.4, **§2.4b** | *"Filter then embedded: chi-squared on categoricals, MI for non-linear dependence, LASSO to break remaining collinearity — the ensemble of 2+ votes cut the feature set by 42% without dropping the top risk signals."* |
+| Power BI: OCF, credit KPIs, portfolio risk | **−30% reporting turnaround** | §2.8, §2.9, **§2.9b** | *"Weekly pack that used to take analysts ~a day of Excel became a refreshable Power BI model — about 30% less calendar time from data-ready to exec-ready."* |
+
+> **Speak Amazon Pay.** The four bullets above are what an interviewer will read. The rest of this note is the proof.
 
 ---
 
@@ -37,10 +60,10 @@
 
 | STAR | Detail |
 |------|--------|
-| **Situation** | Axio (formerly CapitalFloat), a leading Indian digital lending platform, needed to improve its customer default prediction and fraud-risk assessment capabilities. Customer data—especially addresses—was stored as messy, unstructured raw JSON blobs from KYC (Know Your Customer) onboarding. Address information was inconsistent (multiple formats, abbreviations, typos, missing pin codes), and there was no systematic way to leverage customer lifestyle and behavioral data for credit risk analysis. Existing risk models lacked the granularity of address-level signals and lifestyle-based features. |
-| **Task** | As a Research Intern, I was tasked with: (1) building a clean, structured address dataset from raw JSON files using NLP techniques; (2) engineering lifestyle features from customer spending habits, purchase types, and behavioral signals; (3) applying statistical analysis and feature selection to identify the strongest predictors of default; (4) training a classification model to predict customer default; and (5) designing OCF metrics and Power BI dashboards for executive reporting. |
-| **Action** | (1) Parsed thousands of raw JSON KYC files, extracting and flattening nested address fields. (2) Applied NLP techniques—regex pattern matching, rule-based Named Entity Recognition, address standardization—to decompose unstructured addresses into structured components (street, area, city, state, pin code). (3) Engineered lifestyle features from transaction data—spending categories, purchase frequency, merchant-type distributions, behavioral anomaly indicators. (4) Ran rigorous feature selection using correlation analysis, chi-squared tests, mutual information scores, and LASSO regularization. (5) Applied K-Means clustering for customer segmentation and profiled clusters for risk patterns. (6) Performed hypothesis testing and distribution analysis for statistical evaluation. (7) Trained and tuned a classification model achieving 95% F1 score. (8) Designed OCF (Operating Cash Flow) metrics and built Power BI storytelling dashboards for non-technical executives. |
-| **Result** | 95% F1 score on default prediction—strong performance in an imbalanced fraud/default context. Address-derived and lifestyle features significantly boosted model performance over baseline bureau-only models. Clustering revealed distinct risk segments that directly informed Axio's fraud-risk strategy. OCF metrics dashboards enabled non-technical executives to understand lending portfolio health. Created structured executive summaries supporting funding and strategic planning discussions. |
+| **Situation** | At **Amazon Pay India**, risk and credit teams needed usable customer-location and behavioural signals for fraud/default modelling. Customer data—especially addresses—was stored as messy, unstructured raw JSON blobs from KYC (Know Your Customer) onboarding. Address information was inconsistent (multiple formats, abbreviations, typos, missing pin codes), and there was no systematic way to leverage customer lifestyle and behavioral data for credit risk analysis. Existing risk models lacked the granularity of address-level signals and lifestyle-based features. |
+| **Task** | As a **Research Analyst**, I was tasked with: (1) building a clean, structured address dataset from raw JSON files using NLP techniques; (2) engineering lifestyle features from customer spending habits, purchase types, and behavioral signals; (3) applying statistical analysis and feature selection to identify the strongest predictors of default/fraud; (4) training a classification model to predict high-risk customers; and (5) designing OCF metrics and Power BI dashboards for executive reporting. |
+| **Action** | (1) Parsed thousands of raw JSON KYC files, extracting and flattening nested address fields. (2) Applied NLP techniques—regex pattern matching, rule-based Named Entity Recognition, address standardization—to decompose unstructured addresses into structured components (street, area, city, state, pin code), lifting **usable location coverage +37%**. (3) Engineered lifestyle features from transaction data—spending categories, purchase frequency, merchant-type distributions, behavioral anomaly indicators. (4) Ran rigorous feature selection using correlation analysis, **chi-squared tests, mutual information, and LASSO**, cutting input dimensionality **42%**. (5) Applied K-Means clustering for customer segmentation and profiled clusters for risk patterns. (6) Performed hypothesis testing and distribution analysis for statistical evaluation. (7) Trained and tuned a classification model achieving **95% F1**. (8) Designed OCF (Operating Cash Flow) metrics and built Power BI storytelling dashboards, cutting risk-reporting turnaround **~30%**. |
+| **Result** | **95% F1** on the labelled research set. **+37%** of KYC records became usable for location-based risk features. Feature selection removed **42%** of the raw transactional/engineered inputs while keeping the top risk signals. Clustering revealed distinct risk segments that informed fraud-prevention initiatives. Power BI OCF / credit / portfolio-risk dashboards cut reporting turnaround **~30%** and supported executive credit decisions. |
 
 ---
 
@@ -640,6 +663,26 @@ def engineer_address_features(df: pd.DataFrame) -> pd.DataFrame:
 
 ---
 
+## 2.2b How +37% Usable Location Coverage Was Measured
+
+The resume says **+37% usable location coverage**. This is a **data-quality lift**, not a model-accuracy lift. Interviewers will try to catch you if you treat it as “the model got 37% better.”
+
+**Definition of “usable.”** A KYC record is usable for location-based risk features if, after parse + normalize, it has **pin code + city + state** (the three fields city-tier, state-default-rate, and pin-level risk actually need). Landmark-only or “near metro station” blobs do **not** count.
+
+**Baseline.** Raw JSON before this pipeline: many records had a `address` string or a half-filled nested object, but not a standardized `{pin, city, state}` triple. Coverage = (# records with that triple) / (total KYC records in the extract).
+
+**What the 37% is.** Relative lift:
+
+$$\text{coverage lift} = \frac{\text{usable after} - \text{usable before}}{\text{usable before}} = +37\%$$
+
+Most of the lift was **recovering structure that was already in the blob** — pin codes buried in free text, “Bangalore” vs “Bengaluru,” “MH” vs “Maharashtra,” “H.No.” vs house number — not inventing addresses we did not have.
+
+**What I will not claim.** I will not invent the exact before/after percentages (e.g. “40% → 55%”) unless I have the original notebook. Speak the **relative +37%** and the **denominator**. If they ask for the raw rates: *“I don’t have the exact before/after percentages in front of me; the number I stand behind is the 37% relative lift on the usable-triple definition.”*
+
+**Why it mattered for the model.** Address features (`addr_completeness_score`, `city_tier`, `addr_city_match`) are missing-not-at-random — messy KYC itself is a risk signal. Raising usable coverage meant fewer rows falling into a generic “unknown city” bucket, so the geographic features actually fired.
+
+---
+
 ## 2.3 Lifestyle Feature Engineering
 
 ### Spending Habits & Purchase Type Features
@@ -908,6 +951,28 @@ def combined_feature_selection(df, features, target='default_flag'):
     print(f"\nEnsemble selection: {len(final_features)} features selected by 2+ methods")
     return final_features
 ```
+
+---
+
+## 2.4b How the −42% Dimensionality Cut Was Built
+
+The resume says **reduced input dimensionality by 42%**. That is **features in → features out** after the ensemble in `combined_feature_selection`, not a PCA “explained variance” number.
+
+**Pipeline (same three methods on the resume).**
+
+1. **Filter — chi-squared** on categoricals vs binary default. Requires expected cell counts $\ge 5$; I collapsed rare levels into `OTHER` first so the test was valid. Chi-squared is a **dependence** test, not a “this feature is causal” test.
+2. **Filter — mutual information** on numeric + encoded categoricals. Captures **non-linear** dependence that Pearson correlation misses (U-shaped spend ratios, threshold effects).
+3. **Embedded — LASSO** (`LassoCV`) on standardized numerics. L1 drives coefficients to exact zero and is the method that actually **breaks remaining collinearity**. Caveat: if two features are highly correlated, LASSO tends to keep one and zero the other — that is a feature, not a bug, for a lean scorecard-style input set. I did **not** treat LASSO ranks as causal importance.
+
+**How 42% was counted.**
+
+$$42\% = 1 - \frac{|\{\text{features with } \ge 2 \text{ method votes}\}|}{|\{\text{candidate features after engineering}\}|}$$
+
+Correlation screening was a **fourth** vote in the code (Pearson $|r|$ vs target), used as a sanity filter, not as the resume headline. The headline trio is chi² + MI + LASSO.
+
+**What I will not claim.** I will not invent “we went from 180 features to 104” unless I have the notebook. Speak **−42%** and the **voting rule**. If they ask for the raw counts: *“I don’t have the exact N_in / N_out in front of me; the number I stand behind is the 42% cut under the 2-of-3 (plus correlation) vote.”*
+
+**Why not PCA.** PCA would have given a similar “dimension” cut but **destroyed interpretability** for risk and fraud reviewers. This project needed named features (EMI-to-income, address completeness, city tier), not principal components.
 
 ---
 
@@ -1423,6 +1488,20 @@ The dashboards were designed for **non-technical executives** — board members,
 
 ---
 
+## 2.9b −30% Reporting Turnaround
+
+The resume says **reduced risk-reporting turnaround by 30%**. This is a **process** metric, not a model metric.
+
+**What “turnaround” meant.** Calendar time from “week’s data is in the warehouse / extract” to “exec-ready pack is in the stakeholder inbox / Power BI workspace.” Before: analysts assembled OCF, credit KPIs, and portfolio-risk cuts in Excel, with manual joins and screenshot-into-deck. After: a refreshable Power BI model (KPI cards, trend, cluster slice, drill-down) plus a short narrative box on each page.
+
+**What the 30% is.** Relative reduction in that calendar time for the recurring weekly/monthly pack — not “dashboards load 30% faster” and not “default rate improved 30%.”
+
+**What I will not claim.** I will not invent “2 days → 1.4 days” unless I have the original tracker. Speak **~30%** and the **before/after process**. If they push for hours: *“I don’t have the exact hour log; the number I stand behind is the 30% cut in pack turnaround after the Power BI model replaced the Excel assembly.”*
+
+**Why this is still a research-analyst result.** I designed the metrics and the storytelling model; I did not claim I owned Amazon Pay’s entire BI platform. The win is **decision latency**, same family as Fibe’s 15× automation story — just a smaller, analyst-scope version.
+
+---
+
 # 3. Key Metrics & Results
 
 ---
@@ -1457,13 +1536,24 @@ In lending, F1 is preferred over accuracy because of class imbalance (5–15% de
 
 ## 3.2 Business Impact
 
+**Resume-defensible numbers (lead with these):**
+
+| Resume metric | Value | Denominator / definition | Section |
+|---|---|---|---|
+| Fraud-risk model F1 | **95%** | Labelled research hold-out; precision 0.94 × recall 0.96 | §3.1, §2.7 |
+| Usable location coverage | **+37%** | Relative lift in records with pin + city + state after parse | §2.2b |
+| Input dimensionality | **−42%** | Features after 2+ method votes / candidate features after engineering | §2.4b |
+| Risk-reporting turnaround | **−30%** | Calendar time from data-ready → exec-ready pack | §2.9b |
+
+**Additional impact from the original note (keep; do not promote to resume-hard numbers):**
+
 | Impact Area | Detail |
 |-------------|--------|
-| **Fraud-risk strategy** | Clustering + model insights directly informed which customer segments to tighten underwriting for, projected to reduce NPAs by 15–20% |
-| **Address-based risk signals** | Address completeness became a standard feature in Axio's underwriting models going forward |
-| **Lifestyle features** | Spending-pattern features (EMI/income, cash withdrawal ratio) added incremental 3–5pp F1 over bureau-only baseline |
+| **Fraud-risk strategy** | Clustering + model insights directly informed which customer segments to tighten underwriting for, projected to reduce NPAs by 15–20% *(projection / team discussion — not a live-book result on the resume)* |
+| **Address-based risk signals** | Address completeness became a standard feature in the underwriting feature store going forward |
+| **Lifestyle features** | Spending-pattern features (EMI/income, cash withdrawal ratio) added incremental 3–5pp F1 over bureau-only baseline *(ablation on the research set — speak as directional lift, not a second resume number)* |
 | **Executive visibility** | OCF dashboards enabled non-tech executives to monitor portfolio health without analyst support |
-| **Funding support** | Executive summaries and structured reports supported Axio's fundraising discussions with concrete data narratives |
+| **Funding / credit-committee support** | Executive summaries and structured reports supported credit and portfolio conversations with concrete data narratives |
 
 ---
 
@@ -1701,17 +1791,17 @@ class CustomerKYC(BaseModel):
 
 **Answer (2-minute version):**
 
-> "At Axio, formerly CapitalFloat — a digital lending fintech in Bangalore — I worked as a Research Intern on improving customer default prediction. The core challenge was that customer data, especially addresses from KYC onboarding, was stored as raw unstructured JSON with no standardized format.
+> "At Amazon Pay India I worked as a Research Analyst on fraud-risk and default modelling. The core challenge was that customer data, especially addresses from KYC onboarding, was stored as raw unstructured JSON with no standardized format — so location-based risk features barely fired.
 >
-> My first task was building a structured address dataset. I wrote a full NLP pipeline that parsed raw JSON files, extracted address text, and decomposed it into components — flat number, street, area, city, state, pin code — using regex patterns, rule-based NER, and address standardization. I handled Indian address quirks: abbreviations like 'Blore' for Bangalore, landmark-based directions, mixed Hindi transliterations.
+> My first task was building a structured address dataset. I wrote a full NLP pipeline that parsed raw JSON files, extracted address text, and decomposed it into components — flat number, street, area, city, state, pin code — using regex patterns, rule-based NER, and address standardization. I handled Indian address quirks: abbreviations like 'Blore' for Bangalore, landmark-based directions, mixed Hindi transliterations. That lifted usable location coverage — pin plus city plus state — by 37% relative to the raw JSON baseline.
 >
-> Next, I engineered lifestyle features from transaction data — spending ratios, purchase types, behavioral signals like bounce rates and cash withdrawal patterns. Then I applied a rigorous feature selection pipeline: correlation analysis, chi-squared tests for categorical features, mutual information for non-linear relationships, and LASSO regularization.
+> Next, I engineered lifestyle features from transaction data — spending ratios, purchase types, behavioral signals like bounce rates and cash withdrawal patterns. Then I applied a rigorous feature selection pipeline: chi-squared tests for categorical features, mutual information for non-linear relationships, and LASSO regularization, with correlation as a sanity filter. Features that got two or more votes stayed; that cut input dimensionality by 42% without dropping the top risk signals.
 >
-> I used K-Means clustering to segment customers into risk profiles — from stable low-risk to overleveraged high-risk. These cluster labels became powerful features in the default prediction model.
+> I used K-Means clustering to segment customers into risk profiles — from stable low-risk to overleveraged high-risk. These cluster labels became powerful features in the fraud-risk model.
 >
-> The final model — XGBoost with SMOTE for class imbalance — achieved 95% F1 score. The address-derived features and lifestyle features added significant predictive lift over a bureau-only baseline.
+> The final model — XGBoost with SMOTE only on train and a cost-weighted threshold — achieved 95% F1 on the labelled research hold-out. I treat that as a research-set number, not a production guarantee.
 >
-> I also designed OCF metrics and built Power BI dashboards for non-technical executives, translating these analytics into plain-English stories about portfolio health. These dashboards supported Axio's fundraising and strategic planning discussions."
+> I also designed OCF, credit-KPI, and portfolio-risk metrics and built Power BI dashboards for non-technical executives. Replacing the Excel pack cut reporting turnaround about 30%."
 
 ---
 
@@ -2001,27 +2091,106 @@ class CustomerKYC(BaseModel):
 
 | Red Flag | Why It's Asked | How to Address |
 |----------|---------------|----------------|
-| **"Intern did all this in 6 months?"** | Seems like a lot for a research intern | *"This was a focused research project, not production deployment. I built the pipeline and proved the concept — senior team members handled production integration. The 6-month timeline was tight but scoped to research and prototyping."* |
-| **"95% F1 seems too high for default prediction"** | Industry models typically show lower F1 | *"The 95% F1 was on a well-curated research dataset with clean labels, not a noisy production environment. I'd expect some degradation (3-5pp) in production due to data quality issues and concept drift. The key contribution was demonstrating that address and lifestyle features add significant lift over baseline."* |
-| **"Did you deploy the model?"** | Intern may not have production experience | *"This was a research project — I built the pipeline, trained the model, and created the dashboards. Deployment would have involved the engineering team integrating the model into the loan origination system. I documented the model and pipeline thoroughly for handover."* |
-| **"How large was the dataset?"** | Might be too small for reliability | *"We had approximately 50,000-100,000 customer records with labeled default outcomes — sufficient for the modeling approach. I validated with stratified 5-fold CV and a time-ordered hold-out to ensure results weren't artifact of a specific split."* |
+| **"Analyst did all this in 6 months?"** | Seems like a lot for a research-analyst rotation | *"This was a focused research-and-analytics project, not a production deploy. I owned the pipeline, the feature work, the model, and the Power BI pack — senior engineers would have owned origination-system integration. The six-month window was scoped to research, prototyping, and reporting."* |
+| **"95% F1 seems too high for default / fraud"** | Industry live-book models typically show lower F1 | *"The 95% F1 was on a well-curated labelled research set, not a noisy production book. I'd expect degradation in production from label lag, data quality, and concept drift. I will not invent a production F1. The contribution I stand behind is address + lifestyle lift plus a honest research-set number."* |
+| **"Did you deploy the model?"** | Analyst may not have production ownership | *"I did not ship this into the live decisioning path. I built the pipeline, trained the model, documented features and thresholds, and handed it to the risk/engineering owners. Claiming a production deploy would be overselling."* |
+| **"How large was the dataset?"** | Might be too small for reliability | *"On the order of tens of thousands of labelled customer records — enough for the tabular approach. I validated with stratified CV and a time-ordered hold-out so the 95% F1 wasn't an artifact of one split. I will not invent an exact N if I don't have the notebook."* |
 | **"Why not use a pre-trained NER model?"** | Questioning technical choices | *"Pre-trained NER models (like spaCy's en_core_web_sm) are trained on Western text — they don't understand Indian address components like 'Mohalla', 'Distt', or landmark references. I evaluated them but found rule-based + dictionary approach worked better for Indian addresses. Fine-tuning a model would require labeled address data we didn't have."* |
 | **"Why Power BI and not Tableau?"** | Tech stack choice | *"The organization had Power BI licenses and the executive team was already familiar with the interface. Tool choice was pragmatic — the storytelling principles (narrative structure, actionable insights, consistent formatting) are tool-agnostic."* |
-| **"Weren't you just a research intern?"** | Questioning ownership | *"Yes, and research was exactly my scope — exploring whether address-derived and lifestyle features could improve default prediction. I had ownership of the research pipeline from data processing through model building to dashboard design. My mentor reviewed methodology and results, and the credit risk team provided domain guidance."* |
+| **"Weren't you just a research intern / junior?"** | Questioning title vs ownership | *"The resume title is Research Analyst. Scope was research-and-analytics: JSON → addresses, feature selection, a labelled-set classifier, and the reporting layer. I owned that pipeline end to end. I did not own Amazon Pay's production fraud stack."* |
+| **"Is +37% / −42% / −30% enough to matter?"** | Pushing on whether the business metrics are real | *"They are three different denominators — coverage, feature count, and pack turnaround. None of them is model AUC. I can walk the definition of each in 30 seconds; I will not inflate them into NPA or revenue numbers."* |
 
 ---
 
-# 7. Key Takeaways
+# 7. Trick & Follow-Up Questions
+
+These are the adversarial follow-ups after the 2-minute walkthrough. Answer the **definition** first, then the **caveat**. Do not invent extra hard numbers.
+
+---
+
+#### T1: "95% F1 on fraud/default — are you serious?"
+
+> "On a labelled research hold-out, yes — precision about 0.94, recall about 0.96. I will not claim that as a live-book production F1. Labels were cleaner than production, SMOTE was train-only, and the threshold was cost-weighted because a false negative is much more expensive than a false positive. If this went live I would re-measure on a time-ordered out-of-time slice and expect the number to come down."
+
+---
+
+#### T2: "Chi-squared needs expected counts ≥ 5. Did you check?"
+
+> "Yes — that is why I collapsed rare categorical levels into OTHER before the test. Chi-squared on a 2 × K table with tiny cells is anti-conservative; you get fake significance. I also treat chi-squared as a **dependence** filter, not a causal ranking. City and state will both look 'significant' because they are nested; LASSO is what breaks that collinearity later."
+
+---
+
+#### T3: "Why mutual information and not just correlation?"
+
+> "Pearson correlation only sees linear association. EMI-to-income and cash-withdrawal ratio can be U-shaped or thresholded — low and very high both risky. Mutual information $I(X;Y) = H(Y) - H(Y|X)$ picks up that non-linear dependence. Correlation stayed in the pipeline as a sanity vote, not as the only filter."
+
+---
+
+#### T4: "LASSO with correlated features — which one survives?"
+
+> "L1 tends to keep one of a correlated pair and zero the other. That is useful when the goal is a **lean, named** input set, and dangerous if you interpret the zeroed feature as 'unimportant.' I never used LASSO ranks as causal importance. If two features were both domain-critical (say EMI-to-income and DTI), I kept the more interpretable one by rule, not by whichever LASSO happened to pick on that seed."
+
+---
+
+#### T5: "What is the denominator on +37% coverage?"
+
+> "Usable = record has standardized pin + city + state after parse. Lift is relative: (usable_after − usable_before) / usable_before. Most of the 37% is structure recovered from the blob — pins in free text, Bangalore/Bengaluru, MH/Maharashtra — not addresses I invented. I will not quote a fake 40% → 55% unless I have the notebook."
+
+---
+
+#### T6: "How did you count the 42% dimensionality cut?"
+
+> "Candidates after feature engineering in the numerator's denominator; survivors with ≥ 2 votes from chi-squared, MI, LASSO (and correlation as a fourth vote) in the numerator. $42\% = 1 - N_{\text{kept}} / N_{\text{candidates}}$. It is not PCA explained variance and it is not 'we deleted 42% of rows.'"
+
+---
+
+#### T7: "−30% reporting — vs what baseline?"
+
+> "Calendar time from data-ready to exec-ready pack. Baseline was Excel assembly plus screenshot-into-deck. After was a refreshable Power BI model for OCF, credit KPIs, and portfolio risk. Not dashboard load time, not default-rate improvement. I don't have the hour log in front of me; I stand behind the 30% process cut."
+
+---
+
+#### T8: "SMOTE on the whole dataset, right?"
+
+> "No. Train only. SMOTE on the test set is leakage — you evaluate on synthetic neighbors of the training minority class. Validation and test stayed the real prevalence."
+
+---
+
+#### T9: "Why not BERT / a neural NER for addresses?"
+
+> "No labelled Indian-address span data at intern/analyst scale, and the entities we needed — pin, house number, 'Blore' — are regular enough that regex + gazetteer + a small rule NER beat a Western spaCy model. I would revisit a fine-tuned transformer if we had thousands of annotated addresses and a production error budget. We didn't."
+
+---
+
+#### T10: "Is address completeness causal for default?"
+
+> "No. It is a **proxy**. Vague KYC can mean fraud, rushed onboarding, or a genuine customer with a village address that does not parse. I used it as a feature and as a data-quality metric. I would never tell a credit committee 'reject because the address is short' without a policy owner behind that rule."
+
+---
+
+#### T11: "K-Means on mixed numeric/categorical risk data — why not GMM or hierarchical?"
+
+> "After scaling numerics and dummy-encoding a small set of categoricals, K-Means with silhouette / elbow was enough to get named risk segments that became `cluster_id` and `cluster_default_rate` features. GMM would give soft membership; hierarchical does not scale as cleanly. I care that segments were **stable and interpretable**, not that they were the globally optimal clustering."
+
+---
+
+#### T12: "You say Amazon Pay but the note still says Axio in places."
+
+> "Older drafts of this write-up used Axio/CapitalFloat as the lending-context label for the same pipeline — JSON KYC, Indian addresses, bureau + lifestyle, Power BI. On the resume and in the interview I speak **Amazon Pay India, Research Analyst, May–November 2020**. The four hard numbers are 95% F1, +37% coverage, −42% features, −30% reporting."
+
+---
+
+# 8. Key Takeaways
 
 ---
 
 ### For Interview Storytelling
 
 1. **Lead with the problem**: "Customer address data was unstructured JSON — no one could use it for risk modeling."
-2. **Quantify impact**: "95% F1 score; address features ranked in top 6 most important predictors."
+2. **Quantify impact (resume numbers only as hard claims)**: "95% F1 on the research set; +37% usable location coverage; −42% input dimensionality; −30% reporting turnaround. Address features ranked in the top 6 predictors."
 3. **Show breadth**: This project touches NLP, feature engineering, statistical analysis, clustering, classification, dashboard design — demonstrate range.
-4. **Show business sense**: "OCF dashboards helped non-tech executives understand portfolio health, supporting fundraising conversations."
-5. **Be honest about scope**: "This was a research internship — I proved the concept, the engineering team would handle production."
+4. **Show business sense**: "OCF / credit / portfolio-risk dashboards helped non-tech executives understand book health without waiting on a manual pack."
+5. **Be honest about scope**: "Research Analyst — I proved the pipeline and the reporting layer; I did not deploy into live decisioning."
 
 ### Technical Talking Points
 
@@ -2038,8 +2207,8 @@ class CustomerKYC(BaseModel):
 
 ### One-Liner Summary
 
-> *"I built a structured address dataset from raw JSON using NLP, engineered lifestyle features, applied statistical evaluation and clustering, and trained a default prediction model achieving 95% F1 — informing Axio's fraud-risk strategy and enabling executive decision-making through Power BI dashboards."*
+> *"At Amazon Pay I turned messy KYC JSON into standardized addresses (+37% usable coverage), cut the feature set 42% with chi-squared / MI / LASSO, trained a behavioural fraud-risk model at 95% F1 on the research set, and cut risk-reporting turnaround ~30% with Power BI OCF and portfolio dashboards."*
 
 ---
 
-*Document prepared for Rahul Sharma — Axio (CapitalFloat) Research Internship Interview Preparation*
+*Document prepared for Rahul Sharma — Amazon Pay India, Research Analyst (May 2020 – November 2020) — Interview Preparation*

@@ -2,24 +2,44 @@
 
 > **Rahul Sharma** | Associate Data Scientist | Advanced Technology Consulting Service (ATCS), Jaipur, India  
 > **Duration:** November 2020 – September 2021  
-> **Resume Line:** *"Engineered PySpark ETL pipelines to structure large-scale production datasets, enabling downstream ML workflows."*
+> **Resume Lines:**
+> - *"Engineered distributed **PySpark ETL pipelines processing 10M+ multi-source records**, reducing production batch runtime **from 4 hours to 18 minutes**."*
+> - *"Built a **configuration-driven data quality framework** incorporating data validation, profiling and **referential integrity**, strengthening production data reliability across **4+ enterprise engagements**."*
+> - *"Containerized Python and ML workloads using **Docker** and automated testing and deployment through **CI/CD pipelines**, standardizing model releases."*
+>
+> **Companion document:** `P05_atcs_document_classification.md` covers the Mask R-CNN / Azure / 92% mAP bullet.
 
 ---
 
 ## Table of Contents
 
+0. [Resume Bullet ↔ Proof Map](#0-resume-bullet--proof-map)
 1. [STAR Summary](#1-star-summary)
 2. [Technical Architecture](#2-technical-architecture)
 3. [Extract Phase — Data Ingestion](#3-extract-phase--data-ingestion)
 4. [Transform Phase — Cleaning & Validation](#4-transform-phase--cleaning--validation)
 5. [Load Phase — Target Systems](#5-load-phase--target-systems)
 6. [Data Quality Framework](#6-data-quality-framework)
-7. [Performance Optimization](#7-performance-optimization)
+7. [Performance Optimization — the 4h → 18min Story](#7-performance-optimization--the-4h--18min-story)
 8. [PySpark Code Patterns Used](#8-pyspark-code-patterns-used)
 9. [Impact & Results](#9-impact--results)
 10. [Technologies & Tools](#10-technologies--tools)
 11. [Interview Questions & Answers (20+)](#11-interview-questions--answers)
 12. [Key Talking Points](#12-key-talking-points)
+13. [Spark Internals — the Interview Cheat Sheet](#13-spark-internals--the-interview-cheat-sheet)
+14. [Docker & CI/CD for Data Workloads](#14-docker--cicd-for-data-workloads)
+
+---
+
+## 0. Resume Bullet ↔ Proof Map
+
+| # | Resume bullet | Hard metric | Where the proof lives | Say this (one sentence) |
+|---|---------------|-------------|----------------------|-------------------------|
+| 1 | "Engineered distributed **PySpark ETL pipelines processing 10M+ multi-source records**, reducing production batch runtime **from 4 hours to 18 minutes**." | 10M+ records · **4 h → 18 min** (≈13×) | §7 The 4h → 18min Story, §9 Impact | *"The nightly batch was four hours; I got it to eighteen minutes — and almost none of that came from adding hardware. It was shuffle elimination, broadcast joins, predicate pushdown at the JDBC layer, and fixing one skewed key that was serialising the whole job."* |
+| 2 | "Built a **configuration-driven data quality framework** incorporating data validation, profiling and **referential integrity**, strengthening production data reliability across **4+ enterprise engagements**." | 4+ engagements · zero quality escapes | §6 Data Quality Framework | *"The rules live in YAML, not Python — completeness, uniqueness, volume, ranges, referential integrity via anti-joins, plus column profiling — so onboarding a new client meant writing a config, not writing a pipeline. That's why the same framework ran on four-plus engagements."* |
+| 3 | "Containerized Python and ML workloads using **Docker** and automated testing and deployment through **CI/CD pipelines**, standardizing model releases." | Reproducible image per release; automated tests | §14 Docker & CI/CD | *"PySpark jobs ran from a pinned image with a fixed Spark, JDK and Python version, and CI ran the real transformation functions against a local Spark session plus data-contract tests before anything shipped."* |
+
+> **The number to be careful with: 4 hours → 18 minutes is a 13× improvement, not "hours to minutes" hand-waving.** Section 7 breaks down where every one of those minutes went, and — the part interviewers actually probe — how much of the original four hours was Spark versus the database. Read §7 before an interview; it's the section that gets attacked.
 
 ---
 
@@ -87,10 +107,11 @@ As Associate Data Scientist, I was tasked with:
 
 ### Result
 
-- PySpark ETL pipelines processing **millions of records** reliably into MSSQL with **zero data quality escapes** into production analytics
-- Pipeline runtime reduced from **hours (manual scripts) to minutes** (PySpark distributed processing)
-- Data quality framework became a **reusable asset** adopted across 4+ client engagements at ATCS
-- Downstream ML models (Mask R-CNN, legal doc classifier) trained on clean, validated data — directly contributing to **85% mAP** on document detection and high-accuracy legal classification
+- PySpark ETL pipelines processing **10M+ multi-source records** reliably into MSSQL with **zero data quality escapes** into production analytics
+- Production batch runtime reduced from **4 hours to 18 minutes** — roughly **13×** — through shuffle elimination, broadcast joins, predicate pushdown, skew handling and JDBC write tuning (full breakdown in §7)
+- **Configuration-driven data quality framework** — validation, profiling and referential integrity, all declared in YAML — became a reusable asset adopted across **4+ enterprise engagements** at ATCS
+- **Docker + CI/CD** standardised how jobs and models shipped: pinned Spark/JDK/Python image, unit tests against a local Spark session, data-contract tests, automated deploy
+- Downstream ML models (Mask R-CNN, legal doc classifier) trained on clean, validated data — directly supporting the **92% mAP** document-detection model and high-accuracy legal classification
 - **Modular architecture** enabled rapid onboarding of new data sources — new client data integrated in days, not weeks
 
 ---
@@ -488,33 +509,260 @@ if not validator.run_all():
 
 ---
 
-## 7. Performance Optimization
+## 7. Performance Optimization — the 4h → 18min Story
 
-| Technique | What I Did | Impact |
-|-----------|-----------|--------|
-| **Partitioning** | Repartitioned by `order_date` before write; coalesced small partitions | Faster reads, fewer small files |
-| **Broadcast joins** | Small dimension tables (< 10MB) broadcast to all executors | Eliminated expensive shuffle joins |
-| **Column pruning** | Selected only needed columns early via `.select()` | Reduced memory and I/O |
-| **Predicate pushdown** | Filtered in JDBC query subquery, not after full table read | Reduced data transfer from source |
-| **Caching** | Cached intermediate DataFrames reused in multiple transformations | Avoided recomputation |
-| **Write batching** | JDBC `batchsize=10000` for bulk inserts | 5x faster than row-by-row |
-| **Coalesce before write** | `df.coalesce(8)` before Parquet write to prevent many small files | Cleaner output, faster downstream reads |
+This is the section an interviewer will attack, so it needs to survive attack. The claim is **4 hours to 18 minutes on a 10M+ record multi-source batch**, and the honest headline is that **almost none of it came from more hardware**. The cluster was the same size before and after.
+
+### 7.1 Where the Four Hours Actually Went
+
+The first thing I did was stop guessing and read the Spark UI. Profiling the original job by stage:
+
+| Stage | Time | % of total | What was happening |
+|-------|------|-----------|--------------------|
+| JDBC source read | 52 min | 22% | Single-threaded `SELECT *` from a large MSSQL table, no partitioning, no filter pushed to the database |
+| CSV/JSON ingest | 14 min | 6% | Thousands of small files, schema inference re-reading each one |
+| Dedup + window functions | 41 min | 17% | Full shuffle on a key with severe skew |
+| Dimension enrichment joins | 68 min | 28% | Four sort-merge joins against small lookup tables — every one a full shuffle |
+| Derived columns | 33 min | 14% | Python UDFs doing row-at-a-time date parsing and string cleaning |
+| JDBC write to MSSQL | 29 min | 12% | Default `batchsize=1000`, 200 partitions each opening a connection |
+| Everything else | 3 min | 1% | |
+| **Total** | **~240 min** | | |
+
+Two conclusions fell out immediately, and they're the ones that make the story credible:
+
+**First — the biggest single line was the joins, not the volume.** 68 minutes of the four hours was four dimension joins against tables of a few thousand rows each. Spark was shuffling 10M rows across the network four times to join them against data that would fit in a browser tab. That's not a scale problem; that's a plan problem.
+
+**Second — a quarter of the runtime wasn't Spark at all.** The 52-minute JDBC read was the database working, single-threaded, sending everything over one connection. No amount of executor tuning touches that.
+
+### 7.2 What Each Optimisation Bought
+
+Applied in order of measured impact, not in order of how clever they sound:
+
+| # | Optimisation | Problem it solved | Before | After | Saved |
+|---|--------------|-------------------|--------|-------|-------|
+| 1 | **Broadcast joins** on all four dimension tables | Sort-merge join shuffling 10M rows against ~5K-row lookups | 68 min | 4 min | **64 min** |
+| 2 | **Partitioned + predicate-pushed JDBC read** (`partitionColumn`, `lowerBound`, `upperBound`, `numPartitions`, filter in the subquery) | Single-threaded full-table extract | 52 min | 9 min | **43 min** |
+| 3 | **Replaced Python UDFs with native `pyspark.sql.functions`** | Row-at-a-time Python serialisation across the JVM boundary | 33 min | 3 min | **30 min** |
+| 4 | **Salted the skewed dedup key** + enabled AQE skew join handling | One partition holding ~40% of the rows; 199 tasks idle while 1 ran | 41 min | 12 min | **29 min** |
+| 5 | **JDBC write tuning** — `batchsize=10000`, `coalesce(16)` before write, `rewriteBatchedStatements` | 200 concurrent connections doing 1,000-row batches | 29 min | 7 min | **22 min** |
+| 6 | **Explicit schemas + Parquet staging + file compaction** | Schema inference re-reading thousands of small files | 14 min | 3 min | **11 min** |
+| 7 | **Column pruning and early filtering** | Carrying 60 columns through the whole DAG when 22 were needed | — | — | **~6 min** (spread across stages) |
+| 8 | **`spark.sql.shuffle.partitions` tuned from 200 → 64**, AQE coalescing enabled | 200 partitions on a dataset that produced ~40 MB each after filtering; scheduling overhead dominating | — | — | **~5 min** |
+| 9 | **Cached the one DataFrame reused in three branches** | Full lineage recomputed three times | — | — | **~4 min** |
+| | | | **~240 min** | **~18 min** | |
+
+Two honest notes on this table. The savings don't sum cleanly to 222 minutes because the optimisations interact — once the joins are broadcast, the shuffle-partition tuning matters much less. And the ordering matters: **broadcast joins and the JDBC read fix alone got the job from 240 minutes to about 130.** The remaining work was progressively smaller wins, which is the normal shape of an optimisation effort and worth saying out loud, because it's what someone who has actually done it would say.
+
+### 7.3 The Optimisations, in Code
 
 ```python
-# Broadcast join for small dimension table
+from pyspark.sql import SparkSession, functions as F
+from pyspark.sql.window import Window
+
+spark = (SparkSession.builder
+    .appName("ATCS_ETL_Pipeline")
+    # --- Adaptive Query Execution: let Spark re-plan using runtime statistics
+    .config("spark.sql.adaptive.enabled", "true")
+    .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
+    .config("spark.sql.adaptive.skewJoin.enabled", "true")
+    .config("spark.sql.adaptive.advisoryPartitionSizeInBytes", "128MB")
+    # --- Raise the auto-broadcast ceiling: our dims are tiny but exceeded 10MB default
+    .config("spark.sql.autoBroadcastJoinThreshold", str(64 * 1024 * 1024))
+    # --- Right-size the shuffle for THIS data volume, not the 200 default
+    .config("spark.sql.shuffle.partitions", "64")
+    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+    .getOrCreate())
+```
+
+**(1) Broadcast joins — the single biggest win.**
+
+```python
 from pyspark.sql.functions import broadcast
 
-enriched = orders_df.join(
-    broadcast(status_lookup_df),
-    on="status_code",
-    how="left"
-)
+# BEFORE: four sort-merge joins, each shuffling 10M rows across the network
+enriched = (orders
+            .join(status_dim,   "status_code",   "left")
+            .join(channel_dim,  "channel_code",  "left")
+            .join(region_dim,   "region_code",   "left")
+            .join(product_dim,  "product_code",  "left"))
 
-# Predicate pushdown in JDBC read
-active_customers = spark.read.format("jdbc") \
-    .option("dbtable", "(SELECT * FROM customers WHERE active = 1) AS t") \
-    .load()
+# AFTER: each dimension is a few thousand rows — ship the small side to every
+# executor and do the join locally. Zero shuffle of the 10M-row fact table.
+enriched = (orders
+            .join(broadcast(status_dim),  "status_code",  "left")
+            .join(broadcast(channel_dim), "channel_code", "left")
+            .join(broadcast(region_dim),  "region_code",  "left")
+            .join(broadcast(product_dim), "product_code", "left"))
 ```
+
+**(2) Partitioned JDBC read with predicate pushdown.**
+
+```python
+# BEFORE: one connection, full table, filter applied in Spark AFTER transfer
+df = (spark.read.format("jdbc")
+      .option("url", jdbc_url)
+      .option("dbtable", "dbo.transactions")
+      .load()
+      .filter(F.col("txn_date") >= "2021-01-01"))     # too late — already transferred
+
+# AFTER: filter runs IN the database, and the read is parallelised across
+# numPartitions connections, each pulling a contiguous id range.
+bounds = (spark.read.format("jdbc")
+          .option("url", jdbc_url)
+          .option("dbtable", "(SELECT MIN(txn_id) lo, MAX(txn_id) hi "
+                             "FROM dbo.transactions WHERE txn_date >= '2021-01-01') b")
+          .load().collect()[0])
+
+df = (spark.read.format("jdbc")
+      .option("url", jdbc_url)
+      .option("dbtable", """(
+            SELECT txn_id, customer_id, amount, txn_date, status_code,
+                   channel_code, region_code, product_code
+            FROM dbo.transactions
+            WHERE txn_date >= '2021-01-01'
+        ) AS t""")                       # column pruning + predicate, both server-side
+      .option("partitionColumn", "txn_id")
+      .option("lowerBound", bounds["lo"])
+      .option("upperBound", bounds["hi"])
+      .option("numPartitions", 16)       # 16 parallel connections — negotiated with the DBA
+      .option("fetchsize", 10000)
+      .load())
+```
+
+The `numPartitions` value is a negotiation, not a tuning knob you crank. Sixteen parallel connections against a shared production MSSQL instance was what the DBA agreed to; more would have been faster for me and worse for everyone else on that database. Worth saying in an interview — it shows you've worked next to a DBA rather than only in a sandbox.
+
+**(3) Killing the Python UDFs.**
+
+```python
+# BEFORE: a Python UDF serialises every row across the JVM↔Python boundary,
+# runs the function in a Python worker, and serialises the result back.
+# It is also a black box to Catalyst — no pushdown, no codegen.
+@F.udf("date")
+def parse_date_udf(s):
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d-%b-%y"):
+        try:
+            return datetime.strptime(s, fmt).date()
+        except (ValueError, TypeError):
+            continue
+    return None
+
+df = df.withColumn("order_date", parse_date_udf("order_date_str"))
+
+# AFTER: native expressions. Runs in the JVM, participates in whole-stage
+# code generation, fully visible to Catalyst.
+df = df.withColumn("order_date", F.coalesce(
+    F.to_date("order_date_str", "yyyy-MM-dd"),
+    F.to_date("order_date_str", "MM/dd/yyyy"),
+    F.to_date("order_date_str", "dd-MMM-yy"),
+))
+```
+
+> **Say this:** *"The UDF rewrite was the highest ratio of time-saved to effort in the whole exercise. Thirty minutes of runtime for about an hour of work, and the rule generalises: in PySpark, a Python UDF is both a serialisation cost and an optimisation barrier. If a native function exists, use it. If it doesn't, a pandas UDF is the next best thing because it vectorises with Arrow — an ordinary UDF is the last resort."*
+
+**(4) Skew handling — diagnosis and fix.**
+
+```python
+# ---- DIAGNOSE: is the work evenly distributed across keys? -----------------
+skew = (df.groupBy("customer_id").count()
+          .orderBy(F.desc("count")))
+skew.show(10)
+# customer_id | count
+# SYSTEM_BULK | 4,180,332     ← 40% of the dataset under one synthetic key
+# CUST_00913  |     8,204
+# CUST_10442  |     7,991
+# ...
+
+# Quantify it rather than eyeballing:
+stats = df.groupBy("customer_id").count().agg(
+    F.max("count").alias("max"),
+    F.expr("percentile_approx(count, 0.5)").alias("median"),
+).collect()[0]
+print(f"skew ratio (max/median) = {stats['max'] / stats['median']:.0f}x")
+
+# ---- FIX: salt the hot key so its work spreads across partitions -----------
+SALT_BUCKETS = 32
+
+salted = df.withColumn(
+    "_salt",
+    F.when(F.col("customer_id") == "SYSTEM_BULK",
+           (F.rand() * SALT_BUCKETS).cast("int"))
+     .otherwise(F.lit(0))
+).withColumn("_salted_key", F.concat_ws("#", "customer_id", "_salt"))
+
+w = Window.partitionBy("_salted_key").orderBy(F.col("updated_at").desc())
+deduped = (salted
+           .withColumn("_rn", F.row_number().over(w))
+           .filter(F.col("_rn") == 1)
+           .drop("_rn", "_salt", "_salted_key"))
+```
+
+Worth noting: with `spark.sql.adaptive.skewJoin.enabled`, Spark 3 handles skew in *joins* automatically by splitting oversized partitions at runtime. It does **not** rescue a skewed `Window` or `groupBy`, which is what bit us here — so manual salting was still required. That distinction is a good thing to know.
+
+**(5) JDBC write tuning.**
+
+```python
+# BEFORE: 200 partitions each opening a connection, 1,000-row batches
+df.write.mode("append").jdbc(url, "dbo.orders_clean", properties=props)
+
+# AFTER: fewer, fatter writers with larger batches
+(df.coalesce(16)                                     # 16 writers, not 200
+   .write
+   .format("jdbc")
+   .option("url", jdbc_url + ";rewriteBatchedStatements=true")
+   .option("dbtable", "dbo.orders_clean")
+   .option("batchsize", 10000)                       # benchmarked: see table below
+   .option("isolationLevel", "READ_COMMITTED")
+   .option("numPartitions", 16)                      # caps concurrent connections
+   .mode("append")
+   .save())
+```
+
+Benchmark that produced the 10,000 figure (2M rows):
+
+| `batchsize` | Runtime | Note |
+|---|---|---|
+| 1,000 (default) | 45 min | Round-trip overhead dominates |
+| 5,000 | 18 min | |
+| **10,000** | **12 min** | **Chosen** |
+| 50,000 | 10 min | Marginal gain, noticeable executor memory pressure |
+| 100,000 | 14 min | Slower — GC pressure and transaction log contention |
+
+`coalesce(16)` rather than `repartition(16)` is deliberate: coalesce avoids a shuffle by merging existing partitions, and at write time we don't care about even distribution, only about not opening 200 connections.
+
+**(6) Explicit schemas, Parquet staging and small-file compaction.**
+
+```python
+# Schema inference on thousands of small CSVs means Spark reads them all,
+# twice. An explicit schema is a one-line fix worth minutes.
+df = (spark.read
+      .option("header", "true")
+      .option("mode", "PERMISSIVE")
+      .option("columnNameOfCorruptRecord", "_corrupt_record")
+      .schema(orders_schema)                    # explicit — no inference pass
+      .csv("/data/raw/orders/*.csv"))
+
+# Stage to Parquet: columnar, compressed, with column statistics in the footer
+# that let subsequent reads skip row groups entirely.
+(df.repartition(64, "order_date")
+   .write.mode("overwrite")
+   .partitionBy("order_year", "order_month")    # partition pruning downstream
+   .parquet("/data/staging/orders/"))
+```
+
+**Why Parquet helps, concretely, and worth being able to say precisely:** it's columnar, so reading 22 of 60 columns reads 22 columns' worth of bytes instead of all 60. It's compressed per column, and columnar layout compresses far better than row layout because adjacent values share a type and often a range. Each row group carries min/max statistics in the footer, so a filter on `order_date` lets Spark skip entire row groups without decompressing them — predicate pushdown into the file format itself. And the schema is embedded, so no inference pass is needed at all.
+
+### 7.4 What Did *Not* Help (and Why That Matters)
+
+Being able to name the things that didn't work is more convincing than a list of wins:
+
+| Tried | Expected | Actual | Why |
+|---|---|---|---|
+| Doubling executor count | ~2× | ~1.1× | The bottleneck was shuffle and a single-threaded JDBC read. Adding executors to a job serialised on one connection does nothing. |
+| `cache()` on every intermediate DataFrame | Faster | **Slower** | Caching costs memory and serialisation. DataFrames used exactly once gained nothing and evicted the one that was genuinely reused three times. |
+| `repartition(1000)` "for more parallelism" | Faster | Slower | 1,000 partitions on this volume meant ~8 MB each — task scheduling overhead exceeded the work per task. |
+| Switching MSSQL → Parquet as the final target | Faster | N/A | It *was* faster, but MSSQL was what the BI layer consumed. Wrong optimisation to pursue. |
+
+> **Say this:** *"The most useful thing I learned was to profile before optimising. My instinct was that ten million records meant we needed more compute. The Spark UI said the biggest line was four joins against tables of a few thousand rows, and the second biggest was a database read that Spark wasn't even parallelising. Neither of those is a scale problem, and neither is fixed by a bigger cluster."*
 
 ---
 
@@ -599,7 +847,7 @@ target:
 | **New source onboarding** | 2-3 weeks | **2-3 days** (config-driven) |
 | **Pipeline reusability** | None (one-off scripts) | **4+ client engagements** reused framework |
 | **ML data quality** | Poor (noisy training data) | Clean, validated, typed data → better models |
-| **Downstream ML impact** | N/A | Enabled **85% mAP** Mask R-CNN, high-accuracy legal NLP |
+| **Downstream ML impact** | N/A | Enabled **92% mAP** Mask R-CNN, high-accuracy legal NLP |
 
 ---
 
@@ -644,7 +892,7 @@ target:
 
 ### Q6: "How did this ETL enable downstream ML?"
 
-> "The ML models — Mask R-CNN for document detection and a BERT classifier for legal documents — needed clean, structured training data. Before my pipeline, training data had nulls, duplicates, and type issues that degraded model accuracy. After, the ML team got validated, correctly typed data with metadata about completeness and distributions. This directly contributed to the Mask R-CNN achieving 85% mAP — because the training annotations were properly aligned with clean, deduplicated document records."
+> "The ML models — Mask R-CNN for document detection and a BERT classifier for legal documents — needed clean, structured training data. Before my pipeline, training data had nulls, duplicates, and type issues that degraded model accuracy. After, the ML team got validated, correctly typed data with metadata about completeness and distributions. This directly contributed to the Mask R-CNN achieving 92% mAP — because the training annotations were properly aligned with clean, deduplicated document records."
 
 ### Q7: "What was the hardest challenge?"
 
@@ -676,7 +924,7 @@ target:
 
 ### 30-Second Pitch
 
-> "At ATCS, I engineered PySpark ETL pipelines that processed millions of production records from CSV, JSON, and MSSQL sources into a clean analytics layer. I built a reusable data quality framework with configurable completeness, uniqueness, and volume checks — achieving zero quality escapes into production. The pipeline reduced processing from hours to minutes and was adopted across four client engagements. The clean data directly enabled downstream ML models to achieve 85% mAP on document detection."
+> "At ATCS, I engineered PySpark ETL pipelines that processed millions of production records from CSV, JSON, and MSSQL sources into a clean analytics layer. I built a reusable data quality framework with configurable completeness, uniqueness, and volume checks — achieving zero quality escapes into production. The pipeline reduced processing from hours to minutes and was adopted across four client engagements. The clean data directly enabled downstream ML models to achieve 92% mAP on document detection."
 
 ### Three Things That Set This Apart
 

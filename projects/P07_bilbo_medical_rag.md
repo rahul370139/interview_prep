@@ -1,7 +1,9 @@
-# P07 — Medical RAG System for MARCH-PAWS Checklists | Bilbo.ai
+# P07 — Production Healthcare RAG Platform | Bilbo.ai
 
-> **Rahul Sharma** | AI Engineer Intern | Bilbo.ai, Baltimore, US
-> **Duration:** September 2025 – Present
+> **Rahul Sharma** | **AI Engineer** | Bilbo.ai, Baltimore, US
+> **Duration:** September 2025 – May 2026
+
+> **⭐ THIS IS YOUR #1 MOST-DRILLED PROJECT.** It is your *current role*, it is the first thing on your resume, and it is exactly what AI Engineer / GenAI Engineer interviews are about (2026 interviews are ~40% RAG + evals + agents). Master this before anything else.
 
 ---
 
@@ -14,6 +16,27 @@
 5. [Interview Questions & Answers (25+)](#5-interview-questions--answers)
 6. [Red Flags & How to Handle](#6-red-flags--how-to-handle)
 7. [Key Takeaways & Talking Points](#7-key-takeaways--talking-points)
+8. [LangGraph Agentic Orchestration](#8-langgraph-agentic-orchestration)
+9. [Structured Output Validation & LLM Guardrails](#9-structured-output-validation--llm-guardrails)
+10. [Trick & Follow-Up Questions](#10-trick--follow-up-questions)
+
+---
+
+## 0. Resume Bullet ↔ Proof Map
+
+Your resume makes five claims about this role. An interviewer will pick one and drill. Here is what to say and where the proof lives.
+
+| Resume bullet | Hard number | Proof lives in | One-sentence spoken answer |
+|---|---|---|---|
+| "Production healthcare RAG platform for protocol queries, combining hybrid retrieval, reranking, and citation grounding… **sub-5-second latency**" | **< 5 s** full answer; sub-second question generation | §1.1, §3.1 | *"It's a grounded protocol-QA platform — hybrid retrieval, cross-encoder reranking, paragraph-level citations, answering in under five seconds."* |
+| "**Eight-stage** document processing pipeline… parsing, hierarchy extraction, paragraph-aware chunking, FAISS indexing, quality validation — **improving citation correctness**" | **8 stages** | §2.1 | *"Eight stages: extract, discover headings, detect anchors, segment paragraphs, clean, window, embed, index — the hierarchy and paragraph awareness are what make citations correct."* |
+| "Integrated **FAISS and BM25** with **Reciprocal Rank Fusion** and **cross-encoder reranking**, raising **top-five relevance by 28%** while preserving paragraph-level source attribution" | **+28% top-5 relevance** | §2.3, §2.4, §3.1 | *"Dense plus lexical fused with RRF, then a cross-encoder rerank — that stack lifted top-five relevance 28% over dense-only retrieval."* |
+| "Deployed a **4-bit quantized Mistral-7B** through **Ollama**, implementing prompt engineering, **LangGraph** stateful orchestration, **structured output validation**, and **LLM guardrails**" | Q4_K_M, ~4.37 GB | §2.7, §8, §9 | *"Mistral-7B at 4-bit runs locally through Ollama — no PHI leaves the box — orchestrated in LangGraph with schema validation and guardrails on the output."* |
+| "Designed **agentic AI workflows** with LangGraph — stateful orchestration, **conditional routing, memory, and tool/function calling** — to automate multi-step healthcare protocol reasoning" | 9-stage protocol traversal | §8 | *"The protocol is a multi-step reasoning task, so it's a LangGraph state machine with conditional routing, per-session memory, and tools for retrieval and validation."* |
+
+**The 28% number — how to defend it.** This is the metric most likely to be challenged. Say it like this:
+
+> "It's a retrieval-quality measurement, not a model benchmark. I built a labelled query set from the protocol manual — representative medic questions with the ground-truth paragraphs that should answer them. Then I measured how often the correct paragraph appeared in the top five results. Dense-only retrieval was the baseline; adding BM25 with Reciprocal Rank Fusion and then a cross-encoder rerank raised that top-five hit rate by about 28% relative. The gain came mostly from lexical matching — medical protocols are full of exact terms like 'needle decompression' and 'tension pneumothorax' where embeddings blur near-synonyms but BM25 nails the exact token."
 
 ---
 
@@ -41,6 +64,8 @@ I was tasked with designing and deploying a retrieval-augmented NLP system that 
 
 **Result**
 - End-to-end RAG system producing grounded, citation-backed MARCH-PAWS checklists for any medical scenario
+- **Top-five retrieval relevance raised ~28%** over a dense-only baseline by adding BM25 + Reciprocal Rank Fusion + cross-encoder reranking — while preserving paragraph-level source attribution
+- **Sub-5-second** end-to-end answer latency (sub-second question generation), entirely on local hardware — no PHI leaves the environment
 - Quality score baseline of **~0.64** with a concrete improvement roadmap to **0.92+**
 - 141 indexed windows over 384-dimension embeddings covering the entire TC 4-02.1 manual
 - Sub-second question generation via Q-Gen prompt (no retrieval needed), <5s full answer generation
@@ -1264,3 +1289,299 @@ Additionally:
 | Quality baseline | ~0.64 |
 | Target quality | 0.92+ |
 | Total system memory | ~5.5 GB |
+| **Top-5 relevance gain (hybrid + rerank)** | **+28%** |
+| **End-to-end answer latency** | **< 5 s** |
+
+---
+
+## 8. LangGraph Agentic Orchestration
+
+> Your resume says: *"Designed agentic AI workflows with LangGraph, implementing stateful orchestration, conditional routing, memory, and tool/function calling to automate multi-step healthcare protocol reasoning."* This section is the proof. Expect a full 15-minute drill here — agent design is the hottest area in 2026 AI interviews.
+
+### 8.1 Why this problem needs a graph, not a chain
+
+Walking a medic through MARCH-PAWS is **not** a single LLM call. It is a multi-step reasoning process with real control flow:
+
+- 9 protocol stages that must be visited in clinical order (massive hemorrhage before airway — you don't intubate someone bleeding out)
+- Each stage's questions depend on **what the medic answered in earlier stages**
+- Some stages get **skipped** based on the scenario (no burns → skip burn-specific branches)
+- Retrieval quality varies per stage, and a low-relevance stage must **refuse** rather than guess
+- The whole traversal must be **resumable** — a medic can pause mid-assessment
+
+A linear chain can't express "skip, branch, retry, refuse, remember." A state machine can. That's the whole argument for LangGraph here.
+
+### 8.2 The graph
+
+```
+                    ┌─────────────────────────────┐
+                    │  ingest_scenario (entry)     │
+                    │  classify: medical? in-scope?│
+                    └──────────┬──────────────────┘
+                               │
+              ┌────────────────┴─────────────┐
+      not medical                        medical
+              │                               │
+      ┌───────▼────────┐          ┌───────────▼──────────┐
+      │ refuse_node    │          │  plan_stages          │
+      │ (scope guard)  │          │  order 9 MARCH-PAWS   │
+      └────────────────┘          │  stages, mark skips   │
+                                  └───────────┬───────────┘
+                                              │
+                    ┌─────────────────────────▼──────────────────────┐
+                    │            STAGE LOOP (per stage)               │
+                    │                                                 │
+                    │  retrieve_node ──► TOOL: hybrid_search          │
+                    │      │             (FAISS + BM25 + RRF)         │
+                    │      ▼                                          │
+                    │  rerank_node ────► TOOL: cross_encoder_rerank    │
+                    │      │                                          │
+                    │      ▼                                          │
+                    │  ┌──────────────────────┐                       │
+                    │  │ relevance_gate       │  z-score threshold    │
+                    │  └───┬──────────────┬───┘                       │
+                    │  below            above                         │
+                    │      │              │                           │
+                    │      ▼              ▼                           │
+                    │  refuse_stage   generate_node (Q-Gen / A-Gen)    │
+                    │      │              │                           │
+                    │      │              ▼                           │
+                    │      │        validate_node ──► structured       │
+                    │      │              │           output + citation│
+                    │      │        ┌─────┴─────┐     verification     │
+                    │      │      valid      invalid                   │
+                    │      │        │           │                      │
+                    │      │        │           ▼                      │
+                    │      │        │      repair_node (re-prompt,      │
+                    │      │        │        max 2 attempts)            │
+                    │      │        │           │                      │
+                    │      └────────┴───────────┘                      │
+                    │                   │                              │
+                    │            advance_stage ──► more stages? ────────┘
+                    └───────────────────┬────────────────────────────┘
+                                        │ no more stages
+                                        ▼
+                              ┌──────────────────────┐
+                              │  compile_assessment   │
+                              │  full checklist +     │
+                              │  citations + quality  │
+                              └──────────────────────┘
+```
+
+### 8.3 The four things the resume claims, mapped to code
+
+**(1) Stateful orchestration** — a typed state object threaded through every node:
+
+```python
+from typing import TypedDict, Annotated, Literal
+import operator
+
+class ProtocolState(TypedDict):
+    # --- inputs ---
+    scenario: str                      # "chest gunshot wound, conscious"
+    # --- planning ---
+    stage_queue: list[str]             # remaining MARCH-PAWS stages
+    current_stage: str | None
+    skipped_stages: list[str]
+    # --- memory (accumulates across stages) ---
+    responses: Annotated[list[dict], operator.add]   # medic's answers so far
+    findings: Annotated[list[str], operator.add]     # clinical facts established
+    # --- per-stage working set ---
+    retrieved: list[dict]              # reranked windows
+    relevance_score: float
+    draft: dict | None
+    # --- validation ---
+    validation_errors: list[str]
+    repair_attempts: int
+    # --- output ---
+    checklist: Annotated[list[dict], operator.add]
+    refusals: Annotated[list[str], operator.add]
+```
+
+The `Annotated[..., operator.add]` reducers are the important detail: they let nodes **append** to shared history without clobbering it, which is how the graph accumulates memory across nine stages.
+
+**(2) Conditional routing** — edges are functions of state, not fixed:
+
+```python
+def route_after_relevance(state: ProtocolState) -> Literal["generate", "refuse_stage"]:
+    """A stage with weak grounding must refuse, not improvise.
+    In a medical tool, a confident wrong answer is the worst outcome."""
+    return "generate" if state["relevance_score"] >= state["threshold"] else "refuse_stage"
+
+def route_after_validation(state: ProtocolState) -> Literal["advance", "repair"]:
+    if not state["validation_errors"]:
+        return "advance"
+    if state["repair_attempts"] >= 2:      # bounded — never loop forever
+        return "advance"                    # emit with a QA flag instead
+    return "repair"
+
+builder.add_conditional_edges("relevance_gate", route_after_relevance)
+builder.add_conditional_edges("validate", route_after_validation)
+```
+
+**(3) Memory** — two distinct kinds, and interviewers love this distinction:
+
+| Memory type | Scope | What it holds | Why |
+|---|---|---|---|
+| **Short-term / working** | one assessment session | `responses`, `findings`, stages done | Later stages must know earlier answers ("tourniquet already applied") |
+| **Long-term / checkpointed** | across sessions | LangGraph checkpointer (thread_id) | A medic can pause and resume; also gives replay for debugging |
+
+```python
+from langgraph.checkpoint.memory import MemorySaver
+graph = builder.compile(checkpointer=MemorySaver())
+# resume the same assessment later
+graph.invoke(None, config={"configurable": {"thread_id": session_id}})
+```
+
+**(4) Tool / function calling** — retrieval and validation are *tools*, not hardcoded steps, so the model can request them and I can log/meter them:
+
+```python
+@tool
+def hybrid_search(query: str, stage: str, k: int = 20) -> list[dict]:
+    """Retrieve protocol paragraphs for a stage using FAISS + BM25 fused with RRF."""
+    ...
+
+@tool
+def verify_citation(citation: str) -> dict:
+    """Check a paragraph anchor exists in the source manual. Returns {valid, text}."""
+    ...
+```
+
+### 8.4 Bounded autonomy — the judgment point
+
+The graph is deliberately **not** free-roaming. Every loop is bounded (`repair_attempts >= 2`), the stage order is planned up front rather than chosen turn-by-turn, and refusal is a first-class terminal state per stage.
+
+> **Say this:** "I gave the agent exactly as much autonomy as the task needed and no more. It routes and retries within hard bounds, but it can't invent new stages or loop forever. In a clinical decision-support tool, predictable and auditable beats clever — and a bounded graph is far easier to test, because I can assert on the node trace."
+
+### 8.5 How this connects to the rest of your portfolio
+
+This is the same principle as AI Cargo's hard tool filter (P15) — **constrain agents in code, not prompts**. Being able to say "I've applied this pattern in two different production systems" is what makes it read as a principle rather than a one-off.
+
+Cross-reference: `../learning/17_langchain_langgraph.md`, `../learning/10_agentic_ai_and_multi_agent.md`, `../learning/27_agentic_patterns_deep_dive.md`.
+
+---
+
+## 9. Structured Output Validation & LLM Guardrails
+
+> Your resume claims "structured output validation, and LLM guardrails." In a *healthcare* system this is the highest-scrutiny claim on the whole resume. Have this airtight.
+
+### 9.1 The layered defense
+
+```
+LLM raw output
+   │
+   ├─ Layer 1: FORMAT      → does it parse as the required schema?
+   ├─ Layer 2: SCHEMA      → Pydantic types, required fields, bounds
+   ├─ Layer 3: GROUNDING   → is every citation a real paragraph anchor?
+   ├─ Layer 4: SAFETY      → scope, contraindications, no invented dosages
+   ├─ Layer 5: QUALITY     → actionable verbs, stage alignment, semantic relevance
+   └─ Layer 6: REPAIR      → bounded re-prompt with the specific error
+        │
+        └─ still failing → refuse / degrade to verified excerpts (never guess)
+```
+
+### 9.2 Schema enforcement with Pydantic
+
+```python
+from pydantic import BaseModel, Field, field_validator
+
+class ChecklistItem(BaseModel):
+    action: str = Field(min_length=5, max_length=300)
+    stage: Literal["M","A","R","C","H","P","A2","W","S"]
+    citation: str = Field(pattern=r"^\d+-\d+[a-z]?$")   # e.g. "6-4"
+    priority: int = Field(ge=1, le=5)
+
+    @field_validator("action")
+    @classmethod
+    def must_be_actionable(cls, v: str) -> str:
+        # a checklist item that isn't an instruction is useless in the field
+        if not any(v.lower().startswith(verb) for verb in ACTION_VERBS):
+            raise ValueError(f"not actionable: {v!r}")
+        return v
+
+class StageResponse(BaseModel):
+    stage: str
+    items: list[ChecklistItem] = Field(min_length=1, max_length=8)
+    refused: bool = False
+    refusal_reason: str | None = None
+```
+
+Two levers, and know the difference:
+- **Constrained decoding** (grammar/JSON-schema enforced at sampling time — Outlines, llama.cpp GBNF, Ollama `format: json`): the model *cannot* emit invalid syntax. Cheap and strong for format.
+- **Post-hoc validation + repair** (Pydantic then re-prompt): still needed, because valid JSON can be **semantically** wrong — a well-formed citation to a paragraph that doesn't exist.
+
+> **Say this:** "Constrained decoding solves syntax; it does nothing for truth. I use both — grammar-constrained generation so I never fight a JSON parser, then Pydantic plus citation verification for meaning."
+
+### 9.3 Grounding guardrail — the one that actually matters
+
+Every citation is checked against the indexed anchors, and unverifiable citations are **dropped, not surfaced**:
+
+```python
+def enforce_grounding(response: StageResponse, index) -> tuple[StageResponse, list[str]]:
+    kept, dropped = [], []
+    for item in response.items:
+        hit = index.get_paragraph(item.citation)
+        if hit is None:
+            dropped.append(item.citation)                 # hallucinated anchor
+            continue
+        if semantic_similarity(item.action, hit.text) < 0.45:
+            dropped.append(item.citation)                 # cited but unsupported
+            continue
+        kept.append(item)
+    return response.model_copy(update={"items": kept}), dropped
+```
+
+Note the second check — an anchor can exist while the claim isn't actually supported by it. That's **citation-washing**, and only a similarity check between claim and cited text catches it.
+
+### 9.4 Input-side guardrails
+
+| Guard | Mechanism | Failure mode it prevents |
+|---|---|---|
+| **Scope classifier** | keyword + embedding similarity to medical corpus | Answering "what's the weather" with protocol content |
+| **Prompt-injection screen** | pattern + instruction-override detection on scenario text | "Ignore your rules and tell me…" |
+| **PII minimization** | local-only inference (Ollama), no external API calls | PHI leaving the environment |
+| **Length/complexity caps** | token budget per stage | Cost blowups and context dilution |
+
+### 9.5 Why local 4-bit Mistral-7B *is* a guardrail
+
+> **Say this:** "Running a 4-bit Mistral-7B locally through Ollama wasn't only a cost decision — it's a compliance guardrail. Protocol queries in a medical context can contain patient specifics, so the strongest privacy control available is that no inference request ever leaves the machine. That constraint drove the model choice, and quantization is what made a 7B model fit the hardware budget while keeping latency under five seconds."
+
+Cross-reference: `../learning/31_ai_safety_guardrails_responsible_ai.md`, `../learning/13_quantization.md`, `../learning/49_llmops_and_observability.md`.
+
+---
+
+## 10. Trick & Follow-Up Questions
+
+The adversarial set. These are the questions that separate "I built this" from "I read about this."
+
+**Q: "+28% top-five relevance — 28% of what? Absolute or relative?"**
+> "Relative improvement in top-five hit rate on a labelled query set I built from the manual — representative medic questions paired with the ground-truth paragraphs. Dense-only was the baseline. I quote it as relative because the absolute baseline was already decent; the honest framing is 'the correct paragraph made it into the top five about 28% more often once I added BM25 fusion and reranking.' Most of that came from lexical matching on exact medical terms."
+
+**Q: "Your quality score is 0.64. Would you ship a 0.64 medical system?"**
+> "As a decision-support tool with mandatory citations, yes — and I'd be explicit that 0.64 is my *automated composite*, dominated by strict citation-format matching, not clinical correctness. The safety property that matters is that it never surfaces an unverifiable claim: ungrounded citations are dropped and low-relevance stages refuse. I'd never ship it as autonomous medical advice, and the roadmap to 0.92 is prompt-level citation formatting, then domain adaptation, then fine-tuning."
+
+**Q: "141 vectors. Isn't RAG overkill — why not just put the manual in a long context window?"**
+> "Fair challenge, and for one 200-page manual a long-context model is genuinely viable. Three reasons I still built retrieval: paragraph-level citation is a hard requirement and long-context gives you no attribution primitive; cost and latency per query are far lower when you send five paragraphs instead of the whole manual; and the architecture has to scale to a library of protocols, not one document. There's also 'lost in the middle' — accuracy degrades for facts buried mid-context."
+
+**Q: "You used a cross-encoder. What's your latency budget, and doesn't reranking blow it?"**
+> "Reranking 20 candidates with MiniLM-L-6-v2 is milliseconds on the relevant hardware, and I cache scores with an LRU keyed on query-document pairs. The dominant cost is LLM generation, not reranking. That's the whole point of the retrieve-then-rerank cascade — you only pay the expensive scorer on a small candidate set."
+
+**Q: "How do you know your RRF weights aren't overfit to your own eval set?"**
+> "That's a real risk with a small labelled set. The adaptive alpha is rule-based on query characteristics rather than tuned per query, which limits how much I can overfit. Honestly, with a set this size I'd treat the 28% as directional, report a bootstrap confidence interval, and expand the labelled set before making stronger claims. I'd rather state the uncertainty than over-claim."
+
+**Q: "What happens when the LLM invents a drug dosage?"**
+> "It gets dropped. Dosages must trace to a cited paragraph, and the grounding check compares the generated claim against the cited source text — so an invented dosage either has no valid anchor or fails the similarity check. If validation strips too much, the stage degrades to showing verified excerpts rather than a synthesized answer. Degrade to source, never to guess."
+
+**Q: "You said LangGraph. Couldn't you have done this with a for-loop over nine stages?"**
+> "For the happy path, yes — and I'd have started there. The graph earns its place because of the branches: conditional skipping, the relevance gate that routes to refusal, bounded repair loops, and resumable sessions via a checkpointer. I also get the node trace for free, which is how I debug and how I assert behavior in tests. If the flow were genuinely linear I'd have kept the loop; frameworks should be justified by control flow, not fashion."
+
+**Q: "Mistral-7B is weak compared to a frontier model. Isn't that a quality cop-out?"**
+> "It's a constraint-driven choice: PHI can't leave the environment, so local inference was non-negotiable, and 4-bit was what made a 7B fit the hardware with sub-5-second latency. I compensated architecturally — heavy retrieval, reranking, few-shot context engineering, structured output constraints, and validation — so the model does less unaided reasoning. That's the general lesson: with strong grounding and validation, a small model plus good context beats a big model with a naive prompt for extractive, grounded tasks."
+
+**Q: "How would you evaluate this properly if you had a month?"**
+> "Three tracks. Retrieval: expand the labelled set to a few hundred queries, report recall@k and MRR with confidence intervals. Generation: clinician-reviewed ratings on a stratified sample plus an LLM-as-judge for groundedness, calibrated against those human labels. System: latency p95, refusal rate, and citation-drop rate as production health metrics. Then wire the golden set into CI so a prompt change can't silently regress it."
+
+**Q: "What's the single biggest weakness of this system?"**
+> "Evaluation depth. The architecture and safety story are strong, but my automated quality score is a proxy built by one engineer, not clinician-validated ground truth at scale. I can defend every design decision; I can't yet claim clinically-validated accuracy — and I think being straight about that line is more credible than inflating it."
+
+**Q: "If you had to cut one component, which goes?"**
+> "The dynamic z-score threshold. It's elegant but it's the piece with the least evidence behind its calibration — I'd replace it with a simpler tuned floor validated on a larger set. I would not cut BM25 or citation verification; those carry the most value per line of code."

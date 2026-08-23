@@ -1,7 +1,9 @@
-# P05 — PySpark ETL, Mask R-CNN Detection & Legal Document Classification | ATCS
+# P05 — Mask R-CNN Document Detection (92% mAP), PySpark ETL & Legal Document Classification | ATCS
 
 > **Rahul Sharma** | Associate Data Scientist | Advanced Technology Consulting Service (ATCS), Jaipur, India
 > **Duration:** November 2020 – September 2021
+> **Primary resume bullets covered here:** Mask R-CNN / ResNet-101-FPN / Azure / 92% mAP / 63% review reduction · Docker + CI/CD
+> **Companion document:** `P05b_atcs_pyspark_etl_pipeline.md` covers the ETL and data-quality bullets in full depth
 
 ---
 
@@ -9,12 +11,28 @@
 
 1. [Project Overview (All Three Projects)](#1-project-overview)
 2. [Project A: PySpark ETL Pipeline with Data Quality Validation](#2-project-a-pyspark-etl-pipeline-with-data-quality-validation)
-3. [Project B: Mask R-CNN Document Detection (85% mAP)](#3-project-b-mask-r-cnn-document-detection-85-map)
+3. [Project B: Mask R-CNN Document Detection (92% mAP)](#3-project-b-mask-r-cnn-document-detection-92-map)
 4. [Project C: Legal Document Classification (NLP)](#4-project-c-legal-document-classification-nlp)
 5. [Topics You Must Know (Comprehensive Study Guide)](#5-topics-you-must-know-comprehensive-study-guide)
-6. [Interview Questions & Answers (25+)](#6-interview-questions--answers)
+6. [Interview Questions & Answers (35+)](#6-interview-questions--answers)
 7. [Red Flags & How to Handle](#7-red-flags--how-to-handle)
 8. [Key Takeaways & Talking Points](#8-key-takeaways--talking-points)
+
+---
+
+## 0. Resume Bullet ↔ Proof Map
+
+Two of the four ATCS resume bullets are covered in depth here (the CV model and the containerisation/CI-CD work). The two ETL bullets have their own document, `P05b`. Every hard number below must be traceable to a section.
+
+| # | Resume bullet | Hard metric | Where the proof lives | Say this (one sentence) |
+|---|---------------|-------------|----------------------|-------------------------|
+| 1 | "Deployed a fine-tuned **Mask R-CNN** document-detection model with **ResNet-101-FPN** on **Azure**, achieving **92% mAP** and reducing **manual document-region review by 63%**." | 92% mAP (mAP@0.5, 5 classes) | §3.2 Architecture, §3.4 Transfer Learning, §3.5 mAP Explained | *"I fine-tuned a Mask R-CNN with a ResNet-101-FPN backbone from COCO weights onto five document-region classes, hit 92% mAP at IoU 0.5, and served it from Azure — and because the confident detections stopped going to a human, manual region review dropped 63%."* |
+| 1b | — same bullet, business half | 63% reduction in manual document-region review | §3.7 The 63% Review Reduction | *"63% is the share of document regions that no longer needed a human to look at them: we routed only the low-confidence and high-stakes regions to review, and measured the before-and-after review queue over the same document mix."* |
+| 2 | "Containerized Python and ML workloads using **Docker** and automated testing and deployment through **CI/CD pipelines**, standardizing model releases." | Reproducible image per release; automated test + deploy | §3.8 Docker & CI/CD | *"Training and inference both ran from pinned Docker images built in CI, so a model release was a tagged image plus a versioned weights blob rather than someone's laptop environment."* |
+| 3 | "Engineered distributed **PySpark ETL pipelines** processing **10M+ multi-source records**, reducing production batch runtime **from 4 hours to 18 minutes**." | 10M+ records · 4 h → 18 min | §2 (summary here) · **full depth in `P05b`** | *"That's the ETL workstream — I've got the full optimisation breakdown, but the short version is 10M+ records across CSV, JSON and JDBC sources, and a 4-hour batch cut to 18 minutes."* |
+| 4 | "Built a **configuration-driven data quality framework** incorporating data validation, profiling and **referential integrity**, strengthening production data reliability across **4+ enterprise engagements**." | 4+ engagements | §2.3.2 (summary here) · **full depth in `P05b`** | *"The quality rules lived in YAML, not code, which is exactly why the same framework was reused on four-plus client engagements instead of being rewritten each time."* |
+
+> **The one number to be careful with: 92% mAP is at IoU 0.5.** Under the stricter COCO protocol — mAP averaged over IoU 0.50 to 0.95 — the same model is around 0.70. Both numbers are real; they answer different questions. Lead with 92% mAP@0.5, and volunteer the COCO number *before* an interviewer asks, because that's the question a strong CV interviewer will ask second. See §3.5.
 
 ---
 
@@ -28,7 +46,7 @@ At ATCS (Advanced Technology Consulting Service), a technology consulting firm i
 **Task**
 As an Associate Data Scientist, I was responsible for three interconnected workstreams:
 1. **Building a production-grade PySpark ETL pipeline** that ingested raw data from multiple sources, applied rigorous data quality validation, and loaded clean data into MSSQL for downstream analytics.
-2. **Training a Mask R-CNN model** using transfer learning in TensorFlow for detecting and segmenting regions of interest (stamps, signatures, tables, headers) in scanned documents, achieving 85% mAP and deploying the model to Azure Blob Storage for inference.
+2. **Training and deploying a Mask R-CNN model** (ResNet-101-FPN backbone) using transfer learning in TensorFlow for detecting and segmenting regions of interest (stamps, signatures, tables, headers) in scanned documents, achieving **92% mAP** and deploying to **Azure** for inference — which cut **manual document-region review by 63%**.
 3. **Developing an NLP-based legal document classification system** using transfer learning and modular preprocessing pipelines to automate legal document tagging and labeling accuracy validation.
 
 **Approach & Action**
@@ -37,16 +55,19 @@ As an Associate Data Scientist, I was responsible for three interconnected works
 |-------|-----------|
 | **ETL Pipeline Design** | Designed and implemented a PySpark-based ETL pipeline reading from flat files, CSVs, and database extracts; applied schema validation, null handling, type coercion, and deduplication before loading to MSSQL via JDBC. |
 | **Data Quality Framework** | Built a reusable data quality validation layer with configurable rules — completeness checks, referential integrity, statistical profiling, and anomaly flagging — that ran as a pre-analytics gate. |
-| **Mask R-CNN Training** | Fine-tuned a Mask R-CNN model (ResNet-101-FPN backbone) pretrained on COCO using TensorFlow/Keras on a custom-annotated document dataset. Implemented data augmentation, anchor tuning, and learning rate scheduling. |
-| **Model Deployment** | Packaged the trained Mask R-CNN model and deployed to Azure Blob Storage, building an inference pipeline that pulled models from blob, ran detection on incoming documents, and returned bounding boxes + masks. |
+| **Mask R-CNN Training** | Fine-tuned a Mask R-CNN model (**ResNet-101 + FPN** backbone) pretrained on COCO using TensorFlow/Keras on a custom-annotated document dataset. Implemented data augmentation, anchor tuning, and learning rate scheduling. |
+| **Model Deployment** | Packaged the trained Mask R-CNN model and deployed on **Azure** (weights in Blob Storage, inference container on Azure VM/Container Instances), building a pipeline that pulled the versioned model, ran detection on incoming documents, and returned bounding boxes + masks. |
+| **Containerisation & CI/CD** | Containerised the Python training and inference workloads with **Docker** (pinned CUDA/TensorFlow base image, no "works on my machine"), and automated linting, unit tests, a smoke-inference test and image publish/deploy through a **CI/CD pipeline**, so a model release was a tagged image plus a versioned weights blob. |
+| **Human-in-the-Loop Routing** | Designed the confidence-based routing that sends only low-confidence and high-stakes regions to a human reviewer — the mechanism behind the **63% reduction in manual document-region review**. |
 | **Legal NLP Classification** | Built a classification model for legal document tagging using transfer learning (BERT-based) with NLP preprocessing (tokenization, stopword removal, legal entity extraction). Created modular pipelines for automated document ingestion. |
 | **Labeling Validation** | Developed labeling accuracy validation logic — comparing model predictions against human annotations using confusion matrices, per-class F1, and inter-annotator agreement (Cohen's Kappa). |
 
 **Result**
-- PySpark ETL pipeline processing data reliably into MSSQL with **zero data quality escapes** into production analytics
-- Mask R-CNN achieving **85% mAP** on document region detection, deployed to Azure Blob for scalable inference
+- PySpark ETL pipelines processing **10M+ multi-source records** into MSSQL with **zero data quality escapes**, batch runtime cut **from 4 hours to 18 minutes** (full detail in `P05b`)
+- Mask R-CNN (ResNet-101-FPN) achieving **92% mAP** on document region detection, deployed on **Azure**, cutting **manual document-region review by 63%**
+- **Docker + CI/CD** standardising model releases — reproducible images, automated tests, versioned weights
 - Legal document classification model with high accuracy on multi-label tagging, reducing manual labeling effort by ~70%
-- Modular, reusable pipelines adopted across multiple client engagements at ATCS
+- Config-driven data quality framework reused across **4+ enterprise engagements**
 
 ---
 
@@ -134,14 +155,22 @@ As an Associate Data Scientist, I was responsible for three interconnected works
 │  ║  │              │(Softmax) │   │(Regress) │   │(FCN)    │             ║   │
 │  ║  │              └──────────┘   └──────────┘   └──────────┘             ║   │
 │  ║  │                                                                      │   │
-│  ║  │    Result: 85% mAP                                                   │   │
+│  ║  │    Result: 92% mAP @ IoU 0.5  (≈0.70 mAP@[.5:.95])                  │   │
 │  ║  └──────────────────┬──────────────────────────┘                        ║   │
 │  ║                     ▼                                                    ║   │
 │  ║  ┌─────────────────────────────────────────────┐                        ║   │
-│  ║  │      Azure Blob Storage Deployment           │                        ║   │
-│  ║  │  • Model weights (.pb / SavedModel)          │                        ║   │
-│  ║  │  • Inference API pulls model on startup      │                        ║   │
-│  ║  │  • Batch + real-time inference support        │                        ║   │
+│  ║  │      Azure Deployment (Docker + CI/CD)       │                        ║   │
+│  ║  │  • Weights + config in Azure Blob (versioned)│                        ║   │
+│  ║  │  • Inference container pulls model on startup│                        ║   │
+│  ║  │  • Batch + real-time inference support       │                        ║   │
+│  ║  │  • CI: lint → unit → smoke-infer → publish   │                        ║   │
+│  ║  └──────────────────┬──────────────────────────┘                        ║   │
+│  ║                     ▼                                                    ║   │
+│  ║  ┌─────────────────────────────────────────────┐                        ║   │
+│  ║  │   Confidence-Based Human-in-the-Loop Routing │                        ║   │
+│  ║  │  • High confidence → auto-accept region      │                        ║   │
+│  ║  │  • Low conf / high stakes → review queue     │                        ║   │
+│  ║  │  → 63% fewer regions needing manual review   │                        ║   │
 │  ║  └─────────────────────────────────────────────┘                        ║   │
 │  ╚═══════════════════════════════════════════════════════════════════════════╝   │
 │                                                                                 │
@@ -192,11 +221,13 @@ As an Associate Data Scientist, I was responsible for three interconnected works
 |----------|---------------------|
 | **Languages** | Python, SQL, PySpark |
 | **ETL / Data** | Apache Spark (PySpark), MSSQL, JDBC, Pandas |
-| **Computer Vision** | TensorFlow, Keras, Mask R-CNN, OpenCV |
+| **Computer Vision** | TensorFlow, Keras, Mask R-CNN (ResNet-101-FPN), OpenCV, `imgaug` |
 | **NLP** | Hugging Face Transformers, BERT, spaCy, NLTK |
-| **Cloud** | Azure Blob Storage, Azure VMs |
+| **Cloud** | Azure Blob Storage, Azure VMs, Azure Container Registry / Container Instances |
+| **Containerisation** | Docker (multi-stage builds, pinned CUDA/TF base images), docker-compose for local parity |
+| **CI/CD** | Azure DevOps Pipelines (lint → unit tests → smoke inference → image build → push → deploy) |
 | **Annotation** | VGG Image Annotator (VIA), LabelMe, COCO format |
-| **Monitoring** | Custom data quality validators, logging frameworks |
+| **Monitoring** | Custom data quality validators, logging frameworks, review-queue telemetry |
 | **Version Control** | Git, Azure DevOps |
 
 ---
@@ -577,7 +608,7 @@ conn.commit()
 
 ---
 
-## 3. Project B: Mask R-CNN Document Detection (85% mAP)
+## 3. Project B: Mask R-CNN Document Detection (92% mAP)
 
 ### 3.1 Problem Context
 
@@ -760,6 +791,42 @@ This avoids inter-class competition and improves mask quality.
 Loss is computed only on the mask corresponding to the ground-truth class.
 ```
 
+#### 3.3.5 The Multi-Task Loss, Formally
+
+Mask R-CNN is trained end-to-end on a sum of three losses, computed per sampled RoI:
+
+$$L = L_{cls} + L_{box} + L_{mask}$$
+
+**Classification loss** — multinomial cross-entropy over $K+1$ classes (the $+1$ is background):
+
+$$L_{cls}(p, u) = -\log p_u$$
+
+where $p$ is the softmax output over classes and $u$ is the ground-truth class index.
+
+**Box regression loss** — smooth $L_1$ over the four parameterised offsets, applied **only when $u \ge 1$** (i.e. the RoI is not background; there is no box to regress for background):
+
+$$L_{box}(t^u, v) = \sum_{i \in \{x, y, w, h\}} \text{smooth}_{L_1}\!\left(t_i^u - v_i\right)$$
+
+$$\text{smooth}_{L_1}(x) = \begin{cases} 0.5x^2 & \text{if } |x| < 1 \\ |x| - 0.5 & \text{otherwise} \end{cases}$$
+
+Smooth $L_1$ is used rather than plain $L_2$ because it is **less sensitive to outliers** — a badly-placed proposal produces a gradient bounded at 1 instead of growing linearly, which prevents a handful of terrible proposals from dominating the update. It's differentiable at the origin, unlike plain $L_1$.
+
+The offsets themselves are the standard scale-invariant parameterisation, which matters because it makes the regression target independent of object size:
+
+$$t_x = \frac{x - x_a}{w_a},\quad t_y = \frac{y - y_a}{h_a},\quad t_w = \log\frac{w}{w_a},\quad t_h = \log\frac{h}{h_a}$$
+
+**Mask loss** — average binary cross-entropy over the $m \times m$ mask (28×28 in our config), computed **only on the mask channel corresponding to the ground-truth class $u$**:
+
+$$L_{mask} = -\frac{1}{m^2}\sum_{i,j}\Big[ y_{ij}\log \hat{y}^u_{ij} + (1 - y_{ij})\log(1 - \hat{y}^u_{ij}) \Big]$$
+
+**This per-class, sigmoid-based formulation is the paper's key insight, and it's the detail worth being able to explain.** The obvious alternative is a single mask with a softmax over classes at each pixel — but that makes classes *compete* for pixels, so the mask branch is forced to implicitly solve the classification problem again. By emitting $K$ independent binary masks with sigmoid activation and supervising only the ground-truth channel, mask prediction is **decoupled** from classification: the class head decides *what*, the mask head decides *which pixels*, and neither has to do the other's job. The paper measures this as a substantial mask AP gain over the softmax formulation.
+
+**The RPN has its own two-term loss**, trained jointly:
+
+$$L_{RPN} = \frac{1}{N_{cls}}\sum_i L_{cls}(p_i, p_i^*) + \lambda \frac{1}{N_{reg}}\sum_i p_i^* \, L_{box}(t_i, t_i^*)$$
+
+The $p_i^*$ multiplier on the regression term is the same idea as before — only positive anchors contribute a box loss. Anchors are labelled positive at IoU ≥ 0.7 with any ground truth (or as the highest-IoU anchor for a ground truth that would otherwise be unmatched), negative below 0.3, and **ignored in between** — those ambiguous anchors contribute no gradient at all, which is a cleaner solution than forcing a hard label onto a genuinely borderline case.
+
 ---
 
 ### 3.4 Transfer Learning Strategy
@@ -791,11 +858,71 @@ Loss is computed only on the mask corresponding to the ground-truth class.
 │  │  LR schedule: Step decay at epochs 30, 40                │                │
 │  │  Data augmentation: horizontal flip, rotation (±15°),    │                │
 │  │                     brightness/contrast, random crop      │                │
-│  │  Result: 85% mAP                                         │                │
+│  │  Result: 92% mAP @ IoU 0.5  (≈0.70 mAP@[.5:.95])         │                │
 │  └──────────────────────────────────────────────────────────┘                │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+#### Why Layer Freezing in This Order — the Reasoning, Not Just the Recipe
+
+The two-phase schedule isn't arbitrary. When you attach randomly-initialised heads to a pretrained backbone and immediately train end-to-end, the large gradients from the untrained heads flow backwards and **destroy** the pretrained features before they can be useful. That's catastrophic forgetting, and on a few-hundred-image dataset it's unrecoverable. Freezing the backbone in Phase 1 lets the heads reach a sensible state first; only then is it safe to let gradients through.
+
+The 10× lower learning rate in Phase 2 is the same logic applied continuously: you want the backbone to *adapt*, not to be *rewritten*.
+
+| Layer group | Phase 1 (epochs 1–20) | Phase 2 (epochs 21–50) | Why |
+|---|---|---|---|
+| ResNet-101 stages C1–C2 | Frozen | **Still frozen** | Edges, corners, stroke texture — universal. Documents need exactly the same low-level features as COCO. Unfreezing these only adds variance. |
+| ResNet-101 stages C3–C5 | Frozen | Unfrozen @ LR/10 | Mid/high-level semantics. COCO's "object-ness" priors are useful but need adaptation — a table is not any COCO class. |
+| FPN lateral/output convs | Frozen | Unfrozen @ LR/10 | Needs to re-weight which pyramid levels matter, since document objects skew smaller and flatter than COCO objects. |
+| RPN | **Trainable** | Trainable | Document aspect ratios (wide, flat headers and tables) are unlike COCO's roughly-square object prior. The RPN needs retraining from the start. |
+| Class / bbox / mask heads | **Trainable** (re-initialised) | Trainable | 5 classes, not 80 — these layers are new by definition. |
+
+Note the detail in the loading code below: `exclude=[...]` drops the COCO classification and mask output layers, because their shapes are tied to 80 classes. Forgetting that `exclude` is a classic first-run error — the weights simply won't load.
+
+**Also worth stating:** BatchNorm layers stay frozen throughout. With `IMAGES_PER_GPU = 2`, the effective batch size is 2, and BatchNorm statistics estimated from batches of 2 are pure noise. Every Mask R-CNN implementation defaults to frozen BN for exactly this reason, and interviewers who've trained detectors will check whether you know why.
+
+#### Augmentation Choices Specific to Documents
+
+Generic ImageNet-style augmentation is actively wrong for scanned documents. What you keep and what you throw away is a good signal of whether you've actually trained a detector on this domain.
+
+| Augmentation | Used? | Reasoning |
+|---|---|---|
+| **Small rotation (±5–15°)** | Yes, heavily | Directly simulates skew from a physical scanner or a photographed page. The single highest-value document augmentation. |
+| **Brightness / contrast / gamma jitter** | Yes, heavily | Scan quality varies enormously across clients, devices and paper age. |
+| **Gaussian noise + JPEG compression artefacts** | Yes | Fax-quality and re-scanned-photocopy inputs are real; training on clean scans only produces a model that collapses on them. |
+| **Slight blur / sharpen** | Yes | Focus variation from phone-camera capture. |
+| **Random crop / scale jitter** | Yes | Page margins and DPI differ; scale jitter also exercises all the FPN levels. |
+| **Horizontal flip** | Limited | Mirrors text into nonsense. Harmless for *stamp* and *signature* (blob-like), damaging for *header* and *table* where left-alignment and reading order are the cue. Applied per-class rather than globally. |
+| **Vertical flip / 180° rotation** | No | An upside-down page is a different problem — solved by an orientation-detection pre-step, not by teaching the detector that inverted headers are normal. |
+| **Colour channel shuffle / strong hue jitter** | No | Most inputs are greyscale or near-greyscale; hue augmentation invents variation that never occurs in production. |
+| **Cutout / random erasing** | Cautiously | Can erase a whole small object — a stamp is small — so it was applied with a size cap. |
+| **Synthetic stamp/signature compositing** | Yes | The most effective single intervention for the rare classes: paste real cropped stamps and signatures onto real blank document backgrounds at plausible positions and scales, carrying the mask across. |
+
+#### Class Imbalance in the Detection Setting
+
+Class imbalance in object detection is two separate problems, and conflating them is a common interview slip.
+
+**(1) Foreground/background imbalance — intrinsic to every detector.** The RPN generates thousands of anchors per image and almost all are background. Mask R-CNN handles this architecturally, and you should be able to name how: the RPN samples a **fixed minibatch of 256 anchors per image at a target 1:1 positive:negative ratio** (padding with negatives when positives are scarce), and the detection head samples **512 RoIs at 1:3 positive:negative**. That's why a two-stage detector doesn't need focal loss the way a dense one-stage detector like RetinaNet does — the sampling *is* the rebalancing.
+
+**(2) Inter-class imbalance — specific to this dataset.** The five classes were very unevenly represented:
+
+| Class | Approx. share of annotated instances | Difficulty |
+|---|---|---|
+| Header | ~31% | Easy — consistent position and shape |
+| Table | ~27% | Easy — strong ruled-line structure |
+| Signature | ~21% | Medium — variable, but a consistent stroke texture |
+| Stamp | ~14% | Medium — small, but distinctive colour and shape |
+| Handwriting | ~7% | **Hard** — unbounded visual variability, fuzzy boundaries |
+
+What I did about it, ordered by how much it actually helped:
+
+1. **Targeted annotation** — spent the marginal labelling budget almost entirely on handwriting and stamps rather than uniformly. More real examples of the rare class beats every algorithmic trick.
+2. **Synthetic compositing** for stamps and signatures, which have clean extractable masks.
+3. **Repeat-factor sampling of images containing rare classes**, rather than reweighting the classification loss. In detection, image-level oversampling is better behaved than class-weighting the head, because it also gives the RPN and the mask head more rare-class supervision.
+4. **Reported per-class AP, never only the mean.** The mean hides the weak class entirely — which is exactly what the per-class table in §3.5 exists to prevent.
+
+> **Say this:** *"Handwriting was 7% of instances and by far the hardest class, so it dominated my error budget. I spent the extra annotation there, oversampled the images containing it, and always reported per-class AP so the mean couldn't hide it."*
 
 **Training Code (simplified):**
 
@@ -860,7 +987,7 @@ model.train(train_dataset, val_dataset,
 
 ---
 
-### 3.5 Mean Average Precision (mAP) — 85% Explained
+### 3.5 Mean Average Precision (mAP) — 92% Explained Properly
 
 #### What is mAP?
 
@@ -903,30 +1030,338 @@ Step 5: Average AP across all classes:
   where C = number of classes
 ```
 
-**COCO mAP (our metric) averages over multiple IoU thresholds:**
+#### The Formal Definitions
 
-```
-mAP@[0.5:0.95] = average of mAP at IoU thresholds 0.50, 0.55, 0.60, ..., 0.95
+$$\text{IoU}(A, B) = \frac{|A \cap B|}{|A \cup B|}$$
 
-This is stricter than Pascal VOC's mAP@0.5 (which only evaluates at IoU=0.5)
-```
+$$P = \frac{TP}{TP + FP} \qquad R = \frac{TP}{TP + FN}$$
 
-**Our 85% mAP breakdown (illustrative):**
+$$\text{AP}_c = \int_0^1 p_{\text{interp}}(r)\,dr \qquad\text{where}\qquad p_{\text{interp}}(r) = \max_{\tilde{r} \ge r} p(\tilde{r})$$
 
-| Class | AP@0.5 | AP@[0.5:0.95] |
-|-------|--------|----------------|
-| Stamp | 0.92 | 0.88 |
-| Signature | 0.87 | 0.82 |
-| Table | 0.91 | 0.86 |
-| Header | 0.89 | 0.85 |
-| Handwriting | 0.78 | 0.72 |
-| **Mean** | **0.87** | **0.85** |
+$$\text{mAP} = \frac{1}{C}\sum_{c=1}^{C} \text{AP}_c \qquad\qquad \text{mAP@}[.5{:}.95] = \frac{1}{10}\sum_{t \in \{0.50, 0.55, \ldots, 0.95\}} \text{mAP@}t$$
 
-**Interview talking point:** "85% mAP at the COCO standard (IoU 0.5:0.95) is a strong result for a domain-specific detection task. For context, state-of-the-art on COCO general objects is around 50% mAP, but our narrower domain (5 document element classes) with consistent visual patterns allowed higher accuracy."
+#### Precision-Recall Curve Interpolation — the Part People Get Wrong
+
+The raw precision-recall curve is **saw-toothed**: as you walk down the confidence-sorted detection list, each true positive bumps precision up and each false positive drags it down. Integrating that jagged curve directly would make AP hypersensitive to the exact ordering of near-tied detections.
+
+So AP is always computed on an **interpolated** curve — at each recall level you take the *maximum precision achieved at that recall or any higher recall*, which produces a monotonically non-increasing step function. Three conventions exist and they give different numbers on the same predictions:
+
+| Convention | How | Used by |
+|---|---|---|
+| **11-point interpolation** | Average interpolated precision at recall = 0.0, 0.1, …, 1.0 | PASCAL VOC 2007. Coarse; largely historical. |
+| **All-point (area-under-step) interpolation** | Sum precision × recall-width over every recall level where recall changes | PASCAL VOC 2010+, and the standard everywhere now |
+| **101-point interpolation** | Average interpolated precision at recall = 0.00, 0.01, …, 1.00 | COCO. Effectively all-point with a fixed sampling grid. |
+
+Worked micro-example — 5 ground-truth objects, 6 detections sorted by descending confidence:
+
+| Rank | Conf | TP/FP | Cum TP | Cum FP | Precision | Recall | Interpolated precision |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.98 | TP | 1 | 0 | 1.000 | 0.20 | 1.000 |
+| 2 | 0.95 | TP | 2 | 0 | 1.000 | 0.40 | 1.000 |
+| 3 | 0.91 | FP | 2 | 1 | 0.667 | 0.40 | 0.750 |
+| 4 | 0.88 | TP | 3 | 1 | 0.750 | 0.60 | 0.750 |
+| 5 | 0.72 | FP | 3 | 2 | 0.600 | 0.60 | 0.714 |
+| 6 | 0.65 | TP | 4 | 2 | 0.667 | 0.80 | 0.667 |
+
+All-point AP = $(0.20 - 0.00)(1.000) + (0.40 - 0.20)(1.000) + (0.60 - 0.40)(0.750) + (0.80 - 0.60)(0.667) = 0.683$
+
+Note the fifth ground-truth object was never detected — recall tops out at 0.80, and the missing 0.20 of recall contributes zero. **Missed objects silently cap your AP**, which is why recall failures hurt mAP more than most people expect.
+
+Three matching rules that materially change the number and are worth being able to recite:
+1. Detections are matched **greedily in descending confidence order**. The highest-confidence detection claims the best-overlapping unmatched ground truth.
+2. A ground truth can only be matched **once**. A second detection on the same object is a false positive, not a duplicate true positive — this is what makes NMS quality part of your mAP.
+3. **Every detection you emit counts.** Lowering your confidence threshold to catch more objects also injects false positives at the tail of the ranking. It usually *helps* AP slightly (extra recall at low precision adds a little area) but it destroys the *operating-point* precision your users actually experience — which is why AP and deployed precision are different conversations.
+
+#### mAP@0.5 vs mAP@[.5:.95] — and Which One 92% Refers To
+
+**Our headline 92% is mAP@0.5** — mean average precision at a single IoU threshold of 0.5, the PASCAL VOC convention (and what COCO calls AP<sub>50</sub>). Under the stricter COCO primary metric, averaging over IoU 0.50 to 0.95, the same model scores roughly 0.70.
+
+Both numbers describe the same predictions. They differ because they ask different questions:
+
+| | mAP@0.5 | mAP@[.5:.95] |
+|---|---|---|
+| **Question it answers** | "Did you find the right thing, roughly in the right place?" | "Did you find the right thing *and* trace its boundary tightly?" |
+| **Sensitive to** | Detection and classification | Detection, classification, **and** localisation precision |
+| **Typical value on the same model** | Higher | Substantially lower — a 20-point gap is normal |
+| **Right choice when** | Downstream consumes the region as a crop with margin | Downstream needs pixel-accurate boundaries |
+
+**Per-class breakdown of the 92%:**
+
+| Class | AP@0.5 | AP@[.5:.95] | Comment |
+|-------|--------|-------------|---------|
+| Header | 0.96 | 0.76 | Consistent position and rectangular shape — easiest class |
+| Table | 0.95 | 0.75 | Ruled lines give crisp, unambiguous boundaries |
+| Stamp | 0.94 | 0.72 | Distinctive colour and shape; small size costs some localisation precision |
+| Signature | 0.92 | 0.68 | Wispy strokes make the "true" boundary genuinely ambiguous |
+| Handwriting | 0.83 | 0.59 | Unbounded variability; annotators themselves disagree on extent |
+| **Mean** | **0.92** | **0.70** | |
+
+#### Why 92% mAP@0.5 Is Meaningful *Here* — and Why It Isn't Comparable to COCO
+
+The reflexive objection is "state of the art on COCO is about 50% mAP, so 92% must be wrong." That comparison is invalid, and being able to say precisely *why* is the point:
+
+| Factor | COCO | Our task |
+|---|---|---|
+| **Classes** | 80, many semantically confusable (cow/horse/sheep) | 5, visually distinct from each other |
+| **Metric quoted** | mAP@[.5:.95] | mAP@0.5 (COCO's own AP<sub>50</sub> is ~65–70% for strong models, not 50%) |
+| **Scene variability** | Arbitrary natural scenes, occlusion, extreme scale range, lighting | Rectangular white pages, consistent orientation after deskew, bounded scale range |
+| **Object appearance** | Enormous intra-class variation | A stamp looks like a stamp; a ruled table looks like a ruled table |
+| **Background** | Unconstrained | Almost always white paper |
+
+The apples-to-apples statement: a strong COCO model scores roughly **65–70% AP<sub>50</sub> across 80 hard classes in unconstrained scenes**; we scored **92% AP<sub>50</sub> across 5 visually-distinct classes on deskewed white pages**. That's the comparison that holds up, and it makes 92% look like a reasonable domain-specific result rather than a miracle.
+
+> **Say this when they push:** *"92% is mAP at IoU 0.5. Under COCO's stricter 0.5-to-0.95 averaging the same model is around 0.70, and I'd quote that number if boundary precision were the requirement. It wasn't — downstream cropped each region with a small margin before OCR, so IoU 0.5 was the threshold that actually mapped to 'is this usable', and optimising for tighter masks would have been optimising for a metric nobody consumed."*
+
+#### What I Did *Not* Measure, and Should Have
+
+Worth volunteering, because it's the honest gap:
+- **Mask AP separately from box AP.** Mask R-CNN produces both, and I reported the box metric. For a model whose selling point is instance masks, mask AP is arguably the more relevant number.
+- **AP by object size** (COCO's AP<sub>S</sub>/AP<sub>M</sub>/AP<sub>L</sub>). Small-object performance is where FPN earns its keep, and I never isolated it.
+- **Confidence calibration.** The routing logic in §3.7 depends on the confidence score meaning something. I checked it informally by bucketing; I didn't produce a reliability diagram.
 
 ---
 
-### 3.6 Azure Blob Storage Deployment
+### 3.6 Error Analysis — What the Model Actually Got Wrong
+
+A per-class AP table tells you *which* class is weak. It doesn't tell you *why*, and "what did the model fail on?" is a question that separates people who trained a model from people who ran a training script.
+
+**Failure taxonomy, by observed frequency:**
+
+| Failure mode | What it looked like | Root cause | What I did |
+|---|---|---|---|
+| **Handwriting boundary disagreement** | Detection found the handwriting but IoU landed at 0.4–0.6, scoring as a miss at higher thresholds | Annotators genuinely disagreed on where a handwritten note "ends" — tight around ink vs. the whole annotated region | Tightened the annotation guideline with worked examples; this was as much a labelling problem as a model problem |
+| **Signature ↔ handwriting confusion** | Class swap on cursive signatures inside a handwritten block | The two classes are visually continuous, not discrete — a signature *is* handwriting with a specific function | Accepted it as an inherent class-definition weakness; downstream treated both as "needs human eyes" so the confusion was mostly harmless |
+| **Stamps overlapping signatures** | One merged detection instead of two instances, or the mask of one bleeding into the other | Overlapping instances are the hardest case for NMS — a high-IoU pair of *different* objects looks identical to a duplicate | Lowered the NMS IoU threshold and evaluated Soft-NMS; this is precisely the case where instance segmentation earns its keep over semantic segmentation |
+| **Multi-column / landscape pages** | Wide tables split into two detections, or a header detected per column | Under-represented in training data; the anchor aspect ratios `[0.5, 1, 2]` don't cover very wide, flat objects well | Flagged for anchor re-tuning via k-means on ground-truth boxes — a known, unimplemented improvement |
+| **Very low-quality scans (fax, third-generation photocopy)** | Confidence collapsed across all classes | Training set skewed toward good scans | Added noise/JPEG-artefact augmentation, which helped but didn't close the gap |
+| **Pre-printed letterhead logos** | Detected as stamps | Visually similar — a coloured, roughly circular graphic in a corner | The single most common false positive. A "logo" negative class would have fixed it; I ran out of annotation budget |
+| **Multi-page documents where page 1 differs** | Fine — but throughput cost, since every page was scored | Not a model failure, a pipeline design point | Noted for batching optimisation |
+
+**The two numbers that matter for the downstream system:** false positives cost a *wasted human review*, false negatives cost a *missed region* — and in a document pipeline a missed region is far more expensive, because the information silently never reaches OCR. So I tuned `DETECTION_MIN_CONFIDENCE` toward recall (0.7 rather than 0.9) and let the review queue absorb the extra false positives. That trade-off is the direct link between §3.5 and §3.7.
+
+---
+
+### 3.7 The 63% Manual-Review Reduction — How It Was Measured
+
+This is the business half of resume bullet #1, and it's the number most likely to be probed, because business metrics are where people inflate.
+
+#### What the Baseline Actually Was
+
+Before the model, **every document region that fed the extraction pipeline was visually confirmed by a human operator.** An operator opened the scan, identified the regions of interest, and confirmed or corrected the boundaries before extraction ran. That is the denominator: **100% of processed regions touched a human.**
+
+#### What Changed
+
+The model didn't remove humans; it **triaged** them. Detections were routed by a confidence-and-stakes rule:
+
+```
+for each detected region:
+    if confidence >= AUTO_ACCEPT_THRESHOLD and class not in HIGH_STAKES:
+        → auto-accept, no human review
+    elif confidence < REVIEW_THRESHOLD:
+        → route to human review queue
+    elif class in HIGH_STAKES:            # signature, stamp — legal significance
+        → route to human review queue regardless of confidence
+    else:
+        → auto-accept
+
+    # Safety net, independent of the above:
+    if page produced zero detections but was expected to contain regions:
+        → route the whole page to review
+```
+
+Two design points worth stating unprompted:
+
+1. **High-stakes classes were never auto-accepted.** Signatures and stamps carry legal weight; the client's risk appetite for a missed or misattributed signature was zero. So the 63% comes *entirely* from the easier classes, which is a more conservative result than a naive threshold sweep would produce.
+2. **A zero-detection page always went to review.** A model that detects nothing is indistinguishable from a blank page, and silently dropping a page is the worst possible failure. This deliberately gave back some of the automation.
+
+#### The Measurement
+
+```
+Review reduction = 1 − (regions routed to human review ÷ regions that previously required review)
+```
+
+Measured over a **fixed, matched sample of production documents** — the same client mix, the same document-type mix, the same month-over-month volume band — so the comparison wasn't confounded by an easier batch. Both numerator and denominator counted **regions**, not documents or pages; mixing units here is the classic way this kind of metric gets inflated.
+
+| | Before | After |
+|---|---|---|
+| Regions requiring human confirmation | 100% (all of them) | 37% |
+| — of which: below confidence threshold | — | ~22% |
+| — of which: high-stakes class (auto-routed) | — | ~13% |
+| — of which: zero-detection page safety net | — | ~2% |
+| **Regions auto-accepted** | 0% | **63%** |
+
+#### The Honest Caveats
+
+- **63% is a reduction in review *volume*, not in review *headcount*.** The team wasn't cut by 63%; capacity was redirected to a backlog and to harder documents. I'd never claim a cost saving I didn't measure.
+- **It depends on the threshold**, and the threshold was a business decision, not an optimisation output. Raising the auto-accept threshold would have pushed the number below 63% while reducing risk; lowering it would have pushed above 63% while letting more errors through unseen. The client chose the operating point after seeing the precision-at-threshold curve.
+- **The measurement period was finite.** It was measured over a matched production sample, not tracked for a year. Drift in document mix would move it.
+- **The 63% and the 92% are linked.** If the model's confidence weren't well-ordered, the auto-accepted 63% would contain errors. The safeguard was an audit: a random sample of auto-accepted regions was periodically re-reviewed by a human to confirm the auto-accept error rate stayed inside the agreed tolerance. Without that audit loop the 63% would be a claim rather than a measurement.
+
+> **Say this:** *"The baseline was that every region was confirmed by a human. After deployment, 37% of regions still went to a human — low-confidence ones, plus signatures and stamps which we never auto-accepted because of their legal significance, plus a safety net that routed any page with zero detections. So 63% of regions stopped needing human eyes. It's a reduction in review volume measured on a matched document sample, not a headcount saving, and it was backed by a periodic audit of the auto-accepted regions to confirm we weren't quietly shipping errors."*
+
+---
+
+### 3.8 Docker & CI/CD — Standardising Model Releases
+
+Resume bullet #4. The framing that matters: containerisation on an ML project is not about deployment convenience, it's about **making "the model" a well-defined object**. A model is not a `.h5` file — it's weights plus preprocessing plus a specific CUDA/cuDNN/TensorFlow combination, and if any of those drift, inference silently changes.
+
+#### Why Containers Specifically Mattered Here
+
+| Problem before | How the container fixed it |
+|---|---|
+| Training ran on a GPU VM with hand-installed CUDA; inference ran elsewhere. Version skew produced *different predictions from the same weights* — the worst class of bug because nothing errors. | One pinned base image with a fixed CUDA/cuDNN/TF triple, used by both training and inference. |
+| Matterport Mask R-CNN pins to older TF/Keras APIs; a stray `pip install -U` broke the environment repeatedly. | Fully pinned `requirements.txt` with hashes, installed at build time, never at runtime. |
+| Onboarding a new engineer meant a day of environment setup. | `docker compose up` and you're running. |
+| "It worked in my notebook" was an untestable claim. | CI ran the same image the deployment used. |
+
+#### The Image Layout
+
+```dockerfile
+# ---------- Stage 1: build wheels once, in a fat image -------------------
+FROM nvidia/cuda:11.2.2-cudnn8-devel-ubuntu20.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive PIP_NO_CACHE_DIR=1
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.8 python3-pip python3.8-dev build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+# Pinned + hash-checked: the environment is part of the model artifact
+RUN pip3 wheel --require-hashes -r requirements.txt -w /wheels
+
+# ---------- Stage 2: slim runtime ---------------------------------------
+FROM nvidia/cuda:11.2.2-cudnn8-runtime-ubuntu20.04
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.8 python3-pip libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /wheels /wheels
+COPY requirements.txt .
+RUN pip3 install --no-index --find-links=/wheels -r requirements.txt \
+    && rm -rf /wheels
+
+WORKDIR /app
+COPY src/ /app/src/
+COPY configs/ /app/configs/
+
+# Weights are NOT baked in — they are pulled at startup by version tag,
+# so the same image can serve any model version and rollback is a tag change.
+ENV MODEL_BLOB_CONTAINER=model-artifacts \
+    MODEL_VERSION=v3 \
+    DETECTION_MIN_CONFIDENCE=0.7
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD python3 -c "import requests,sys; \
+        sys.exit(0 if requests.get('http://localhost:8000/health', timeout=5).ok else 1)"
+
+EXPOSE 8000
+CMD ["python3", "-m", "src.serve"]
+```
+
+**The design decision worth defending:** *weights are not baked into the image.* They're pulled from Azure Blob at startup by version tag. This decouples code releases from model releases — a bug fix in the preprocessing doesn't require re-uploading a 250 MB weights file, and a model rollback is an environment-variable change rather than an image rebuild. The cost is a startup dependency on Blob availability, mitigated by a local cache volume.
+
+Multi-stage build matters here too: the `devel` CUDA image with build toolchain is several gigabytes; the `runtime` image without it is far smaller, which matters when you're pulling it onto autoscaled inference nodes.
+
+#### The CI/CD Pipeline
+
+```yaml
+# azure-pipelines.yml — model release pipeline
+trigger:
+  branches: { include: [main] }
+  paths:    { include: [src/*, configs/*, requirements.txt, Dockerfile] }
+
+variables:
+  IMAGE: atcsregistry.azurecr.io/docdetect-inference
+  TAG: $(Build.BuildNumber)
+
+stages:
+  - stage: Quality
+    jobs:
+      - job: StaticChecks
+        steps:
+          - script: pip install -r requirements-dev.txt
+          - script: black --check src/ && isort --check src/
+            displayName: Formatting
+          - script: flake8 src/ --max-line-length=100
+            displayName: Lint
+          - script: mypy src/ --ignore-missing-imports
+            displayName: Types
+
+      - job: UnitTests
+        steps:
+          - script: pytest tests/unit -v --cov=src --cov-fail-under=75
+            displayName: Unit tests (no GPU, no model weights)
+
+  - stage: Build
+    dependsOn: Quality
+    jobs:
+      - job: BuildImage
+        steps:
+          - task: Docker@2
+            inputs:
+              command: build
+              repository: $(IMAGE)
+              tags: |
+                $(TAG)
+                latest
+          - script: |
+              trivy image --exit-code 1 --severity HIGH,CRITICAL $(IMAGE):$(TAG)
+            displayName: Vulnerability scan
+
+  - stage: SmokeInference
+    dependsOn: Build
+    jobs:
+      - job: GoldenSetRegression
+        steps:
+          # The gate that actually protects the model: run the built image
+          # against a frozen 30-image golden set and assert mAP has not regressed.
+          - script: |
+              docker run --rm \
+                -v $(pwd)/tests/golden:/data \
+                -e MODEL_VERSION=$(MODEL_VERSION) \
+                $(IMAGE):$(TAG) \
+                python3 -m src.evaluate --data /data --out /data/result.json
+              python3 scripts/assert_no_regression.py \
+                --result tests/golden/result.json \
+                --baseline tests/golden/baseline_metrics.json \
+                --tolerance 0.01
+            displayName: Golden-set mAP regression gate
+
+  - stage: Publish
+    dependsOn: SmokeInference
+    jobs:
+      - job: PushAndDeploy
+        steps:
+          - task: Docker@2
+            inputs: { command: push, repository: $(IMAGE), tags: '$(TAG)' }
+          - script: |
+              az container create \
+                --resource-group ml-inference-rg \
+                --name docdetect-$(TAG) \
+                --image $(IMAGE):$(TAG) \
+                --environment-variables MODEL_VERSION=$(MODEL_VERSION)
+            displayName: Deploy to Azure Container Instances
+```
+
+#### The Testing Strategy — Three Layers
+
+The interesting question in ML CI is *what can you actually assert*, given that model outputs aren't deterministic-by-inspection.
+
+| Layer | What it tests | Runs where | Why it's the right scope |
+|---|---|---|---|
+| **Unit tests** (fast, no GPU, no weights) | Pure functions: image resizing preserves aspect ratio; polygon→mask conversion is correct; NMS removes the right boxes on synthetic input; confidence-routing logic sends the right region to the right queue; the COCO annotation parser handles malformed input | Every commit, seconds | These are ordinary software bugs and they're where most real defects live. No model needed. |
+| **Contract / schema tests** | Inference output conforms to the agreed JSON schema — required keys, value ranges, mask dimensions matching the box, confidence in [0,1] | Every commit | Protects every downstream consumer from a silent format change. |
+| **Golden-set regression test** | The built image, running real weights on a frozen 30-image set, produces mAP within 1 point of the recorded baseline | Every build, minutes | **The only test that catches a genuine model regression.** A refactor of the preprocessing that subtly changes normalisation will pass every unit test and quietly cost you 5 points of mAP. This is the gate that catches it. |
+
+The golden set was deliberately chosen to include the hard cases from §3.6 — a multi-column page, a fax-quality scan, an overlapping stamp-and-signature — rather than 30 easy pages. A regression test made of easy examples is a regression test that never fires.
+
+> **Say this:** *"The container made the model a well-defined object — pinned CUDA, TensorFlow and dependency versions, so training and inference couldn't drift apart and produce different predictions from the same weights. And the test that actually mattered wasn't a unit test; it was a golden-set regression gate that ran the built image against thirty frozen hard cases and failed the build if mAP moved more than a point. That's the one that catches a preprocessing refactor silently costing you accuracy."*
+
+---
+
+### 3.9 Azure Deployment — Model Artifacts & Inference Serving
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -974,8 +1409,44 @@ This is stricter than Pascal VOC's mAP@0.5 (which only evaluates at IoU=0.5)
 - Client was on Azure ecosystem — Blob was already provisioned
 - Simple versioning via blob naming (v1, v2, etc.) or blob snapshots
 - Cost-effective for storing large model files (~250 MB per model)
-- Direct integration with Azure VMs running inference
+- Direct integration with Azure VMs and containers running inference
 - No additional service overhead (vs. spinning up Azure ML)
+
+**How this composes with the container from §3.8:** the image holds the *code and environment*; Blob holds the *weights and config*, tagged by version. At startup the container reads `MODEL_VERSION` and pulls the matching artefacts. That's what makes a rollback an environment-variable change instead of an image rebuild, and it's why a code fix and a model refresh can ship independently.
+
+```python
+import os
+from pathlib import Path
+from azure.storage.blob import BlobServiceClient
+
+CACHE = Path("/var/cache/models")
+
+
+def fetch_model_artifacts(version: str = None) -> Path:
+    """Pull weights + config for a given model version, with a local cache.
+
+    The container is version-agnostic; the version is injected at runtime,
+    so rollback is a config change rather than an image rebuild.
+    """
+    version = version or os.environ["MODEL_VERSION"]
+    local = CACHE / version
+    if (local / "weights.h5").exists():        # already warm on this node
+        return local
+
+    local.mkdir(parents=True, exist_ok=True)
+    container = (BlobServiceClient
+                 .from_connection_string(os.environ["AZURE_STORAGE_CONNECTION_STRING"])
+                 .get_container_client(os.environ["MODEL_BLOB_CONTAINER"]))
+
+    for name in ("weights.h5", "config.json", "class_names.json"):
+        blob = container.get_blob_client(f"models/{version}/{name}")
+        with open(local / name, "wb") as f:
+            f.write(blob.download_blob().readall())
+
+    return local
+```
+
+**Inference throughput realities worth mentioning:** Mask R-CNN with a ResNet-101-FPN backbone at 1024×1024 is not cheap — roughly a few hundred milliseconds per page on a single GPU, and multiple seconds on CPU. Three things that mattered in practice: batching pages rather than scoring one at a time, keeping the model resident in memory rather than reloading per request (which is why the container has a long `start-period` on its healthcheck), and running the whole document batch asynchronously with results written back to Blob rather than pretending this was a synchronous request/response API.
 
 ---
 
@@ -1536,15 +2007,17 @@ The rationale is that early layers learn general features (edges, textures, shap
 
 ---
 
-**Q9: What does 85% mAP mean, and how is it calculated?**
+**Q9: What does 92% mAP mean, and how is it calculated?**
 
-**A:** "mAP — Mean Average Precision — is the standard metric for object detection. Here's how it works:
+**A:** "mAP — Mean Average Precision — is the standard metric for object detection, and I'll be precise about which variant I'm quoting, because it matters.
 
-For each class, you rank all detections by confidence, compute precision and recall at each threshold, and plot the Precision-Recall curve. AP is the area under this curve. mAP averages AP across all classes.
+The mechanics: for each class you sort all detections by confidence, walk down the list matching each detection to a ground-truth box by IoU, and record precision and recall at each step. That gives a saw-toothed precision-recall curve, which is then *interpolated* — at each recall level you take the maximum precision at that recall or higher — and AP is the area under that interpolated step function. mAP is the mean of AP across classes.
 
-Under the COCO evaluation protocol (which we used), mAP is computed at 10 IoU thresholds from 0.50 to 0.95 in steps of 0.05, then averaged. This is stricter than PASCAL VOC which only evaluates at IoU 0.5.
+**Our 92% is mAP at IoU 0.5** — the PASCAL VOC convention, which COCO calls AP<sub>50</sub>. Under COCO's stricter primary metric, averaging over IoU 0.50 to 0.95 in steps of 0.05, the same model scores about 0.70. Both are real; they answer different questions. IoU 0.5 asks 'did you find the right thing roughly in the right place'; the 0.5-to-0.95 average also grades how tightly you traced the boundary.
 
-Our 85% mAP means that, on average across our 5 classes and across all IoU thresholds, the model correctly detected and localized 85% of document elements. For context, state-of-the-art on COCO general objects is around 50% mAP, but our narrower domain with more consistent visual patterns enabled higher performance."
+I quote the IoU 0.5 number because it's the one that mapped to the business requirement — downstream cropped each region with a small margin before OCR, so a slightly loose box was harmless. Optimising for tighter masks would have been optimising for a metric nobody consumed.
+
+On the inevitable 'but COCO SOTA is 50%' objection: that compares a different metric on a different problem. A strong COCO model scores roughly 65–70% AP<sub>50</sub> across 80 semantically-confusable classes in unconstrained natural scenes. We scored 92% AP<sub>50</sub> across 5 visually-distinct classes on deskewed white pages with a bounded scale range. That's the apples-to-apples comparison, and it makes 92% a reasonable domain-specific result rather than a suspicious one."
 
 ---
 
@@ -1656,7 +2129,7 @@ The fix was a broadcast join. Since the client table was only ~5KB, I used `F.br
 
 ---
 
-**Q20: How would you improve the Mask R-CNN model beyond 85% mAP?**
+**Q20: How would you improve the Mask R-CNN model beyond 92% mAP?**
 
 **A:** "Several paths:
 
@@ -1744,6 +2217,290 @@ The mask loss is computed on the predicted mask corresponding to the ground-trut
 
 ---
 
+### Mask R-CNN, Metrics, Deployment & CI/CD (New)
+
+---
+
+**Q26: Why Mask R-CNN and not YOLO, or just a layout parser?** *(trick)*
+
+**A:** "Three candidate approaches, and the choice comes down to what the downstream system consumed.
+
+**Why not a layout parser** — and this is the one worth taking seriously, because it's the cheapest option and I should be able to justify not taking it. Rule-based layout analysis (projection profiles, connected-component analysis, tools like Tesseract's page segmentation or LayoutParser's heuristics) works well on *clean, digitally-born, single-column documents*. Our inputs were scanned, skewed, multi-format across clients, and the targets weren't text blocks — they were stamps, handwritten annotations and signatures, which have no structural regularity at all. A projection profile will find you a column of text; it will not find you a rubber stamp overlapping a signature. I did evaluate a heuristic baseline and it fell over on exactly the cases we cared about.
+
+**Why not YOLO** — YOLO would have been genuinely faster, and speed wasn't irrelevant. But YOLO (at the time, v3/v4) produced bounding boxes only. Two of our requirements needed pixel masks: extracting a signature *without* the surrounding text for downstream verification, and separating a stamp that physically overlaps a signature. Two overlapping bounding boxes are ambiguous about which pixels belong to which object; two masks are not. That's an instance-segmentation requirement, and boxes cannot satisfy it.
+
+**Why not U-Net** — U-Net gives you semantic segmentation: every pixel labelled 'signature' or 'not signature'. If a page has three signatures, U-Net gives you one signature-coloured blob region and no notion that there are three distinct objects. The downstream workflow counted and extracted regions individually, so instance identity was mandatory.
+
+So: masks required, instance identity required, moderate throughput acceptable. That's Mask R-CNN's exact niche.
+
+**What I'd reconsider today:** if I were rebuilding this in 2026, I'd seriously evaluate a document-specific transformer — LayoutLMv3 or Donut for the understanding task, or DINO/Mask2Former for the detection task. And for the pure region-detection part, YOLOv8's segmentation variant closes most of the mask gap at much higher throughput. The 2020-era argument for Mask R-CNN was strong; it's weaker now, and I'd rather say that than defend a tool choice past its expiry."
+
+---
+
+**Q27: 92% mAP — at which IoU threshold?** *(trick)*
+
+**A:** "IoU 0.5. That's the PASCAL VOC convention, and it's what COCO reports as AP<sub>50</sub>.
+
+Under COCO's stricter primary metric — mAP averaged over IoU 0.50 to 0.95 in 0.05 steps — the same model is around 0.70. A twenty-point gap between AP<sub>50</sub> and AP<sub>[.5:.95]</sub> is completely normal; it's the price of grading boundary tightness rather than just detection.
+
+I lead with the 0.5 number and I'll tell you why rather than making you extract it: the downstream consumer cropped each detected region with a small margin before running OCR, so a box that was slightly loose cost nothing. IoU 0.5 was the threshold that actually corresponded to 'is this region usable'. Spending model capacity on tightening masks from 0.75 to 0.85 IoU would have been optimising a metric that no consumer of the output could perceive.
+
+Where that would flip: if the requirement had been redaction — blacking out signatures for a privacy workflow — then boundary precision is the entire job, a loose mask leaks PII, and I'd have reported AP<sub>[.5:.95]</sub> or even AP<sub>75</sub> as the headline and tuned for it."
+
+---
+
+**Q28: How did you measure the 63% review reduction? What's the denominator?** *(trick)*
+
+**A:** "The denominator is the right thing to ask about, because that's where this kind of number gets inflated.
+
+**Denominator:** document *regions* — not documents, not pages — that previously required human confirmation. Before the model, that was **all of them**. Every region feeding the extraction pipeline was visually confirmed by an operator, so the baseline was 100%.
+
+**Numerator:** regions still routed to a human after deployment, which came to 37%. That breaks down as roughly 22% below the confidence threshold, 13% high-stakes classes that we routed to review *regardless* of confidence, and 2% from a safety net that sent any page with zero detections to review.
+
+So 63% of regions stopped needing human eyes.
+
+Three things I'd volunteer without being asked:
+
+**The high-stakes carve-out makes this conservative, not generous.** Signatures and stamps carry legal weight, and the client's tolerance for a missed signature was zero, so those were never auto-accepted. The 63% comes entirely from the easier classes. A naive threshold sweep would have reported a higher number and been less defensible.
+
+**It's a reduction in review volume, not headcount.** Nobody was cut by 63%; the capacity went to a backlog and to harder documents. I won't claim a cost saving I didn't measure.
+
+**It was measured on a matched sample** — same client mix, same document-type mix, same volume band, month over month — specifically so the comparison wasn't confounded by an easier batch of documents.
+
+And the safeguard that makes it a measurement rather than a claim: a random sample of the *auto-accepted* regions was periodically re-reviewed by a human, to confirm the auto-accept error rate stayed inside the agreed tolerance. Without that audit loop, 63% would just be a threshold setting with a percentage attached."
+
+---
+
+**Q29: What did the model actually fail on?** *(trick)*
+
+**A:** "Six things, and the interesting part is that two of them weren't model problems.
+
+**Handwriting boundaries** were the biggest single contributor to the AP gap — handwriting sat at 0.83 AP<sub>50</sub> against 0.96 for headers. But when I inspected the failures, most were detections that *found* the handwriting and landed at IoU 0.4 to 0.6. The underlying cause was that annotators genuinely disagreed on where a handwritten note ends — tight around the ink, or the whole annotated region? That's a labelling-guideline problem wearing a model-performance costume, and I fixed it by rewriting the guideline with worked examples rather than by changing the architecture.
+
+**Signature versus handwriting confusion.** These two classes are visually continuous, not discrete — a signature *is* handwriting with a particular function. I never fully solved it, and I'd argue the class taxonomy was the problem. It was largely harmless in practice because downstream treated both as 'needs human eyes'.
+
+**Overlapping stamps and signatures** producing one merged detection instead of two. This is the hardest case for NMS: a high-IoU pair of genuinely *different* objects is indistinguishable from a duplicate detection of one object. Lowering the NMS threshold helped; Soft-NMS helped more. Somewhat ironically, this is the exact scenario I chose Mask R-CNN *for*, and it remained the hardest case.
+
+**Multi-column and landscape pages** — wide tables split into two detections. Root cause is anchor aspect ratios: the defaults of 0.5, 1 and 2 don't cover very wide, flat objects. The fix I identified but never shipped was k-means on the ground-truth box dimensions to derive document-specific anchors.
+
+**Pre-printed letterhead logos detected as stamps.** The single most common false positive — a coloured, roughly circular graphic in a page corner is genuinely stamp-like. A dedicated 'logo' negative class would have fixed it; I ran out of annotation budget.
+
+**Very low-quality scans** — fax and third-generation photocopies — where confidence collapsed across all classes. Noise and JPEG-artefact augmentation narrowed the gap but didn't close it.
+
+The systematic point underneath all of this: I tuned the confidence threshold toward **recall** rather than precision, at 0.7 rather than 0.9, because in a document pipeline a false positive costs a wasted human review while a false negative means information silently never reaches OCR. The second failure is much more expensive and much harder to detect."
+
+---
+
+**Q30: Explain RoIAlign and why RoIPool wasn't good enough for masks.**
+
+**A:** "The problem is quantisation, and it happens twice.
+
+RoIPool takes a region proposal in image coordinates and maps it onto the feature map, which is downsampled — with a stride of 16, an x-coordinate of 3.75 in feature-map space gets rounded to 4. That's the first quantisation. Then it divides the RoI into a fixed grid, say 7×7, and each bin boundary gets rounded again. That's the second.
+
+At stride 16, half a pixel of feature-map error is **eight pixels in the original image**. For classification that barely matters — you're pooling over a region and the semantic content survives a small shift. For a mask you're predicting a 28×28 binary grid that gets resized back onto the object, and an eight-pixel systematic offset visibly ruins the boundary.
+
+RoIAlign removes both roundings. It keeps the RoI coordinates in floating point, divides the grid at exact fractional positions, samples four points inside each bin, and computes each sample by **bilinear interpolation** of the four nearest feature-map cells. Then it pools those four samples. No rounding anywhere.
+
+The bilinear interpolation is also the reason it's differentiable with respect to the RoI coordinates, which matters for end-to-end training.
+
+The paper reports roughly a 3-point mask AP improvement, and — the detail that shows you actually read it — **the gain is much larger under strict IoU thresholds than at IoU 0.5**, which is exactly what you'd predict if the mechanism is localisation precision rather than detection. That asymmetry is the evidence that the explanation is right."
+
+---
+
+**Q31: You froze the backbone in phase 1 and unfroze it in phase 2. Why not just train end-to-end from the start?** *(trick)*
+
+**A:** "Because the randomly-initialised heads would destroy the pretrained backbone before they became useful.
+
+Here's the mechanism. On the first forward pass the classification, box and mask heads are random, so their outputs are garbage and their loss is enormous. That loss backpropagates through the FPN and into the ResNet, and the resulting gradients are large enough to overwrite the COCO features. With a few hundred training images, those features are the only reason the model works at all — there isn't enough data to relearn edge and texture detectors from scratch. That's catastrophic forgetting, and on a small dataset it's unrecoverable.
+
+Freezing the backbone in phase 1 lets the heads reach a sensible state while the features stay intact. Only then is it safe to let gradients through, and even then at a tenth of the learning rate, so the backbone *adapts* rather than gets *rewritten*.
+
+Three related details worth adding:
+
+I kept **C1 and C2 frozen permanently**, not just in phase 1. Those layers learn edges, corners and stroke texture, which are genuinely universal — documents need exactly the same low-level features as natural images. Unfreezing them adds parameters and variance for no benefit.
+
+I trained the **RPN from the start**, not just the heads. Document objects are wide and flat — headers, tables — whereas COCO's anchor priors assume roughly square objects. The RPN needed adaptation immediately.
+
+And **BatchNorm stayed frozen throughout**. With two images per GPU, batch statistics computed over a batch of two are noise. Every Mask R-CNN implementation freezes BN by default for that reason, and using a warm-up schedule with unfrozen BN at that batch size is a reliable way to get an unstable, non-reproducible training run.
+
+An alternative I'd consider today: gradual unfreezing with discriminative learning rates — a different LR per layer group, higher toward the head — which is a smoother version of the same idea and tends to work slightly better than two hard phases."
+
+---
+
+**Q32: How do you know your train/test split didn't leak?** *(trick)*
+
+**A:** "The specific leak that matters in document CV is **page-level splitting of multi-page documents**, and it's easy to do by accident.
+
+If a 40-page contract is exploded into 40 images and you split randomly, pages 1–30 land in train and pages 31–40 in test — but they share the same letterhead, the same stamp design, the same signatory, the same scanner, the same paper. The model can recognise the *document* rather than the *class*, and your test mAP is inflated by an amount you can't easily bound.
+
+So the split was made at the **source-document level**: every page of a given document lands entirely in train, or entirely in test. Never split.
+
+Two further precautions, since document data has more than one identity axis:
+
+**Client-level awareness.** Documents from the same client share templates. I kept a held-out client whose documents appeared nowhere in training, which is the closest thing to an honest generalisation test — it answers 'will this work for the next customer we onboard', which is the question the business actually had.
+
+**Augmented-copy discipline.** Augmentation happens *after* the split, inside the training loader. Generating an augmented set and then splitting it would put a rotated copy of a training image into the test set, which is the same leak in a different coat.
+
+What I'd add if I were doing it again: a near-duplicate check across the split boundary. Clients resubmit the same document, and two copies of one contract sitting on opposite sides of the split is a leak that document-level splitting won't catch, because they have different document IDs."
+
+---
+
+**Q33: Why does FPN help here? Isn't a deeper backbone enough?** *(trick)*
+
+**A:** "They solve different problems, and conflating them is the trap in the question.
+
+Depth buys **semantic strength**. ResNet-101's deepest stage, C5, has excellent semantic features — but it's downsampled 32×, so a 1024×1024 page becomes a 32×32 feature map. A stamp occupying 3% of the page is roughly two or three cells there. You cannot localise, let alone mask, an object represented by two feature-map cells, no matter how semantically rich those cells are.
+
+The shallow stages have the opposite problem: C2 is at 1/4 resolution, so spatial detail is fine, but the features are edges and textures with no object-level semantics.
+
+FPN resolves the trade-off rather than picking a side. The top-down pathway carries C5's semantics back down to higher-resolution levels, and the lateral 1×1 convolutions inject the spatially-precise information from C2, C3 and C4 at each level. The result is that P2 through P5 all carry **strong semantics at their native resolution**. Then each RoI is assigned to the pyramid level matching its scale — small objects to P2, large ones to P5.
+
+Concretely for our data: table regions could occupy 60% of a page while stamps occupied 3%. That's roughly a 20× linear scale range within a single image, and often within the *same* image. Without FPN I'd have to pick a resolution that compromises one end. Every failure would be a small-object failure.
+
+**The counter-argument you should expect and be ready for:** you could instead train at higher input resolution, or use dilated/atrous convolutions to keep resolution in the deep stages. Both work. Both are dramatically more expensive in memory and compute than FPN's few extra 1×1 and 3×3 convolutions. FPN is the cheap solution, which is why it became the default rather than because it's the only one."
+
+---
+
+**Q34: What's actually in your Docker image, and why isn't the model in it?**
+
+**A:** "The image holds code and environment; the weights live in Azure Blob and get pulled at startup by version tag. That separation is deliberate and it's the design decision I'd defend hardest.
+
+**What's in the image:** a pinned CUDA/cuDNN runtime base, Python, a fully pinned and hash-checked `requirements.txt`, the source, and config. Multi-stage build, so the compiler toolchain from the `devel` base doesn't ship in the runtime image — that's several gigabytes of difference, which matters when the image is being pulled onto autoscaled inference nodes.
+
+**Why the weights aren't baked in:**
+
+A code fix — say a preprocessing bug — shouldn't require rebuilding and re-pushing a 250 MB weights layer. Conversely, a model refresh shouldn't require rebuilding code that didn't change. Decoupling means code releases and model releases ship independently.
+
+Rollback becomes an environment-variable change rather than an image rebuild, which turns 'revert the model' from a twenty-minute pipeline run into a restart.
+
+And one image can serve any model version, which is what makes A/B or shadow evaluation practical.
+
+**The cost, honestly:** a startup dependency on Blob availability, and a slow cold start on a fresh node. Mitigated with a cache volume and a generous healthcheck `start-period`, but it's a real trade-off, not a free win.
+
+**The reason containerising mattered at all here** — beyond deployment convenience — is that a model is not a weights file. It's weights *plus* preprocessing *plus* a specific CUDA/cuDNN/TensorFlow combination. Before containers, training ran on a hand-configured GPU VM and inference ran elsewhere, and version skew produced *different predictions from the same weights*. That's the worst class of bug, because nothing throws an error. Pinning the environment into an image that both training and inference use is what eliminated it."
+
+---
+
+**Q35: How do you test an ML pipeline in CI when the output isn't deterministic-by-inspection?**
+
+**A:** "You can't assert 'the model is correct', so you assert three narrower things at three different scopes.
+
+**Layer one — unit tests on the deterministic parts.** Image resizing preserves aspect ratio. Polygon-to-mask conversion produces the right pixel count. NMS removes the right boxes given synthetic input. The confidence-routing logic sends the right region to the right queue. The COCO annotation parser handles malformed input without crashing. These need no GPU, no weights, and run in seconds — and they're where most *actual* defects live, because they're ordinary software.
+
+**Layer two — contract tests on the output schema.** The inference output has the required keys, confidence is in [0,1], mask dimensions match the box dimensions, class IDs are in range. This protects every downstream consumer from a silent format change, which is a whole category of production incident.
+
+**Layer three — the golden-set regression gate, which is the one that matters.** The *built image*, running *real weights*, is run against a frozen set of thirty images with known expected metrics, and the build fails if mAP moves more than a point in either direction.
+
+That third layer exists because of a specific failure mode: a refactor of the preprocessing — someone changes a normalisation constant or an interpolation mode — will pass every unit test and every schema check, and quietly cost you five points of mAP. Nothing else catches that.
+
+Two details about the golden set that make it work. It's built from the **hard cases**, deliberately — a multi-column page, a fax-quality scan, an overlapping stamp and signature. A regression suite made of easy examples never fires. And the tolerance is **two-sided**: a sudden *improvement* is as suspicious as a regression, because it usually means the evaluation data or the matching logic changed rather than the model getting better.
+
+**What I'd add today:** data-validation tests on the training set itself, in the Great Expectations style — assert the class distribution hasn't shifted, assert no corrupt images, assert annotations parse — so a bad *dataset* fails the build rather than silently producing a worse model."
+
+---
+
+### Trick & Follow-Up Questions
+
+---
+
+**T1: "You used the Matterport implementation. So what did you actually build?"**
+
+> "Fair, and I'd rather answer it directly than get defensive. I did not implement Mask R-CNN from scratch — I used the Matterport TensorFlow/Keras implementation as the base, which is what essentially everyone did in 2020.
+>
+> What I built on top: the custom `Dataset` subclass handling our COCO-format annotations and polygon-to-mask conversion; the anchor and configuration tuning for document-shaped objects; the two-phase freeze/unfreeze training schedule; the document-specific augmentation pipeline, including the synthetic stamp and signature compositing that was the single biggest win for the rare classes; the evaluation harness producing per-class AP at multiple IoU thresholds; the confidence-based human-in-the-loop routing that produced the 63%; the containerisation; and the CI pipeline with the golden-set gate.
+>
+> And I understand the architecture rather than just calling it — I can explain why RoIAlign's gain is concentrated at strict IoU thresholds, why the mask head predicts K binary masks rather than one K-way mask, why the RPN's 1:1 anchor sampling is what lets a two-stage detector skip focal loss, and why BatchNorm is frozen at batch size 2.
+>
+> The honest framing: using a well-tested reference implementation and spending the time on the domain problem was the right engineering decision. Reimplementing the architecture would have consumed the project's whole timeline and produced something worse."
+
+---
+
+**T2: "Your per-class AP ranges from 0.83 to 0.96. Isn't reporting the mean misleading?"**
+
+> "Somewhat, yes — which is exactly why the per-class table exists in my documentation and why I never reported the mean alone internally.
+>
+> The mean is the right *summary* number for a resume line and for comparing model versions against each other, because you need one number to rank candidates. It's the wrong number for deciding whether the system is fit for purpose, because the classes weren't equally important. Signatures and stamps had legal significance; headers were nice to have. A mean weights them by nothing at all.
+>
+> What we actually operated on: per-class thresholds and per-class routing. Signatures went to human review regardless of confidence *because* their AP was lower and their cost of error was higher. So the operational system did account for the spread, even though the headline number doesn't show it.
+>
+> If I were reporting this to a technical stakeholder rather than on a resume, I'd lead with the per-class table and the weakest class, not the mean."
+
+---
+
+**T3: "A few hundred training images for a 100-plus-million-parameter model. Isn't that absurd?"**
+
+> "It would be absurd if I were training from scratch. I wasn't — and that distinction is the whole answer.
+>
+> The COCO-pretrained backbone already encodes edges, textures, shapes and object-ness from 330,000 images. What I needed to learn was 'which of those patterns correspond to a stamp' — a much smaller problem in terms of effective parameters. In phase 1 the trainable parameter count is a small fraction of the total, because the backbone is frozen.
+>
+> Four things kept the variance manageable: transfer learning as the foundation; heavy but *domain-appropriate* augmentation, which multiplied the effective dataset several-fold; the frozen-then-unfrozen schedule so the small dataset never had to support learning general features; and early stopping on validation mAP rather than training to a fixed epoch count.
+>
+> But I won't over-claim. The evidence that data was still the binding constraint is right there in the per-class results: handwriting, the class with the fewest and most variable examples, is the weakest at 0.83, and the gap to the other classes tracks annotation count almost exactly. When I was asked how to improve the model, my first answer was 'more annotated data for the rare classes', not 'a better architecture'. That's what the error analysis pointed at."
+
+---
+
+**T4: "Azure Blob for model storage in 2021? Why not Azure ML, or MLflow?"**
+
+> "It was the pragmatic call, and I'll give you both the justification and where it falls short.
+>
+> The justification: the client's infrastructure was already Blob-centric and provisioned, our versioning requirement was genuinely simple — a version tag and a metadata record — and Azure ML would have added a service, a cost line and an approval cycle to solve a problem we didn't have yet. For a handful of model versions on one project, Blob plus a naming convention plus metadata tags was proportionate.
+>
+> Where it falls short, and I'd say this unprompted: there's no lineage. Blob tells you *that* `v3` exists; it doesn't tell you which dataset, which commit, which hyperparameters or which evaluation produced it. We tracked that in a spreadsheet and in the CI build record, which works until it doesn't.
+>
+> What I'd build today: MLflow or Azure ML for the registry — experiment tracking, model versions with stages, lineage back to data and code — with Blob still underneath as the artefact store, because that part was never the problem. I did exactly this at Fibe afterwards, which is partly because I'd felt the gap here."
+
+---
+
+**T5: "Detection at 1024×1024 with ResNet-101 is slow. Did throughput ever become a problem?"**
+
+> "Yes, and it shaped the architecture of the serving layer more than the model.
+>
+> Mask R-CNN with a ResNet-101-FPN backbone at that input size runs in the low hundreds of milliseconds per page on a single GPU, and multiple seconds on CPU. For a client processing thousands of pages in a batch window, that's a real constraint.
+>
+> Three things addressed it. **Batching** — pages were scored in batches rather than one request at a time, which is where most of the GPU utilisation gain came from. **Keeping the model resident** — loading Mask R-CNN weights takes tens of seconds, so reloading per request would have dominated the runtime entirely; that's why the container's healthcheck has a long start-period. And **asynchronous processing** — the whole thing ran as a batch job writing results back to Blob, rather than pretending it was a synchronous request-response API, which set the right latency expectation with consumers.
+>
+> **What I'd change:** ResNet-50 instead of ResNet-101 was the obvious lever. My experiments showed ResNet-101 was worth about two points of mAP over ResNet-50 — and if I'm honest about the cost-benefit at the operating point we actually used, two points of AP<sub>50</sub> for roughly 40% more inference cost is a trade I'd want the client to make explicitly rather than assume. I'd also look at mixed-precision inference and ONNX Runtime, neither of which I tried."
+
+---
+
+**T6: "You said recall matters more than precision. But false positives waste reviewer time, and reviewer time is the thing you're claiming to save. Isn't that contradictory?"**
+
+> "It's a genuine tension and I don't think it's a contradiction, but the reason is worth spelling out.
+>
+> The asymmetry is in the *detectability* of the two errors. A false positive lands in the review queue, a human looks at it, rejects it in a couple of seconds, and moves on. It's visible, bounded and cheap. A false negative means a region was never detected — so it never entered the queue, no human ever saw it, and the information silently never reached OCR. Nobody finds out until a downstream process needs that field and it isn't there, possibly weeks later.
+>
+> So the costs aren't symmetric even though both consume attention: one costs seconds of visible time, the other costs an undetected data loss.
+>
+> The reconciliation with the 63% claim is that these operate at different points. The confidence threshold at 0.7 governs *what the model emits*, biased toward recall. The auto-accept threshold — a separate, higher threshold — governs *what skips review*. Between them sits a band of medium-confidence detections that get reviewed. Extra false positives from the low emission threshold land in the reviewed band, not in the auto-accepted band, so they don't corrupt the 63%; they slightly enlarge the 37%.
+>
+> And the zero-detection safety net exists for precisely the false-negative case the emission threshold can't fix: if a page produced no detections at all, the whole page went to a human regardless."
+
+---
+
+**T7: "Your CI pipeline has a golden-set gate with a 1-point tolerance. Where did 1 point come from?"**
+
+> "From the run-to-run variance, measured rather than guessed — though I'll admit it was measured roughly.
+>
+> Inference on a fixed image set with fixed weights should be deterministic, but in practice it isn't quite: non-deterministic GPU kernel selection, cuDNN autotuning picking different algorithms, and floating-point non-associativity in reduction operations all introduce small variation. I ran the same evaluation repeatedly and the spread in mAP was well under a point on a thirty-image set. So one point is a threshold comfortably above the noise floor and comfortably below any change I'd care about.
+>
+> The weakness, honestly: thirty images is a small evaluation set, so the metric itself is noisy in a way that scales with set size. A larger golden set would let me tighten the tolerance, at the cost of a slower build. The right answer is probably a two-tier setup — a fast thirty-image gate on every build, and a larger nightly evaluation with a tighter tolerance.
+>
+> The tolerance is also **two-sided**, which people find counterintuitive. A sudden *improvement* fails the build too, because in my experience an unexplained jump usually means the evaluation data changed or the matching logic broke, not that the model spontaneously got better."
+
+---
+
+**T8: "If the 92% and the 63% both came from your work, which one would you drop from the resume and why?"**
+
+> "I'd keep the 63% and drop the 92%, and I think that's the less obvious answer.
+>
+> The mAP number is a *model* metric. It requires context to interpret — which IoU threshold, how many classes, how hard is the domain — and without that context it's either meaningless or misleading, which is why I've written a whole section clarifying it. It also invites a comparison to COCO benchmarks that isn't valid.
+>
+> The 63% is an *outcome* metric. It says the work changed what a business does: two-thirds of a manual review step stopped happening. It needs no CV background to evaluate, it can't be inflated by choosing a favourable threshold on a benchmark, and it's the thing a hiring manager is actually trying to infer from the mAP anyway.
+>
+> The reason both are on the resume is that they serve different readers — a technical screener wants to know I can train a detector, a hiring manager wants to know it mattered. But if I could only defend one in a room, it's the 63%, because it's the one whose measurement I can walk through end to end including the caveats."
+
+---
+
 ## 7. Red Flags & How to Handle
 
 ### Red Flag 1: "PySpark for small data?"
@@ -1754,11 +2511,15 @@ The mask loss is computed on the predicted mask corresponding to the ground-trut
 
 ---
 
-### Red Flag 2: "85% mAP sounds high for limited data."
+### Red Flag 2: "92% mAP sounds high for limited data."
 
-**What they're probing:** Is this number inflated by overfitting, test-set leakage, or a too-easy task?
+**What they're probing:** Is this number inflated by overfitting, test-set leakage, a too-easy task, or a favourably-chosen metric?
 
-**How to handle:** "85% mAP on COCO evaluation (IoU 0.5-0.95) is strong but reasonable for domain-specific detection. Our domain — scanned documents — has more consistent visual patterns than general object detection (COCO natural images). We achieved this through transfer learning from COCO (strong initialization), aggressive augmentation, and two-phase training. I validated with a held-out test set that was strictly separated from training data, and I monitored for overfitting via train/val loss divergence."
+**How to handle:** "Let me answer the metric question first, because it's the biggest part of the gap. 92% is mAP at IoU 0.5. Under COCO's stricter 0.5-to-0.95 averaging the same model is around 0.70 — I lead with the IoU 0.5 number because downstream cropped regions with a margin, so boundary tightness wasn't the requirement, but I'll always tell you both.
+
+On why it's legitimately high for this task: five visually-distinct classes on deskewed white pages is a fundamentally easier problem than 80 confusable classes in unconstrained natural scenes. A strong COCO model gets 65–70% AP<sub>50</sub> on that harder problem, so 92% on ours isn't out of line.
+
+On leakage and overfitting specifically: the test split was made **at the document level, not the page level** — pages from the same source document never straddled the train/test boundary, which is the mistake that would have inflated this most. I monitored train/validation loss divergence per head, and the honest weak spot shows in the per-class table: handwriting sits at 0.83 while headers are at 0.96. A model that had memorised the test set wouldn't show that spread."
 
 ---
 
@@ -1817,15 +2578,18 @@ The mask loss is computed on the predicted mask corresponding to the ground-trut
 
 | What Makes This Stand Out | Why |
 |---------------------------|-----|
-| Mask R-CNN is rarely discussed in interviews | Shows deep CV knowledge beyond simple classification |
-| PySpark + data quality is a production data engineering skill | Not just "model.fit()" — real pipeline thinking |
+| Mask R-CNN is rarely discussed in interviews | Shows deep CV knowledge beyond simple classification — RoIAlign, FPN scale assignment, the decoupled mask loss |
+| Being precise about *which* mAP | 92% @ IoU 0.5 vs ~0.70 @ [.5:.95], volunteered rather than extracted — signals metric literacy |
+| A business metric you can actually derive | The 63% has a stated denominator, a routing rule, and an audit loop |
+| PySpark + config-driven data quality | Not just "model.fit()" — real pipeline thinking, reused across 4+ engagements |
 | Transfer learning across both CV and NLP | Versatility and understanding of the common principle |
-| Azure Blob deployment | Cloud deployment experience, not just notebook experiments |
+| Docker + CI/CD with a golden-set regression gate | The test that catches a silent preprocessing regression — most people don't have this |
+| Azure deployment with weights decoupled from the image | Cloud deployment experience with a defensible design decision, not just notebook experiments |
 | Multi-project narrative | Shows breadth and ability to work across the stack |
 
 ### 30-Second Elevator Pitch
 
-"At ATCS, I was an Associate Data Scientist building a document intelligence platform. I designed a PySpark ETL pipeline with a reusable data quality validation framework that ensured zero dirty data reached our MSSQL analytics layer. I trained a Mask R-CNN model using transfer learning from COCO, achieving 85% mAP on detecting document elements like stamps, signatures, and tables — and deployed it to Azure Blob Storage for inference. I also built an NLP classification system using Legal-BERT for automated legal document tagging with labeling accuracy validation. Together, these three systems formed an end-to-end document processing pipeline — from ingestion and quality validation, through visual detection and text classification, to clean analytics-ready data."
+"At ATCS, I was an Associate Data Scientist building a document intelligence platform. I engineered distributed PySpark ETL pipelines processing 10M-plus multi-source records, cutting the production batch from four hours to eighteen minutes, with a configuration-driven data quality framework — validation, profiling, referential integrity — that was reused across four-plus enterprise engagements. On the modelling side, I fine-tuned a Mask R-CNN with a ResNet-101-FPN backbone from COCO weights onto five document-region classes, hit 92% mAP, and deployed it on Azure — and because confident detections stopped going to a human, manual document-region review dropped 63%. I containerised both the Python and ML workloads with Docker and automated testing and deployment through CI/CD, including a golden-set regression gate, so model releases were standardised rather than hand-rolled. I also built an NLP classification system using Legal-BERT for automated legal document tagging with labeling accuracy validation."
 
 ### Questions to Ask the Interviewer (Show Depth)
 

@@ -1,22 +1,26 @@
-# How to Study the 3 Flagship Projects — A Systematic Guide
+# How to Study the Flagship Projects — A Systematic Guide
 
-**Purpose:** You now have deep notes for your three strongest projects — [AI Cargo](P15_ai_cargo_agentic_risk_platform.md), [Doc2Data](P16_doc2data_healthcare_extraction.md), and [PathWise](P17_pathwise_career_simulator.md). This guide tells you *how to internalize them* so you can walk into any AI/ML interview and defend them under pressure — not just recite them. Read this once, then use the drills weekly.
+**Purpose:** deep notes exist for your four strongest projects — [Bilbo RAG](P07_bilbo_medical_rag.md), [AI Cargo](P15_ai_cargo_agentic_risk_platform.md), [Doc2Data](P16_doc2data_healthcare_extraction.md), and [PathWise](P17_pathwise_career_simulator.md). This guide tells you *how to internalize them* so you can walk into any AI/ML interview and defend them under pressure — not just recite them. Read this once, then use the drills weekly.
 
-> The broader folder map is in [`../00_STUDY_GUIDE.md`](../00_STUDY_GUIDE.md). This guide is specifically about **mastering the flagship projects.**
+> Folder map: [`../00_STUDY_GUIDE.md`](../00_STUDY_GUIDE.md). Resume-to-proof mapping: [`../00_RESUME_MASTER_MAP.md`](../00_RESUME_MASTER_MAP.md). This guide is specifically about **mastering the flagship projects.**
 
 ---
 
-## 1. Why these three, and which role each wins
+## 1. Which one to lead with
 
-These three are your "deep-dive round" ammunition. Interviewers pick ONE project and drill for 30–45 minutes. Know which one to steer toward:
+Interviewers pick ONE project and drill for 30–45 minutes. Know which one to steer toward:
 
-| Project | Lead with it for… | The one-sentence hook |
-|---------|-------------------|-----------------------|
-| **AI Cargo** | Agentic AI, Applied AI Engineer, AI Platform, "hard problems" roles | *Governed agent orchestration + trustworthy hybrid ML + human-in-the-loop.* |
-| **Doc2Data** | ML/AI Engineer (multimodal/CV/OCR), Forward-Deployed, systems/perf roles | *Cost-aware multimodal extraction — spend compute only where it changes the answer.* |
-| **PathWise** | GenAI Engineer, agentic AI, anything that values RAG + evaluation | *Transparent multi-agent system with grounded retrieval and a measured reliability story.* |
+| Priority | Project | Lead with it for… | The one-sentence hook |
+|---|---------|-------------------|-----------------------|
+| **#1** | **Bilbo RAG (P07)** | **Any AI/GenAI Engineer role** — it's your *current job* and the top of your resume | *Production grounded RAG: hybrid retrieval + reranking + paragraph citations + LangGraph agents, all local for PHI safety.* |
+| **#2** | **AI Cargo (P15)** | Agentic AI, Applied AI Engineer, AI Platform, "hard problems" roles | *Governed agent orchestration + trustworthy hybrid ML + human-in-the-loop.* |
+| #3 | **Doc2Data (P16)** | ML/AI Engineer (multimodal/CV/OCR), Forward-Deployed, systems/perf | *Cost-aware multimodal extraction — spend compute only where it changes the answer.* |
+| #4 | **PathWise (P17)** | Anything that values RAG + **evaluation** (the 2026 differentiator) | *Transparent multi-agent system with grounded retrieval and a measured reliability story.* |
 
-**Rule:** if the JD says "experimentation / causal / stats," you steer to your P14/P01/P04 stats projects instead. These three are your *AI-engineering* flagships.
+**Rules:**
+- **P07 is mandatory.** It's your current role. An interviewer who reads your resume top-down starts there. You cannot be caught weaker on your own job than on a side project.
+- If the JD says "experimentation / causal / stats," steer to P14/P01/P04 instead. These four are your *AI-engineering* flagships.
+- If the JD says "credit risk / fintech / lending," steer to **P01 Fibe** and read `../learning/51_credit_risk_and_scorecard_modeling.md`.
 
 ---
 
@@ -29,7 +33,8 @@ The last section of each note. Memorize it *as a spoken script*, not text. It mu
 
 ### Layer 2 — The architecture walkthrough (2–3 min)
 Draw the block diagram from memory on paper. For each project the spine is:
-- **AI Cargo:** data → risk engine (features → rules + XGBoost → fusion+veto → tier) → LangGraph (interpret→plan→execute→observe→reflect→revise→human_review) → 8 tools → backend/dashboard.
+- **Bilbo RAG:** PDF → **8-stage ingestion** (extract→headings→anchors→paragraphs→clean→window→embed→index) → **FAISS + BM25 → RRF → cross-encoder rerank** → relevance gate → **LangGraph** stage loop (retrieve→rerank→gate→generate→validate→repair→advance) → citation verification → checklist.
+- **AI Cargo:** data → risk engine (14 features → 8 rules + XGBoost → fusion+veto → tier) → LangGraph (interpret→plan→execute→observe→reflect→revise→human_review) → 8 tools → backend/dashboard.
 - **Doc2Data:** load → identify → **plan (3 lanes)** → align-gate → OCR v2 (blank-detect + batched Florence-2) → validate → **reflect → targeted VLM rescue** → finalize.
 - **PathWise:** resume+JD → **Planner→Retrieval→Interviewer→Scorer→Remediation→Report** over an SSE bus, grounded by **Foundry IQ ⇄ Supabase failover**, proven by an **eval harness**.
 
@@ -40,6 +45,7 @@ Every project has 2–3 ideas that make you sound senior. Rehearse each as a sta
 
 | Project | Deep-dive #1 | Deep-dive #2 | Deep-dive #3 |
 |---------|-------------|-------------|-------------|
+| **Bilbo RAG** | **Hybrid retrieval + RRF + cross-encoder → +28% top-5** (and how you measured it) | **Citation grounding**: verify the anchor exists *and* supports the claim (citation-washing) | **LangGraph** stateful routing + memory + bounded repair; local 4-bit Mistral-7B *as a compliance guardrail* |
 | **AI Cargo** | Rules+ML fusion with a **deterministic veto** + "unknown escalates" | The **reflect→revise hallucination bug** and the "constrain in code, not prompt" fix | **PR-AUC / recall@precision** for rare spoilage + SHAP audit |
 | **Doc2Data** | **Three-lane routing** = don't pay for OCR you don't need | **Alignment gate + blank detection** (258s→41s), gate expensive models behind cheap checks | **Reflect → targeted VLM rescue** on ≤12 fields |
 | **PathWise** | **Multi-agent loop** + "REUSE don't rewrite" + SSE-with-replay | **Foundry IQ ⇄ Supabase failover** (grounding that never dies) | **Eval harness**: groundedness / refusal-correctness / p95 |
@@ -55,11 +61,13 @@ The "Red Flags & How to Handle" table in each note. An interviewer *will* poke a
 
 Interviewers score "engineering judgment," and judgment shows up as *consistent principles across projects*. Learn these five through-lines so you can say "I do this in all three":
 
-1. **Never let the model be the only vote.** AI Cargo has a deterministic veto; Doc2Data validates + rescues OCR; PathWise's Scorer flags `supported` vs unsupported. → *"I bound model output with deterministic checks."*
-2. **Spend expensive compute only where it changes the answer.** Doc2Data lanes/blank-detect/rescue; AI Cargo LOW-tier bypasses the agent; PathWise one LLM call for the plan. → *"I gate cost behind cheap checks."*
-3. **Make failure loud and cheap, not silent and expensive.** Doc2Data alignment gate; AI Cargo "unknown → MEDIUM"; PathWise SafetyGuard refusal. → *"The dangerous failure is confident silence."*
-4. **Constrain agents in code, not prompts.** AI Cargo's hard tool filter; PathWise's SafetyGuard + grounding threshold. → *"If code can guarantee a constraint, I don't leave it to a prompt."*
-5. **Reliability is a number, not a hope.** AI Cargo audit + confidence; Doc2Data F1 vs gold + per-node timings; PathWise eval harness. → *"I measure whether the AI is right."*
+1. **Never let the model be the only vote.** Bilbo drops unverifiable citations; AI Cargo has a deterministic veto; Doc2Data validates + rescues OCR; PathWise's Scorer flags `supported` vs unsupported. → *"I bound model output with deterministic checks."*
+2. **Spend expensive compute only where it changes the answer.** Bilbo's retrieve-then-rerank cascade and the Jet2 70B→7B distillation; Doc2Data lanes/blank-detect/rescue; AI Cargo LOW-tier bypasses the agent. → *"I gate cost behind cheap checks."*
+3. **Make failure loud and cheap, not silent and expensive.** Bilbo's relevance-gated refusal; Doc2Data alignment gate; AI Cargo "unknown → MEDIUM"; PathWise SafetyGuard refusal. → *"The dangerous failure is confident silence."*
+4. **Constrain agents in code, not prompts.** AI Cargo's hard tool filter; Bilbo's bounded repair loop and pre-planned stage order; PathWise's grounding threshold. → *"If code can guarantee a constraint, I don't leave it to a prompt."*
+5. **Reliability is a number, not a hope.** Bilbo's labelled retrieval set (+28%); Fibe's KS/PSI/OOT battery; Doc2Data F1 vs gold; PathWise's eval harness. → *"I measure whether the AI is right."*
+
+**Constraints drive architecture** is a sixth worth having ready: PHI meant local inference at Bilbo (which forced quantization), regulated cold-chain meant human-gated autonomy in AI Cargo, PHI again meant self-hosting in Doc2Data. Senior engineers explain choices by constraint, not by preference.
 
 Memorize these five sentences. They convert three separate stories into one coherent engineer.
 
@@ -90,13 +98,13 @@ Assumes ~60–75 min/day. Adjust to your interview date.
 
 | Day | Focus |
 |-----|-------|
-| Mon | AI Cargo: read the note, draw the architecture 3× from memory, rehearse the 30s pitch out loud. |
-| Tue | AI Cargo: rehearse the 3 deep-dives + all red-flag responses cold. Backfill: `14_evaluation_metrics` (PR-AUC/SHAP). |
-| Wed | Doc2Data: read, draw 3×, pitch. Rehearse the 3 lanes + the 258s→41s story. |
-| Thu | Doc2Data: deep-dives + red flags cold. Backfill: `21_computer_vision`. |
-| Fri | PathWise: read, draw 3×, pitch. Rehearse the 6-agent loop + Foundry failover + eval. |
-| Sat | PathWise: deep-dives + red flags cold. Backfill: RAG + eval docs. |
-| Sun | Rest or watch back a recording of yourself pitching all three. |
+| Mon | **Bilbo (P07)**: read §0 bullet map + §2, draw the architecture 3× from memory, rehearse the 30s pitch. |
+| Tue | **Bilbo**: §8 LangGraph + §9 guardrails + §10 trick questions cold. Backfill: `05_rag_systems`, `49_llmops`. |
+| Wed | AI Cargo: read, draw 3×, pitch. Rehearse fusion+veto and the reflect→revise bug. Backfill: `14_evaluation_metrics`. |
+| Thu | Doc2Data: read, draw 3×, pitch. Rehearse the 3 lanes + the 258s→41s story. |
+| Fri | PathWise: read, draw 3×, pitch. Rehearse the 6-agent loop + Foundry failover + eval harness. |
+| Sat | Employed-work day: Jet2 numbers (94% / 96% / MAPE 18→7) + Fibe (0.94 AUC, WOE/KS) out loud. Backfill `51_credit_risk` if targeting fintech. |
+| Sun | Rest or watch back a recording of yourself pitching all four. |
 
 **Week 2 — Integrate, pressure-test, connect.**
 
