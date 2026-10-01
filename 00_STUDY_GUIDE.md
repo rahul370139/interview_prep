@@ -29,7 +29,8 @@ interview_prep/
 │   ├── 49     LLMOps & observability (LangSmith, Langfuse, evals in CI)
 │   ├── 50     LLM serving & inference optimization (vLLM, speculative decoding)
 │   ├── 51     Credit risk & scorecard modeling (WOE/IV, KS/Gini, PSI, OOT)
-│   └── 52     Frontier AI & the 2026 landscape  ← the "what's new" doc
+│   ├── 52     Frontier AI & the 2026 landscape  ← the "what's new" doc
+│   └── 53     Behavioral interview mastery (rubrics, story bank, AI screens)
 └── projects/
     ├── 00_FLAGSHIP_PROJECTS_STUDY_GUIDE.md  ← how to master the 3 flagships
     ├── P01–P14  One doc per resume project (STAR + architecture + Q&A)
@@ -163,6 +164,7 @@ Rules:
 
 ## 5. Mock interview protocol
 
+- **Behavioral rounds:** every loop has one, and it's the round technical candidates lose without knowing why. Use **[`learning/53_behavioral_interview_mastery.md`](learning/53_behavioral_interview_mastery.md)** — scoring rubrics, your codenamed story bank with real numbers, the hard questions (gap, weakness, salary), company variants, and AI-screen mechanics. Its §13 is a 7-day out-loud rehearsal plan.
 - **Self-mock:** pick 6 questions from `48` (2 conceptual, 2 production, 1 design, 1 behavioral), 45 min timer, record, review.
 - **AI mock:** paste a question list from `48` into ChatGPT/Claude with: *"Act as a strict senior interviewer for a <role> role. Ask me these one at a time, push back with follow-ups, grade each answer 0–3 with one sentence of feedback."* This doubles as practice for AI-conducted screens (`48` §10).
 - **Human mock:** at least one before a real onsite — a friend reading follow-ups from a P-doc's Q&A section is enough.
