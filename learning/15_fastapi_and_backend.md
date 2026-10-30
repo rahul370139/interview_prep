@@ -1601,41 +1601,56 @@ if hash_val in content_hash_to_lesson_id:
 
 ### Q1: "Why FastAPI over Flask?"
 
+**Memory hook:** *Async, validation, free docs* · native async for Groq and Cohere → Pydantic for 50+ schemas → Swagger docs for 40+ endpoints · **Land on:** "Performance is comparable to Node.js, which matters with multiple LLM calls per request."
+
 > **Answer:** "I chose FastAPI for TrainPI because it offers three critical advantages for our use case. First, **native async support** -- our backend makes concurrent calls to Groq LLM and Cohere embeddings, and async lets us process these in parallel instead of sequentially. Second, **automatic Pydantic validation** -- with 50+ request/response schemas, manual validation in Flask would've been error-prone and verbose. FastAPI validates everything from path parameters to nested JSON bodies automatically. Third, **auto-generated docs** -- with 40+ endpoints, having interactive Swagger docs at `/docs` saved our frontend team hours of back-and-forth. The performance is comparable to Node.js, which matters when you're making multiple LLM API calls per request."
 
 ### Q2: "How does Pydantic validation work under the hood?"
+
+**Memory hook:** *Type hints become checks* · raw JSON to model_validate → Rust core, 5-50x faster → exists, coerce, validators, nested → all errors in one 422 · **Land on:** "CareerMatchRequest needs exactly 10 answers between 0 and 5, checked in a single pass."
 
 > **Answer:** "Pydantic uses Python's type hints as a runtime validation DSL. When FastAPI receives a request, it passes the raw JSON to the Pydantic model's `model_validate()`. Pydantic V2 uses a Rust-based core (`pydantic-core`) that's 5-50x faster than V1. For each field, it: (1) checks if the value exists (required vs optional), (2) attempts type coercion (string `"42"` to int `42`), (3) runs validators like `Field(ge=0, le=100)`, and (4) validates nested models recursively. If any validation fails, it collects all errors and returns them as a structured 422 response. In TrainPI, for example, our `CareerMatchRequest` requires exactly 10 answers between 0 and 5 -- Pydantic enforces both constraints in a single pass."
 
 ### Q3: "Explain async/await in Python."
 
+**Memory hook:** *One thread, taking turns* · await yields to the event loop → distill_pdf uses asyncio.gather → without async, double the time → Semaphore(2) limits LLM calls · **Land on:** "async def makes a coroutine, await is a suspension point, and the event loop is the scheduler."
 > **Answer:** "Async/await enables cooperative multitasking within a single thread. When you `await` an I/O operation, the function yields control back to the event loop, which can then run other coroutines. In TrainPI, this was critical -- our `distill_pdf` endpoint makes parallel calls to the Groq LLM (map-reduce summarization) and Cohere (embedding generation) using `asyncio.gather()`. Without async, these would be sequential, roughly doubling the response time. The key mental model: `async def` creates a coroutine, `await` is a suspension point, and the event loop is the scheduler. We also use `asyncio.Semaphore(2)` to limit concurrent LLM calls and avoid overwhelming the API."
 
 ### Q4: "How would you serve an ML model with FastAPI?"
 
+**Memory hook:** *Load once, validate, predict* · load model at startup → Pydantic input and response schemas → inference endpoint → batching, health checks, caching, monitoring · **Land on:** "In TrainPI we precompute embeddings at startup, then match with cosine similarity in real time."
 > **Answer:** "There's a three-step pattern. First, load the model at startup using `@app.on_event('startup')` so you don't reload it per request. Second, create a Pydantic schema for input validation and a response schema for the prediction output. Third, build the inference endpoint that takes validated input, runs the model, and returns structured output. For production, you'd add: request batching with a queue and timeout, health checks that verify the model is loaded, caching for repeated predictions, and monitoring for inference latency. In TrainPI, we used this pattern for our career matcher -- we load the career dataset and precompute embeddings at startup, then the matching endpoint uses cosine similarity for real-time career recommendations."
 
 ### Q5: "What is CORS and why is it needed?"
+
+**Memory hook:** *Browser asks before it calls* · browser blocks cross-origin requests → OPTIONS preflight first → Allow-Origin header or blocked → TrainPI whitelist: Vercel, localhost, credentials · **Land on:** "Never use allow_origins star with credentials. Always whitelist specific origins."
 
 > **Answer:** "CORS is a browser security mechanism that restricts cross-origin HTTP requests. When our React frontend at `v0-frontend-opal-nine.vercel.app` calls our API at `trainpi.railway.app`, the browser first sends an OPTIONS preflight request. Our API must respond with the appropriate `Access-Control-Allow-Origin` header listing the frontend's origin, or the browser blocks the request. In TrainPI, I configured CORS middleware to whitelist our Vercel frontend, localhost ports for development, and set `allow_credentials=True` for authenticated requests. In production, you should never use `allow_origins=['*']` with credentials -- always whitelist specific origins."
 
 ### Q6: "How do you handle errors in production APIs?"
 
+**Memory hook:** *Layers of fallback* · HTTPException with clear codes → graceful degradation when Groq is down → exponential backoff for rate limits → global handler, logs, generic 500 → dual API keys · **Land on:** "The pattern is cache first, database second, generate third, fallback last."
 > **Answer:** "I use a layered approach. At the endpoint level, I catch specific exceptions and raise `HTTPException` with appropriate status codes and clear messages. For external service failures, I implement graceful degradation -- in TrainPI, if the Groq API is down, we fall back to cached responses, then Supabase, then generate intelligent fallback content. For rate limits, I use exponential backoff with server-suggested retry times. For unhandled exceptions, a global exception handler catches everything, logs the full traceback, and returns a generic 500. We also use dual API keys -- if the primary Groq key fails, we automatically try the fallback key. The pattern is: cache first, database second, generate third, fallback last."
 
 ### Q7: "How do you handle concurrent requests and rate limiting?"
 
+**Memory hook:** *Three brakes on LLM calls* · Semaphore(2) caps LLM calls → dual keys with failover → backoff from the 429 retry time → gather chunks under the semaphore · **Land on:** "We never exceed 2 concurrent LLM calls at any time."
 > **Answer:** "In TrainPI, I use three concurrency control mechanisms. First, `asyncio.Semaphore(2)` limits concurrent LLM API calls to avoid overwhelming the Groq rate limit. Second, dual API keys with automatic failover -- if the primary key hits a rate limit, we seamlessly switch to the backup. Third, exponential backoff with server-suggested retry times -- we parse the `try again in Xs` from 429 responses and wait accordingly, doubling the backoff on each retry. For the map-reduce summarization, I use `asyncio.gather()` to process chunks in parallel while the semaphore ensures we don't exceed 2 concurrent LLM calls at any time."
 
 ### Q8: "Walk me through a request lifecycle in your TrainPI API."
 
+**Memory hook:** *Follow one PDF upload* · CORS middleware → Pydantic and UploadFile → PyMuPDF, 400-word chunks, 50 overlap → gather: summarize and embed → cache 2 hours, Supabase, ChatResponse · **Land on:** "If anything fails, we serve fallback content and clean the temp file in a finally block."
 > **Answer:** "Let me trace a PDF upload through `/api/chat/upload`. First, the request hits CORS middleware -- the browser's preflight OPTIONS is handled automatically. Then FastAPI validates the query parameters (`user_id`, `explanation_level`) via Pydantic and the file via `UploadFile`. The endpoint writes the PDF to a temp file, then the distiller extracts text with PyMuPDF, chunks it into 400-word segments with 50-word overlap. Next, two async tasks run in parallel via `asyncio.gather`: map-reduce summarization (each chunk summarized by Groq LLM, then merged into 10 bullets) and Cohere embedding generation. The results are cached in our LRU cache with 2-hour TTL, saved to Supabase, and a conversation is initialized. The response goes through `response_model=ChatResponse` validation, which strips any extra fields, and returns to the client. If anything fails, we have fallback content and the temp file is cleaned up in a `finally` block."
 
 ### Q9: "How does dependency injection work in FastAPI?"
 
+**Memory hook:** *Declare it, FastAPI hands it over* · Depends() resolves at request time → calls get_db, passes the result → yield runs cleanup after → dependencies can chain → dependency_overrides for tests · **Land on:** "It makes it trivial to swap a real database for an in-memory one in tests."
+
 > **Answer:** "FastAPI's DI system uses the `Depends()` function to declare dependencies that are resolved at request time. You can think of it as automatic argument injection. When an endpoint declares `db: Session = Depends(get_db)`, FastAPI calls `get_db()` before the endpoint, passes the result as `db`, and if `get_db` is a generator (uses `yield`), it runs cleanup after the response. Dependencies can be chained -- a `get_current_user` dependency can itself depend on `get_db`. For testing, you can override any dependency with `app.dependency_overrides[get_db] = mock_db`. This makes it trivial to swap a real database for an in-memory one in tests."
 
 ### Q10: "How would you scale this API for high traffic?"
+
+**Memory hook:** *Scale in tiers* · Uvicorn workers behind Gunicorn → LRU cache to Redis → CDN and edge caching → queue and batch LLM calls → auto-scale on Railway or Kubernetes · **Land on:** "Stateless endpoints mean any instance can handle any request."
 
 > **Answer:** "I'd approach it in tiers. First, horizontal scaling: run multiple Uvicorn workers behind Gunicorn (`-w 4 -k uvicorn.workers.UvicornWorker`). Second, move the in-memory LRU cache to Redis for shared caching across workers. Third, add a CDN for static content and consider edge caching for read-heavy endpoints. Fourth, for the LLM calls which are the bottleneck, implement request queuing and batch processing. Fifth, set up auto-scaling on Railway or Kubernetes based on CPU/memory metrics. The architecture already supports this -- the stateless endpoint design means any instance can handle any request, and the Supabase database is centralized."
 

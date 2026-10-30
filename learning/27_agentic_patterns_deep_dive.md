@@ -891,6 +891,8 @@ Plan-and-Execute ●    │    ● Supervisor
 
 ## **Q1: "Explain Chain-of-Thought prompting and when you'd use it vs Tree-of-Thoughts."**
 
+**Memory hook:** *One path versus a search tree* · CoT is one linear chain → ToT explores many paths, backtracks → Self-Consistency samples N, votes → ToT when first approach fails · **Land on:** "CoT costs 1 call, Self-Consistency N calls, ToT K times depth calls."
+
 > CoT asks the model to show its reasoning steps before answering — either via "think step by step" (zero-shot) or with worked examples (few-shot). It's a **linear reasoning chain** that dramatically improves math, logic, and multi-hop tasks with minimal overhead (just one LLM call).
 >
 > Tree-of-Thoughts extends CoT by generating **multiple candidate reasoning paths** at each step, evaluating them ("sure/maybe/impossible"), and searching the tree using BFS or DFS. It's like CoT with backtracking.
@@ -904,6 +906,8 @@ Plan-and-Execute ●    │    ● Supervisor
 
 ## **Q2: "What is ReWOO and how does it differ from ReAct?"**
 
+**Memory hook:** *Plan once, run all, combine once* · Reasoning Without Observation → ReAct waits after each step → ReWOO plans upfront with placeholders → ~5× fewer tokens, parallel tools → cannot adapt mid-execution · **Land on:** "ReWOO for predictable, structured tasks. ReAct for exploratory tasks where each step depends on what you find."
+
 > ReWOO stands for **Reasoning Without Observation**. In ReAct, the agent interleaves thinking and acting — each step waits for the tool result before planning the next step. This is powerful but creates a sequential bottleneck.
 >
 > ReWOO **decouples planning from execution**: the LLM generates the entire plan upfront with placeholders (#E1, #E2) for tool results, then all tool calls execute (potentially in parallel), and finally one LLM call combines everything into the answer.
@@ -916,6 +920,8 @@ Plan-and-Execute ●    │    ● Supervisor
 
 ## **Q3: "Describe the Reflexion pattern. How is it different from just retrying?"**
 
+**Memory hook:** *Retry with a lesson note* · verbal RL, no weight updates → write a reflection on failure → store it in memory → retry with reflections in context → HumanEval 91% vs 80% · **Land on:** "Reflections are targeted and specific, not generic retry noise."
+
 > Reflexion is **verbal reinforcement learning** — the agent learns from failures without updating weights. After a failed attempt, instead of just retrying (which is random), the agent generates a **natural language reflection**: what went wrong, what to do differently, what assumptions were incorrect.
 >
 > This reflection is stored in memory and included as context in the next attempt. So the agent doesn't just retry — it retries **with accumulated wisdom from past failures**.
@@ -927,6 +933,8 @@ Plan-and-Execute ●    │    ● Supervisor
 ---
 
 ## **Q4: "How would you design an agent system for a complex task like autonomous code generation?"**
+
+**Memory hook:** *Plan, code, test, reflect* · Planner breaks task into steps → Executor codes in a sandbox → Evaluator runs tests and lint → Reflexion loop on failure → Replanner revises the approach · **Land on:** "For architecture choices, I add a Debate: two agents argue, and the planner picks."
 
 > I'd combine **Plan-and-Execute** with **Reflexion**:
 >
@@ -941,6 +949,8 @@ Plan-and-Execute ●    │    ● Supervisor
 ---
 
 ## **Q5: "Compare the agentic patterns in terms of cost, latency, and reliability."**
+
+**Memory hook:** *A price ladder* · low cost: CoT, ReWOO → medium: ReAct, Plan-Execute → N× or high: Self-Consistency, ToT, Reflexion → very high: LATS · **Land on:** "LATS is the most reliable, but also the slowest and most expensive."
 
 > | Pattern | LLM Calls | Latency | Cost | Reliability | Use Case |
 > |---------|-----------|---------|------|-------------|----------|
@@ -957,6 +967,8 @@ Plan-and-Execute ●    │    ● Supervisor
 
 ## **Q6: "What's the Mixture-of-Agents approach and when would you use it?"**
 
+**Memory hook:** *Many drafts, one editor* · proposers write independent responses → aggregator synthesizes the final one → can stack in layers → weaker proposers plus strong aggregator → use when quality beats cost · **Land on:** "It is like multiple expert opinions synthesized by a senior expert."
+
 > MoA uses multiple LLMs as "proposers" that each generate independent responses, then an "aggregator" model synthesizes them into a final, superior response. It can be multi-layered — each layer's output feeds into the next round of proposals.
 >
 > The surprising finding: **weaker models as proposers + strong model as aggregator often outperforms the strong model alone**. This is because diverse proposers generate a wider range of ideas, examples, and reasoning paths that the aggregator can cherry-pick from.
@@ -966,6 +978,8 @@ Plan-and-Execute ●    │    ● Supervisor
 ---
 
 ## **Q7: "You're building a customer support agent. Which pattern(s) do you choose and why?"**
+
+**Memory hook:** *Route, look up, adjust* · ReAct base with CRM, order tools → Router classifies intent first → Reflexion light on misunderstandings → say no to ToT, LATS, ReWOO · **Land on:** "ToT is overkill, LATS is too expensive, and ReWOO cannot plan upfront when steps depend on each other."
 
 > For a customer support agent, I'd use:
 >

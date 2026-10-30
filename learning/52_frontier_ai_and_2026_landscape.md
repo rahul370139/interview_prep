@@ -379,6 +379,9 @@ Quick definitions so no term catches you flat:
 ## 17. Interview Questions with Strong Answers
 
 **Q1: "How would you build a RAG system for [domain]?"** *(the most-asked question in the field — have this memorized)*
+
+**Memory hook:** *Data first, measure always* · data format and permissions → structured ingestion, small chunks → BM25 plus dense, RRF, rerank → golden set in CI → production monitoring · **Land on:** "Hybrid retrieval and a good eval set beat a clever architecture with no measurement."
+
 > "I'd start with the data, not the model: what format are the documents, how often do they change, and what's the access-control model — because permissions decide the architecture more than anything else.
 >
 > Then ingestion: parse structure rather than flatten it, chunk with the retrieval unit and the citation unit chosen separately — I like indexing small precise units and returning the larger parent for context. Embed with a strong general model, store in something that supports hybrid search — pgvector, Qdrant, or Vespa at scale.
@@ -390,42 +393,81 @@ Quick definitions so no term catches you flat:
 > Production concerns: caching, a latency budget, PII handling, and monitoring retrieval-miss rate and refusal rate as health metrics. And I'd start with the boring version — hybrid retrieval and a good eval set beat a clever architecture with no measurement."
 
 **Q2: "What's the difference between a workflow and an agent, and which should I build?"**
+
+**Memory hook:** *Your branches vs its choices* · workflow follows your branches → agent decides at runtime → usually you don't need it → AI Cargo bounded graph · **Land on:** "Constrain in code what code can guarantee."
+
 > "A workflow follows branches you wrote; an agent decides its next step at runtime from context. The real question is whether you need runtime reasoning — and usually you don't. If the decision logic is expressible deterministically, a workflow is cheaper, faster, testable, and debuggable. I reach for an agent when the path genuinely depends on intermediate results in ways I can't enumerate. In my AI Cargo project I ended up with a bounded graph rather than a free-roaming agent for exactly that reason, and I hard-filtered which tools the model could propose — constrain in code what code can guarantee."
 
 **Q3: "Your agent works in the demo and fails in production. Debug it."**
+
+**Memory hook:** *Traces first, not code* · read the failing trajectory → context problems, not model → replay the same input → retrieval vs generation separately → add to golden set · **Land on:** "I add the failing case to the golden set so it can't regress again."
+
 > "First I look at traces, not code — I want the failing trajectory: which tools were called, with what arguments, what came back, and where the context went wrong. The common causes in my experience are context problems, not model problems: a poisoned context from one bad tool result, context rot in long loops, or tool-choice degradation because too many tools are in the prompt. Then I check whether the failure is deterministic or sampling-dependent by replaying the same input. If it's grounded in retrieval, I check retrieval recall separately from generation quality, because those need different fixes. Finally I add the failing case to the golden set so it can't regress again."
 
 **Q4: "Evals: how do you know your LLM app got better?"**
+
+**Memory hook:** *Layered checks, honest statistics* · deterministic assertions first → recall@k and nDCG → calibrated LLM-as-judge → trajectory for agents → bootstrap intervals, paired comparisons · **Land on:** "The whole set runs in CI so a prompt change can't ship a regression."
+
 > "Layered. Deterministic assertions first — schema validity, citation existence, latency, no PII — those are cheap and catch most regressions. Then reference-based retrieval metrics, recall@k and nDCG, on a labelled set. Then LLM-as-judge for the subjective dimensions, but calibrated against a human-labelled subset and with position randomization and pairwise comparison to control bias. For agents I also evaluate the trajectory. And I hold the statistics honestly: on a small set a few points is noise, so I report bootstrap confidence intervals and use paired comparisons on identical items. The whole set runs in CI so a prompt change can't ship a regression."
 
 **Q5: "LLM-as-judge is biased. Why should I trust it?"**
+
+**Memory hook:** *Cheap instrument, kept honest* · calibrate against human labels → randomize order → pairwise plus explicit rubric → different model family as judge · **Land on:** "Use the cheap one continuously and the expensive one to keep it honest."
+
 > "You shouldn't trust it unconditionally — you should calibrate it. I measure agreement between the judge and human labels on a subset; if agreement is poor the judge is useless and I fix the rubric or the judge model. Then I control the known biases: randomize candidate order for position bias, use pairwise preference rather than absolute scores, give an explicit rubric to reduce verbosity bias, and avoid using the same model family as judge and contestant to limit self-preference. It's a noisy instrument that scales — humans are the accurate instrument that doesn't. You use the cheap one continuously and the expensive one to keep it honest."
 
 **Q6: "Why is MCP a big deal? Isn't it just function calling?"**
+
+**Memory hook:** *N-times-M into N-plus-M* · function calling emits the call → MCP is the standard around it → write a server once → wider trust boundary → allowlist, scope, sandbox, human gate · **Land on:** "Treat all tool output as untrusted data, not instructions."
+
 > "Function calling is the model's ability to emit a structured call. MCP is the integration standard around it — it turns an N-times-M integration problem into N-plus-M. I write a tool server once and any MCP-capable host can discover and use it, with a consistent notion of tools, readable resources, and reusable prompts. The trade-off worth raising is security: MCP widens your trust boundary. Tool descriptions and results enter the model's context, so they're an injection surface. I'd allowlist servers, scope credentials per server, sandbox execution, treat all tool output as untrusted data rather than instructions, and gate consequential actions behind a human."
 
 **Q7: "When would you use GraphRAG over vector search?"**
+
+**Memory hook:** *Lookup vs relationships* · relational, not lookup → multi-hop errors compound → extraction is expensive → go hybrid · **Land on:** "Vectors for lookup, graph for relationships. GraphRAG is not a general upgrade."
+
 > "When the question is relational rather than lookup. Vector search answers 'what does the corpus say about X'; a graph answers 'how does X connect to Y through Z' and supports corpus-global questions like 'what are the recurring themes.' Multi-hop is the clearest case, because with vectors each hop is a fresh fuzzy search and errors compound. The costs are real though — entity and relation extraction over the corpus is expensive and updates are harder than a re-embed. So in practice I'd go hybrid: vectors for lookup, graph for relationships, and I wouldn't pitch GraphRAG as a general upgrade."
 
 **Q8: "How do you control the cost of an agentic system?"**
+
+**Memory hook:** *Cost per resolved task* · measure per resolved task → cap iterations, cache the prefix → tier models, compact context → cache tool calls, then distill · **Land on:** "At Jet2 I distilled a 70B teacher into a 7B student while holding 94% recall."
+
 > "I measure cost per resolved task, not per call, because that's the number that trades off correctly against quality. Then: hard-cap iterations so a loop can't run away; structure prompts so the stable prefix caches; tier models so a small one does routing, grading, and extraction and a big one only synthesizes; compact context instead of re-sending transcripts; cache deterministic tool calls; and once a task stabilizes, distill it into a small model. That last one I've actually done — at Jet2 I distilled a 70B teacher into a 7B student to make intent classification deployable at scale while holding 94% recall."
 
 **Q9: "Reasoning models — when do you use one, and when don't you?"**
+
+**Memory hook:** *Reasoning only for the hard tail* · route by difficulty and risk → reasoning for the hard tail → small model for high volume → some agents become one call · **Land on:** "Part of the job now is not building an agent that a single strong call would handle."
+
 > "I route by difficulty and by cost of being wrong. Reasoning models buy accuracy with latency and tokens, so they earn their place on the hard tail — ambiguous multi-step problems where a wrong answer is expensive. For high-volume, well-specified tasks like extraction or classification, they're waste; a small model with good context and validation wins on cost and latency. The interesting second-order effect is that reasoning models collapsed some agent workflows into single calls, so part of the job now is *not* building an agent that a single strong call would handle."
 
 **Q10: "What's DSPy and would you use it?"**
+
+**Memory hook:** *Prompting as compilation* · signature, module, metric, optimizer → BootstrapFewShot to MIPROv2 → use with dev set and trusted metric → not for one-offs · **Land on:** "The metric is load-bearing. A bad metric compiles a confidently bad program."
+
 > "It treats prompting as compilation: you declare a typed signature, pick a module like ChainOfThought or ReAct, define a metric, and an optimizer searches instructions and few-shot demonstrations against that metric. Optimizers range from BootstrapFewShot mining successful trajectories to MIPROv2 jointly searching instructions and demos. I'd use it when I have a well-defined task, a labelled dev set, and a metric I trust — because then prompt engineering becomes an optimization problem instead of a craft. I wouldn't use it for a one-off, and I'd be honest that its output is less human-readable and that compilation itself costs API calls. Also the metric is load-bearing: a bad metric compiles a confidently bad program."
 
 **Q11: "Explain GRPO vs DPO vs PPO."**
+
+**Memory hook:** *DPO drops reward, GRPO drops critic* · PPO: reward model plus value network → DPO: loss from preference pairs → GRPO: reward vs group mean → verifiable rewards, RLVR · **Land on:** "Name reward hacking as the failure mode, and keep a KL penalty plus held-out verifiers."
+
 > "PPO is classic RLHF: train a reward model, then optimize the policy with a value network and a clipped objective — powerful but heavy and finicky. DPO removes the reward model entirely; it derives a loss straight from chosen-versus-rejected preference pairs, which is far simpler and more stable and is why it became the default for preference tuning. GRPO removes the critic instead: you sample a group of completions per prompt and use each one's reward relative to the group mean as the advantage, which suits verifiable-reward settings like math or code where a program can score correctness. That pairing — GRPO with verifiable rewards, or RLVR — is what's driving current reasoning training. Whichever you use, I'd name reward hacking as the failure mode and keep a KL penalty to the reference model plus held-out verifiers."
 
 **Q12: "Are MoE models cheaper to serve?"**
+
+**Memory hook:** *Small compute, big memory* · router picks a couple of experts → FLOPs track active parameters → every expert sits in VRAM → serving gets harder · **Land on:** "Big-model quality at small-model compute, while paying big-model memory."
+
 > "Cheaper in compute per token, not in memory. The router activates only a couple of experts per token, so FLOPs track the active parameters — but every expert has to be resident in VRAM, so your memory footprint tracks total parameters. So you get big-model quality at small-model compute, while paying big-model memory. Serving also gets harder: routing imbalance, the need for expert parallelism, and efficiency that varies with batch composition."
 
 **Q13: "What's context engineering and why do people say it replaced prompt engineering?"**
+
+**Memory hook:** *One question vs many steps* · prompt is one question → context across many steps → rot, lost-in-the-middle, poisoning → compaction, caching, just-in-time retrieval → isolated sub-agent windows · **Land on:** "It's a resource-management discipline, which is why it feels more like engineering than prompting."
+
 > "Prompt engineering is optimizing one question. Context engineering is managing what information reaches the model across many steps — and for agents that's where quality and cost actually come from. The failure modes have names now: context rot as the window fills with stale content, lost-in-the-middle where buried facts get ignored, poisoning where one bad tool result contaminates every later turn. So the practices are compaction, ordering stable content first so it caches, just-in-time retrieval instead of preloading, retrieving tools when there are too many to list, and giving sub-agents isolated windows so the parent only sees conclusions. It's a resource-management discipline, which is why it feels more like engineering than prompting."
 
 **Q14: "You've listed a lot of 2026 tooling. What would you actually pick for a greenfield project?"**
+
+**Memory hook:** *Deliberately boring stack* · provider API, hybrid retrieval, reranker → LangGraph only if it branches → tracing and golden set from day one → add complexity against evidence · **Land on:** "I'd never defer observability and evals, because without them every later decision is a guess."
+
 > "Deliberately boring: a strong provider API to start rather than self-hosting, hybrid retrieval on pgvector or Qdrant, a cross-encoder reranker, LangGraph if the control flow genuinely branches, tracing from day one with LangSmith or Langfuse, and a golden set in CI before I optimize anything. I'd add complexity only against evidence — GraphRAG when I see multi-hop failures, DSPy when prompt tuning becomes the bottleneck, self-hosted vLLM when cost or data residency demands it. The thing I'd never defer is observability and evals, because without them every later decision is a guess."
 
 ---

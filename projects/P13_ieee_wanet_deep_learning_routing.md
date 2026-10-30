@@ -25,6 +25,8 @@
 
 ## **The 2-Minute Pitch**
 
+**Memory hook:** *Two eyes: where and when* · no fixed towers, nodes move → AODV and DSR rules can't adapt → my part: CNN for space, LSTM for time → tested on NS-3 · **Land on:** "It beat both on all four metrics: 42% more throughput and 23% less energy."
+
 > "I co-authored an IEEE paper on applying deep learning to improve data transmission in wireless ad hoc networks — these are decentralized networks with no fixed infrastructure, where nodes are mobile (think disaster recovery, military comms, vehicular networks).
 >
 > The core challenge is that traditional routing protocols like AODV and DSR use static rules and can't adapt quickly to constantly changing network topology — nodes move, links break, interference fluctuates.
@@ -310,6 +312,8 @@ Where y_i is actual network metric value and ŷ_i is the CNN-LSTM predicted valu
 
 When an interviewer asks "What was your contribution?":
 
+**Memory hook:** *I did the model, they did the network* · designed CNN-LSTM → built it in TensorFlow/Keras from NS-3 output → chose MSE and cross-entropy → ran the AODV and DSR comparison · **Land on:** "The networking side and NS-3 setup were my co-authors'; the deep learning part was mine."
+
 > "I contributed to the **deep learning architecture design and implementation**. Specifically:
 >
 > 1. **Designed the hybrid CNN-LSTM pipeline** — the CNN processes each network snapshot to extract spatial features (node density patterns, link quality neighborhoods, congestion hotspots), and the LSTM processes the sequence of these spatial features to predict future network states.
@@ -376,6 +380,8 @@ Where PDR = Packet Delivery Ratio and BER = Bit Error Rate. Higher R = more reli
 
 ## **Q2: "Why did you choose CNN-LSTM instead of [other architecture]?"**
 
+**Memory hook:** *Space needs CNN, time needs LSTM* · spatial neighborhoods, CNN → changes over time, LSTM gates → Transformer too heavy, GNN more complex → GRU fine, LSTM for long range · **Land on:** "Two kinds of structure, so two blocks, and kept light for small nodes."
+
 > The network data has two distinct dimensions that need different inductive biases:
 >
 > **Spatial:** At any given moment, the network has a spatial structure — node positions, link quality neighborhoods, congestion clusters. CNNs are designed to detect local spatial patterns via convolutions. A fully-connected layer would treat all features independently, missing these neighborhood effects.
@@ -388,6 +394,8 @@ Where PDR = Packet Delivery Ratio and BER = Bit Error Rate. Higher R = more reli
 
 ## **Q3: "Why MSE as the loss function? What about other options?"**
 
+**Memory hook:** *Big misses hurt most* · MSE for throughput and delay → squared penalty matches the cost → cross-entropy for next-hop choice → MAE or Huber as options · **Land on:** "A route that's way off drops packets, so big errors should cost the most."
+
 > MSE was chosen for the regression tasks (predicting continuous metrics like throughput and delay) because it heavily penalizes large prediction errors — in networking, a route prediction that's way off is much worse than one that's slightly off (a bad route means dropped packets, wasted energy). MSE's squared penalty aligns with this asymmetric cost.
 >
 > For the route selection (classification) component, we used categorical cross-entropy, which is the standard loss for multi-class classification — choosing the optimal next-hop from a set of candidate nodes.
@@ -398,6 +406,8 @@ Where PDR = Packet Delivery Ratio and BER = Bit Error Rate. Higher R = more reli
 
 ## **Q4: "How did you prevent overfitting, given that network simulations can generate limited diversity?"**
 
+**Memory hook:** *Vary the world, hold back the test* · four configs, two mobility models → separate test simulations, no leakage → dropout and early stopping → a light model · **Land on:** "Varied scenarios, a clean split, and a small model kept it from memorizing."
+
 > Multiple strategies:
 > 1. **Diverse simulation scenarios** — We tested across four network configurations (low/medium/high density + sparse topology) with two mobility models (Random Waypoint and Manhattan Grid), giving the model exposure to varied network conditions.
 > 2. **Train/test split** — Historical simulation data for training, separate real-time simulation data for testing — no data leakage.
@@ -407,6 +417,8 @@ Where PDR = Packet Delivery Ratio and BER = Bit Error Rate. Higher R = more reli
 ---
 
 ## **Q5: "What are the limitations of this approach?"**
+
+**Memory hook:** *Heavy, simulated, and big* · compute on battery devices, compress or offload → NS-3 is not the real world → hundreds to thousands of nodes, maybe GNN · **Land on:** "It works in simulation. Real devices, real radios, and big networks are the open problems."
 
 > I'd highlight three:
 >
@@ -420,6 +432,8 @@ Where PDR = Packet Delivery Ratio and BER = Bit Error Rate. Higher R = more reli
 
 ## **Q6: "How does your model handle a node that suddenly fails (hard failure)?"**
 
+**Memory hook:** *See it coming, or react in one cycle* · LSTM spots warning signs → route away before it fails → no warning: seen at next timestep → AODV and DSR wait for timeouts · **Land on:** "We react in one prediction cycle, milliseconds, not seconds of route discovery."
+
 > The model handles this through its **temporal prediction capability**. The LSTM learns patterns that precede node failures — degrading link quality, increasing error rates, reduced responsiveness. When these precursors appear, the model proactively routes traffic away from that node before it fails.
 >
 > For truly sudden failures (no precursor), the model detects the failure at the next timestep (dropped packets, missing node in the snapshot), and the CNN immediately identifies the changed topology. The LSTM then incorporates this new information and adjusts routing in the next prediction cycle.
@@ -429,6 +443,8 @@ Where PDR = Packet Delivery Ratio and BER = Bit Error Rate. Higher R = more reli
 ---
 
 ## **Q7: "If you were to extend this work, what would you do?"**
+
+**Memory hook:** *Graph, attention, RL, shrink* · GNN instead of CNN → attention over time → RL routing policy → quantize and distill for edge · **Land on:** "Each one fixes a real limit: graph shape, sudden events, no labels, and small devices."
 
 > Three directions:
 >
@@ -443,6 +459,8 @@ Where PDR = Packet Delivery Ratio and BER = Bit Error Rate. Higher R = more reli
 ---
 
 ## **Q8: "What's the practical impact — where would this actually be deployed?"**
+
+**Memory hook:** *Disaster, battlefield, cars* · disaster: 95% vs 87% delivery → military: 23% less energy → vehicles: 110ms vs 130ms · **Land on:** "Anywhere there's no tower and the nodes keep moving."
 
 > The paper targets three application domains:
 >

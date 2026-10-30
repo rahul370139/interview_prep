@@ -51,6 +51,8 @@ Three resume bullets land on this project. Every named technology and every numb
 | "**forecast-error variation below 2% across 18+ months**" | Rolling forecast error stayed within a ~2% band month-to-month over 18+ months of planning cycles; avg feature PSI < 0.02 | §2.8, §3.2, Trick Q5 | "The point isn't just that MAPE was 7% once — it's that it stayed within about two points of that, month after month, for eighteen months, which is what makes a forecast plannable." |
 | "Built transcript summarization pipelines using **Snowflake Cortex** and **few-shot prompting**" | In-warehouse `CORTEX.SUMMARIZE` / `CORTEX.COMPLETE`; few-shot templates for a fixed summary schema | §2.10 Snowflake Cortex Pipeline | "Summarization ran inside Snowflake so no customer data ever left the warehouse, and few-shot prompting locked every team onto the same summary format." |
 
+**Memory hook:** *Level first, then stability* · 18% down to about 7% → held within roughly two points → eighteen-plus months of planning · **Land on:** "That steadiness is the part that actually changed how the business planned."
+
 > **If asked for the single number:** "MAPE from about 18% down to about 7% — and more importantly, held within roughly two points of that for eighteen-plus months of planning cycles, which is the part that actually changed how the business planned."
 
 ---
@@ -1373,6 +1375,8 @@ Why stability is the harder and more valuable property: a forecast that is accur
 2. **Event-driven retraining** — route launches, competitor entry/exit, and schedule restructures triggered off-cycle retrains rather than waiting for the calendar.
 3. **Champion/challenger gating** — a retrained model only replaced the incumbent if it beat it on a held-out forward window. This prevented a bad retrain from *causing* an error spike, which is a real and underrated failure mode of automated retraining.
 
+**Memory hook:** *Two numbers, two questions* · seven percent is the accuracy → below two percent is stability → narrow band, two summer seasons → planners cared about stability · **Land on:** "A forecast you can't put an error budget around isn't a forecast you can staff to."
+
 > **Say this:** "Two different numbers get quoted and they answer different questions. Seven percent is the accuracy level. Below two percent variation over eighteen months is the stability — the rolling error stayed inside a narrow band month after month, across two full summer seasons. That second one is what the planning teams actually cared about, because a forecast you can't put an error budget around isn't a forecast you can staff to."
 
 ---
@@ -1393,6 +1397,8 @@ The lazy version of this project is "I used an LSTM because time series." That a
 | **A fair fight requires equal tuning effort** | The most common way to fake a deep-learning win is to Optuna-tune the neural net for 100 trials and run XGBoost on defaults. Every model family got its own Optuna study with a comparable trial budget. |
 | **The winner might change** | Model choice isn't permanent. Part of the quarterly review was re-running the comparison, because if the data regime shifts, a simpler model can retake the lead. |
 | **Fallback and ensembling** | Knowing the runner-up's performance gives you a fallback when the champion misbehaves, and an ensembling option. |
+
+**Memory hook:** *Beat the tuned tree first* · tuned XGBoost is the honest baseline → LSTM must beat it → else ship XGBoost → same budget, same splits · **Land on:** "That's why each model family got its own Optuna study."
 
 > **Say this:** "I benchmarked rather than picked because on tabular, feature-engineered data a well-tuned gradient-boosted tree is the honest baseline — if the LSTM couldn't beat a properly tuned XGBoost, the right answer was to ship XGBoost and save everyone the training infrastructure. The comparison only means something if all three got the same tuning budget and the same splits, which is why each family got its own Optuna study."
 
@@ -1495,6 +1501,8 @@ GRU came within 0.6 points of LSTM while training ~25% faster. That is not a rou
 | **Training time** | Baseline | ~25% faster |
 
 **When I'd choose GRU:** if retraining frequency went up (the training-time gap compounds), if we were operating on shorter route histories where the extra parameters would overfit, or if we ever needed to serve this under a tight latency budget. The 0.6-point MAPE gap is real but it is not large enough to justify LSTM in every context — and saying that is more credible than pretending the champion was obviously correct.
+
+**Memory hook:** *Close race, honest margin* · LSTM won, small margin → GRU half a point, quarter faster → more retraining or shorter histories → then I'd ship GRU · **Land on:** "The extra LSTM gate only earns its keep when you have enough data to fit it."
 
 > **Say this:** "LSTM won, but I want to be honest about the margin. GRU was within about half a point of MAPE and trained roughly a quarter faster. If retraining cadence had increased, or if we'd had shorter histories per route, I'd have shipped the GRU without hesitation — the extra gate in the LSTM only earns its keep when you have enough data to fit it."
 
@@ -1654,6 +1662,8 @@ This is the number most likely to be challenged, so know exactly what both ends 
 2. **Part of the gain is data, not modelling.** The unified Snowflake warehouse and the engineered features — rate-of-sale, competitor pricing, holiday calendars — gave *every* model, including XGBoost, information the manual process never had. If I had to attribute, a meaningful share of the 18→7 improvement comes from the data integration work rather than from the LSTM specifically. The XGBoost result at 9.1% is the evidence for that: most of the gap from 18% closes before you get to deep learning.
 3. **The comparison isn't perfectly controlled.** The manual baseline and the model didn't run on identical conditions for the whole period. The two-month parallel-run period is the cleanest comparison we had.
 
+**Memory hook:** *Real baseline, honest credit* · eighteen percent was the spreadsheet → same routes, same metric → seven percent is the average → summer five, winter nine or ten → data and features did most · **Land on:** "XGBoost got to nine percent, so most of the distance closed before deep learning."
+
 > **Say this:** "The eighteen percent was the incumbent spreadsheet process — last year's actuals plus a growth factor plus planner judgement — measured on the same routes and the same metric, so it's a real baseline rather than one I built to lose. Seven percent is the portfolio average, and I'd immediately add that it ranges from about five percent on stable summer routes to nine or ten on volatile winter ones. And I'd be honest that a good chunk of that improvement came from unifying the data and engineering proper features, not from the LSTM — the XGBoost got to nine percent, so most of the distance from eighteen was closed before deep learning entered the picture."
 
 ---
@@ -1709,6 +1719,8 @@ Four arguments, in the order I'd give them to a technical interviewer — govern
 - **No fine-tuning** at the time — few-shot prompting was the only adaptation mechanism available.
 - **Vendor lock-in.** The pipeline is written in Snowflake-specific SQL. Migrating means rewriting.
 - **Less control over inference parameters** than a self-hosted deployment gives you.
+
+**Memory hook:** *Data never leaves the warehouse* · governance was decisive → transcripts carry PII → external API means months of compliance → Cortex keeps data inside · **Land on:** "Cost and simplicity helped too, but governance is what made the decision."
 
 > **Say this:** "The decisive argument was governance. Transcripts carry PII, and moving them to an external API turns a two-week engineering task into a multi-month compliance exercise — transfer assessments, DPIA, vendor review, ongoing audit. Cortex meant the data never left the warehouse, so that entire category of work evaporated. Cost and simplicity were real benefits too, but governance is what made the decision."
 
@@ -1851,6 +1863,8 @@ Summarization has no single correct answer, which makes evaluation genuinely har
 | **Usefulness** | Could someone act on this without opening the transcript? |
 
 **And the real acceptance test, which sits above all four:** could a downstream consumer — a team lead scanning yesterday's escalations, or an analyst aggregating contact reasons — use the summary *instead of* the transcript? That's a usage question, not a metric, and it's the one that determined whether the pipeline was actually working.
+
+**Memory hook:** *Four layers, cheapest first* · format check on every row → faithfulness grounding on a sample → ROUGE, BERTScore as regression detectors → weekly SME human review · **Land on:** "Human review was the layer that actually told us whether it was good."
 
 > **Say this:** "I evaluated in layers, cheapest first. Format compliance runs on every row and catches most failures for nothing. Faithfulness checks — entity and numeric grounding against the source — run on a sample, because the dangerous failure mode in abstractive summarization is a fluent summary of something that never happened. ROUGE and BERTScore against reference summaries I used as regression detectors when changing prompts, not as quality metrics, because n-gram overlap doesn't measure correctness. And then weekly human review by the SMEs on faithfulness, completeness, consistency and usefulness — that was the layer that actually told us whether it was good."
 
@@ -2155,6 +2169,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q1: "Walk me through this project end-to-end."
 
+**Memory hook:** *Messy JSON in, forecasts out* · nested JSON, no unified schema → flatten into Snowflake, Pydantic checks → rate-of-sale, holidays, competitor, lags → RF, XGBoost, LSTM, walk-forward → Dataiku daily runs, Tableau dashboards · **Land on:** "The LSTM cut MAPE from about 18% to about 7%, with less than 2% drift over 18 months."
+
 **Answer (2-3 minutes):**
 
 > "At Jet2, the operations and finance teams were using multiple disconnected data streams — flight schedules, booking systems, revenue databases, competitor pricing feeds, and regional performance targets. The data arrived in complex nested JSON formats with no unified schema, making analysis slow and inconsistent.
@@ -2173,6 +2189,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q2: "Why walk-forward validation over k-fold for time series?"
 
+**Memory hook:** *No peeking at the future* · k-fold shuffles, future leaks in → walk-forward keeps time order → train on past, test on future → expanding window, stable demand · **Land on:** "For a rapidly changing environment, a sliding window might be better."
+
 **Answer:**
 
 > "Standard k-fold cross-validation randomly shuffles data, which means future data points can end up in the training set while past data points are in the validation set. For time series, this creates data leakage — the model essentially gets to peek at the future.
@@ -2184,6 +2202,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q3: "LSTM vs. XGBoost — why did LSTM win for this forecasting task?"
+
+**Memory hook:** *Single rows versus whole sequence* · XGBoost sees rows independently → LSTM gates remember the sequence → caught booking velocity pattern → 9.1% down to 7.2% → XGBoost stays the fallback · **Land on:** "LSTM ran the 30-day forecast, and XGBoost did quick 7-day recalibrations."
 
 **Answer:**
 
@@ -2198,6 +2218,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q4: "How did you handle seasonality?"
+
+**Memory hook:** *Seasonality at four levels* · sine and cosine calendar encodings → school and bank holiday flags → year-over-year ROS ratios → 28-day LSTM sequence → walk-forward across seasonal transitions · **Land on:** "Every fold had to predict a future period it hadn't seen, including seasonal transitions."
 
 **Answer:**
 
@@ -2215,6 +2237,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q5: "What is rate-of-sale and why does it matter?"
 
+**Memory hook:** *Speedometer for seat sales* · how fast seats book → above benchmark, hold or raise → below, promotional fares → 3, 7, 14, 28-day windows → acceleration and year-over-year ratios · **Land on:** "Rate-of-sale features were consistently in the top 5 across all our models."
+
 **Answer:**
 
 > "Rate-of-sale measures how quickly seats are being booked over a given time window. For example, a 7-day ROS of 15 means we're selling 15 seats per day on average over the last week.
@@ -2226,6 +2250,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q6: "How did you deploy the model?"
+
+**Memory hook:** *Six steps at 6 AM* · Snowflake pull, features, LSTM inference → Pydantic output check, PSI drift → write to Snowflake, refresh Tableau → alerts, monthly retrain, champion check · **Land on:** "We chose Dataiku so the non-engineer operations team could view and trigger the pipeline."
 
 **Answer:**
 
@@ -2240,6 +2266,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q7: "How did you monitor model drift?"
+
+**Memory hook:** *Inputs, errors, outputs* · PSI daily on top 15 → rolling MAPE, alert above 10% → watch prediction distribution for bias → monthly and event-driven retraining · **Land on:** "We sustained less than 2% drift over 18 months."
 
 **Answer:**
 
@@ -2257,6 +2285,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q8: "Explain Optuna hyperparameter tuning — how does TPE work?"
 
+**Memory hook:** *Good pile versus bad pile* · grid is exhaustive, random is blind → TPE models good and bad trials → sample high l(x)/g(x) ratio → near-optimal in about 60 trials → MedianPruner kills weak trials · **Land on:** "Pruning saved us roughly 50% of compute time."
+
 **Answer:**
 
 > "Optuna uses a Bayesian optimization algorithm called TPE — Tree-structured Parzen Estimator. Unlike grid search, which exhaustively evaluates all combinations, or random search, which samples blindly, TPE builds a probabilistic model of which hyperparameter regions produce good results.
@@ -2270,6 +2300,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q9: "How did you handle missing data?"
+
+**Memory hook:** *Different gap, different fix* · rolling windows with min_periods=1 → forward-fill competitor prices → no data, use route average → LSTM masks, XGBoost handles natively → Pydantic at the boundary · **Land on:** "Pydantic caught truly invalid data at the boundary, so the model never saw garbage."
 
 **Answer:**
 
@@ -2287,6 +2319,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q10: "What would you do differently if you started this project today?"
 
+**Memory hook:** *Three upgrades for today* · try Temporal Fusion Transformers → feature store like Feast → A/B test, not simple swap · **Land on:** "A/B testing would show whether a 1% MAPE reduction really means better pricing decisions."
+
 **Answer:**
 
 > "Three things. First, I'd explore Temporal Fusion Transformers (TFT) — a newer architecture specifically designed for multi-horizon time series forecasting. It combines attention mechanisms with LSTM-like recurrence and has built-in interpretability through variable importance and temporal attention weights.
@@ -2299,6 +2333,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q11: "Explain the JSON flattening you did. Why was it necessary?"
 
+**Memory hook:** *Unfold the nested boxes* · deeply nested, variable structure → recursive flatten, composite key columns → aggregate arrays like total passengers → load into Snowflake star schema · **Land on:** "The operations team went from 'we can't use this data' to running their own ad-hoc analyses."
+
 **Answer:**
 
 > "The raw data arrived as deeply nested JSON — a booking record contained nested passenger arrays, nested fare breakdowns, nested route objects. You can't directly load this into a relational table because each record has variable structure and depth.
@@ -2310,6 +2346,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q12: "How does Random Forest differ from XGBoost fundamentally?"
+
+**Memory hook:** *Parallel crowd versus relay team* · bagging versus boosting → RF: independent trees, cuts variance → XGBoost: sequential trees, cuts bias → XGBoost lower error, more tuning-sensitive · **Land on:** "XGBoost beat Random Forest, 9.1% vs. 11.2% MAPE, but the LSTM beat both."
 
 **Answer:**
 
@@ -2327,6 +2365,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q13: "What is the Snowflake schema design and why did you choose star schema?"
 
+**Memory hook:** *One fact, many dimensions* · FACT_BOOKINGS in the center → route, date, flight, competitor dimensions → fast analytical queries, fewer JOINs → maps to Tableau → easy for non-technical users · **Land on:** "Even non-technical users could query bookings by route by month."
+
 **Answer:**
 
 > "We designed a classic star schema with a central fact table — FACT_BOOKINGS — surrounded by dimension tables: DIM_ROUTE, DIM_DATE, DIM_FLIGHT, DIM_COMPETITOR. The fact table contained measurable events — booking counts, revenue, load factors, risk scores — while dimension tables held descriptive attributes.
@@ -2336,6 +2376,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q14: "What is Population Stability Index (PSI) and how did you use it?"
+
+**Memory hook:** *Same bins, then and now* · compare two distributions by bins → below 0.1 fine, above 0.25 retrain → daily on top 15 features → competitor exit example · **Land on:** "When a competitor exited a route, the PSI alert fired before MAPE degraded."
 
 **Answer:**
 
@@ -2349,6 +2391,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q15: "Why Pydantic and not just pandas for validation?"
 
+**Memory hook:** *Guard at the door* · pandas checks after loading → Pydantic checks each record first → types, ranges, business rules → bad records logged and excluded · **Land on:** "That audit trail let us fix systematic problems at the source with data providers."
+
 **Answer:**
 
 > "Pandas can do type checking and basic validation, but it operates at the DataFrame level after data is already loaded. Pydantic validates at the record level before data enters the pipeline, acting as a strict contract.
@@ -2360,6 +2404,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q16: "How do you choose between MAPE, MAE, and RMSE?"
+
+**Memory hook:** *Percent, units, big misses* · depends on the business → MAPE: scale-independent, easy to explain → MAE: same units, 3.1 bookings → RMSE: punishes large errors more · **Land on:** "A 50-booking error can mean crew shortages, so RMSE is also relevant."
 
 **Answer:**
 
@@ -2375,6 +2421,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q17: "What's the difference between data drift and concept drift?"
 
+**Memory hook:** *Inputs move versus rules change* · data drift: input distributions shift → competitor prices drop 20% → concept drift: relationship changes → COVID changed customer behavior → features can't show it · **Land on:** "We used PSI for data drift and rolling MAPE for concept drift."
+
 **Answer:**
 
 > "Data drift — also called covariate shift — is when the input feature distributions change. For example, if competitor prices across all routes suddenly drop 20%, the distribution of our `avg_comp_price` feature shifts. The model might still make reasonable predictions if the learned relationship is robust.
@@ -2387,6 +2435,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q18: "Explain gradient clipping — why did you use it for the LSTM?"
 
+**Memory hook:** *Speed limit on gradients* · cap the gradient norm → stops exploding gradients → max_norm=1.0, scale down → LSTMs can still explode · **Land on:** "Clipping is a simple, effective safeguard."
+
 **Answer:**
 
 > "Gradient clipping caps the gradient norm during backpropagation to prevent exploding gradients — a common problem in RNNs, including LSTMs. When the gradient norm exceeds a threshold, it's scaled down proportionally.
@@ -2398,6 +2448,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q19: "Tell me about a challenge you faced and how you overcame it."
+
+**Memory hook:** *Right type, wrong currency* · MAPE creeping, PSI flags competitors → API switched GBP to EUR → valid floats, Pydantic missed it → range check, currency normalization layer · **Land on:** "MAPE was back to baseline within 48 hours, and I learned to validate semantics, not just types."
 
 **Answer (Behavioral — STAR):**
 
@@ -2417,6 +2469,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q20: "How did you communicate results to non-technical stakeholders?"
 
+**Memory hook:** *Three audiences, three dashboards* · ops: route risk, red/amber/green → finance: revenue versus targets → leadership: monthly executive summary → quarterly SHAP explainability sessions · **Land on:** "Stakeholders understood the model's reasoning, not just its output."
+
 **Answer:**
 
 > "Through Tableau dashboards designed for three audiences.
@@ -2432,6 +2486,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q21: "If the LSTM starts performing poorly, what's your debugging process?"
+
+**Memory hook:** *Data first, architecture last* · data quality and PSI → concept drift versus actuals → SHAP importance shift → time-period patterns → retrain, then re-run comparison · **Land on:** "If the data regime has changed, a simpler model might win."
 
 **Answer:**
 
@@ -2453,6 +2509,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q22: "What is walk-forward validation's relationship to production performance?"
 
+**Memory hook:** *Offline rehearsal of production* · each fold copies production → within 0.5% of production MAPE → k-fold overestimates by 3-8% → can't catch novel events · **Land on:** "That's why continuous monitoring is essential alongside offline validation."
+
 **Answer:**
 
 > "Walk-forward validation is the closest simulation of production conditions we can do offline. Each fold replicates the real-world scenario: the model is trained on all available past data and tested on a future window it hasn't seen.
@@ -2464,6 +2522,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q23: "Explain how you'd implement the LSTM inference pipeline in production."
+
+**Memory hook:** *Same code as training* · pull 30 days from Snowflake → same feature module, no reimplementation → saved scaler, never refit → 28-timestep tensors, model.eval() → inverse scale, Pydantic, write back · **Land on:** "Same code and the saved scaler, so there is no training-serving skew."
 
 **Answer:**
 
@@ -2489,6 +2549,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q24: "How did you validate that the model's business impact was real?"
 
+**Memory hook:** *Model and humans side by side* · two-month parallel run → ops kept their own calls → earlier price changes, revenue impact → risk flagged 2 weeks earlier → not a formal A/B test · **Land on:** "Same routes across seasons gave us confidence the MAPE gain became real operational gains."
+
 **Answer:**
 
 > "We validated business impact through a controlled comparison period.
@@ -2505,6 +2567,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q25: "What is the difference between expanding window and sliding window walk-forward?"
 
+**Memory hook:** *Growing window versus moving window* · expanding keeps all history → sliding keeps fixed size → we chose expanding, 2-year dataset → sliding when old data misleads · **Land on:** "For post-COVID demand, a 12-month sliding window would be more appropriate."
+
 **Answer:**
 
 > "Expanding window starts the training set at a fixed point and grows it with each fold — you're always using ALL available historical data. Sliding window keeps a fixed-size training window that moves forward.
@@ -2516,6 +2580,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q26: "You benchmarked XGBoost, LSTM and GRU. How do I know it was a fair comparison?"
+
+**Memory hook:** *Fair fight, three rules* · same data, splits, metric → comparable Optuna budget each → right input per model → XGBoost 9.1% vs LSTM 7.2% · **Land on:** "A real but modest gap is what a fair fight usually looks like."
 
 **Answer:**
 
@@ -2533,6 +2599,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q27: "Why did XGBoost need lag features but the LSTM didn't?"
 
+**Memory hook:** *Hand-built lags, built-in memory* · XGBoost sees rows independently → so engineer lags by hand → LSTM reads a 3-D sequence → seq_length tuned to 28 → new routes fall back to trees · **Land on:** "That tree fallback is a real advantage that doesn't show up in a MAPE table."
+
 **Answer:**
 
 > "Because they represent time completely differently.
@@ -2547,6 +2615,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q28: "GRU was within 0.6 points of LSTM and trained 25% faster. Why not ship the GRU?"
 
+**Memory hook:** *Close race, data decides* · honestly close call → extra gates help long dependencies → enough data: two hundred routes → flip if more retraining, shorter histories → 0.6 gap is not decisive · **Land on:** "I'd check the gap held across folds before treating it as settled."
+
 **Answer:**
 
 > "Honestly, it was close, and in a slightly different context I'd have shipped the GRU.
@@ -2560,6 +2630,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q29: "Walk me through exactly how Optuna was configured for this."
+
+**Memory hook:** *Sampler, objective, space, pruner* · TPE: good versus bad densities → mean MAPE across folds → also check fold variance → log-scale the learning rate → MedianPruner with warmup steps · **Land on:** "Pruning saved roughly half the compute."
 
 **Answer:**
 
@@ -2577,6 +2649,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q30: "What's a purge gap in walk-forward validation, and did you use one?"
 
+**Memory hook:** *Buffer zone at the border* · rolling windows can cross boundary → gap as long as longest window → ours was 28 days → retrain each fold, refit scaler · **Land on:** "Walk-forward MAPE tracked production MAPE within a fraction of a point."
+
 **Answer:**
 
 > "Yes, and it's the detail that separates people who've actually implemented walk-forward from people who've read the sklearn docs.
@@ -2593,6 +2667,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 
 ### Q31: "What is Snowflake Cortex and why summarize inside the warehouse rather than exporting?"
 
+**Memory hook:** *Bring the model to the data* · LLM functions called from SQL → governance: PII stays inside → no movement bugs, lower cost → it's SQL, analysts extend it → name trade-offs: models, pinning, lock-in · **Land on:** "Cortex isn't strictly better, but governance was the decisive reason."
+
 **Answer:**
 
 > "Cortex is Snowflake's in-warehouse AI layer — LLM functions you call directly from SQL, executing on Snowflake compute. `CORTEX.SUMMARIZE` for abstractive summarization, `CORTEX.COMPLETE` for general generation with a model of your choice, plus sentiment, translation and extractive QA. The architectural inversion is the point: normally you export data to where the model lives, and Cortex brings the model to where the data lives.
@@ -2606,6 +2682,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q32: "How did few-shot prompting produce consistent summaries across different teams?"
+
+**Memory hook:** *Fixed form, taught by example* · consistency was the problem, not quality → four fields, closed outcome enum → examples: clean, pending, multi-issue → negative rules, temperature zero → one shared versioned template · **Land on:** "Escalations by team became a single GROUP BY instead of reading conversations."
 
 **Answer:**
 
@@ -2624,6 +2702,8 @@ Where $\Omega(f) = \gamma T + \frac{1}{2}\lambda \|w\|^2$ is the regularization 
 ---
 
 ### Q33: "How do you evaluate summarization quality? There's no single right answer."
+
+**Memory hook:** *Cheap checks, then humans* · format compliance on every row → faithfulness grounding, PII scan → ROUGE, BERTScore as regression detectors → weekly SME human review · **Land on:** "The real test: could a team lead use the summary instead of opening the transcript?"
 
 **Answer:**
 
@@ -2649,6 +2729,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 
 ### Trick Q1: "MAPE is a bad metric for intermittent demand — why did you use it?"
 
+**Memory hook:** *Admit flaws, then defend* · flaws: zero actuals, asymmetry → our routes not intermittent → scale-independent across two hundred routes → filter near-zero, track sMAPE, MAE, RMSE → truly intermittent? MASE or Croston · **Land on:** "If a segment were truly intermittent, I'd split it out and use MASE."
+
 > **Answer:**
 > "It's a fair criticism and I'd want to answer it in three parts: why MAPE is genuinely flawed, why it was still the right primary metric here, and what I ran alongside it.
 >
@@ -2664,6 +2746,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 
 ### Trick Q2: "Walk-forward validation on 18 months — how many folds, and did you retrain or refit?"
 
+**Memory hook:** *Five folds, fresh start each* · five folds, 30-day test windows → 150 days, 28-day purge gap → retrain from scratch, refit scaler → five folds is a compromise → 18 months is production · **Land on:** "The 18+ months is production operation, not the validation window."
+
 > **Answer:**
 > "Five folds with 30-day test windows, so 150 days of genuine out-of-sample evaluation, expanding window, with a 28-day purge gap between the end of each training set and the start of its test window.
 >
@@ -2676,6 +2760,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 ---
 
 ### Trick Q3: "You said the 18% baseline was the manual process. Isn't beating a spreadsheet a low bar?"
+
+**Memory hook:** *Low bar, right bar* · concede it's a low bar → it's what business actually used → XGBoost at 9.1% is the real bar → LSTM added the last two points · **Land on:** "Most of the improvement came from the data work, not the model."
 
 > **Answer:**
 > "It is a low bar in absolute terms, and I'd concede that immediately — but it's the *right* bar for the business claim, and I ran the harder comparisons too.
@@ -2690,6 +2776,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 
 ### Trick Q4: "7% MAPE — is that on all routes? What's your worst route?"
 
+**Memory hook:** *The average hides the spread* · portfolio average oversells → summer routes five to six → winter routes eight to ten → new routes: cold-start, tree fallback → monitor MAPE by segment · **Land on:** "An aggregate can look stable while a whole segment is degrading."
+
 > **Answer:**
 > "It's the portfolio average, and a single number across a heterogeneous portfolio always oversells. The dispersion is real and I'd give it before being asked.
 >
@@ -2702,6 +2790,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 ---
 
 ### Trick Q5: "Below 2% forecast-error variation over 18 months sounds implausibly stable. What are you actually measuring?"
+
+**Memory hook:** *Steady band, not low number* · not a MAPE of 2% → two-point band month to month → average feature PSI under 0.02 → monthly retrain, event retrain, champion gate → caveats: spikes, volatile segments · **Land on:** "If those eighteen months had included COVID, no retraining cadence would have held that band."
 
 > **Answer:**
 > "It's the kind of claim that deserves scrutiny, so let me be precise about what it is and isn't.
@@ -2718,6 +2808,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 
 ### Trick Q6: "Your LSTM beat XGBoost by two points. Couldn't that just be noise?"
 
+**Memory hook:** *Check folds, not just mean* · gap held across folds → MAE and RMSE agree → overlapping folds overstate significance → Diebold-Mariano or blocked bootstrap → point estimates, not intervals · **Land on:** "The gap I'd defend is tree versus sequence, 9.1% to around 7%."
+
 > **Answer:**
 > "It's the right question, and the honest answer is that I'd want more evidence than a single aggregate to call it definitive.
 >
@@ -2730,6 +2822,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 ---
 
 ### Trick Q7: "Optuna with 100 trials on 5 folds — did you tune on your test set?"
+
+**Memory hook:** *Partly yes, and own it* · partially, optimistically biased → small space, forward folds limit damage → mean-across-folds resists overfitting → fix: nested validation, untouched block · **Land on:** "If tuning had overfit the folds, production would have come in worse. It didn't."
 
 > **Answer:**
 > "Partially, and it's a legitimate concern I should be precise about rather than deflecting.
@@ -2745,6 +2839,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 ---
 
 ### Trick Q8: "Pydantic validation and 'data integrity' — what did it actually catch that pandas wouldn't?"
+
+**Memory hook:** *Perfect structure, wrong meaning* · types are the least of it → reject bad records before load → business rules, not just types → EUR instead of GBP → semantic validator plus normalisation · **Land on:** "Types are table stakes. What hurts is wrong data that looks structurally perfect."
 
 > **Answer:**
 > "Type checking is the least interesting thing Pydantic did, and if that were all of it then you're right, pandas dtypes would cover most of it.
@@ -2767,6 +2863,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 
 ## 6.1 "What was the exact MAPE?"
 
+**Memory hook:** *Confident range, not fake precision* · rule-based baseline around 18% → LSTM in 6-8% range → summer 5-6%, winter 8-10% → portfolio average about 7% · **Land on:** "The overall portfolio average settled at about 7%."
+
 **Red flag:** Interviewers may push for exact numbers to test if you actually ran the project.
 
 **How to handle:** Give a confident range, not a suspiciously precise number.
@@ -2778,6 +2876,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 ---
 
 ## 6.2 "Why LSTM and not ARIMA or Prophet?"
+
+**Memory hook:** *Many routes, many features* · we did try ARIMA, Prophet → ARIMA: univariate, needs stationarity → Prophet: single series, ~200 routes → one multivariate LSTM → 11% to 7% justified cost · **Land on:** "With a single time series and limited features, Prophet would be my first choice."
 
 **Red flag:** Using deep learning for time series when simpler methods might suffice.
 
@@ -2793,6 +2893,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 
 ## 6.3 "Why Dataiku and not custom deployment (Docker/K8s/Airflow)?"
 
+**Memory hook:** *Team fit over tech fit* · small team, ops and finance users → visual status without engineers → my ML code in Python recipes → Dataiku ran orchestration, scheduling, UI → bigger team: Airflow, custom serving · **Land on:** "The right tool depends on the team and context."
+
 **Red flag:** Interviewer may perceive Dataiku as a no-code shortcut.
 
 **How to handle:**
@@ -2807,6 +2909,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 
 ## 6.4 "How do you know the model wasn't just memorizing patterns?"
 
+**Memory hook:** *Three guards, plus production proof* · walk-forward, never saw future → dropout 0.25, weight decay → train-validation gap within 1-2% → 18 months in production · **Land on:** "Holding up for 18 months across unseen seasonal cycles is the strongest evidence of generalization."
+
 **How to handle:**
 
 > "Three safeguards: First, walk-forward validation — the model never saw future data during training, so good performance on the validation folds means genuine generalization, not memorization. Second, dropout regularization in the LSTM (0.25) and weight decay in the optimizer — these actively prevent overfitting. Third, we monitored the gap between training and validation MAPE — it stayed within 1-2%, indicating no significant overfitting.
@@ -2816,6 +2920,8 @@ The adversarial set. These probe whether the numbers are real and whether you un
 ---
 
 ## 6.5 "2% drift seems too good — how is that possible?"
+
+**Memory hook:** *Regular oil changes* · < 2% is average PSI → PSI 0.02 is mild shift → monthly plus event-driven retraining → spikes above 0.1 got investigated · **Land on:** "Spikes triggered immediate retraining, which kept the average low."
 
 **How to handle:**
 

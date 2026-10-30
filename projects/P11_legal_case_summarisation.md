@@ -1359,12 +1359,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q1: Walk me through your legal case summarisation pipeline end-to-end.
 
+**Memory hook:** *Links, details, summaries* · Stage 1: Selenium collects links → Stage 2: BeautifulSoup scrapes details → Stage 3: BART or o3-mini → SpaCy NER on both texts · **Land on:** "Every stage writes to a file, so the pipeline is resumable and easy to debug."
+
 **Answer:**
 "I built a 3-stage modular pipeline for summarising Dutch legal rulings from rechtspraak.nl at scale. **Stage 1 (Link Collection):** A Selenium-based scraper with headless Chrome iterates month-by-month through date ranges, clicking 'Load More' buttons up to 2,000 times per session, collecting all ruling URLs into a text file. I use monthly slicing because the website's pagination truncates results for large date ranges. **Stage 2 (Detail Scraping):** For each URL, Selenium loads the page, waits for the detail panel to render, then BeautifulSoup extracts structured metadata (court, date, judges, case number) from label-value divs, plus the full ruling text from the `div.uitspraak` element. This has retry logic — 3 attempts per URL with random backoff. **Stage 3 (Summarisation + NER):** I run either BART (as a baseline) or OpenAI's o3-mini model with a carefully designed legal domain prompt that enforces 11-section output. This runs in parallel using ThreadPoolExecutor with configurable workers. SpaCy NER then extracts entities (persons, courts, laws, dates) from both the original and summary text for structured output. All stages output to files (txt → csv → csv), making the pipeline resumable and each stage independently debuggable."
 
 ---
 
 ### Q2: Why did you use BART over other summarisation models?
+
+**Memory hook:** *Trained to fill gaps* · text infilling, Poisson spans → matches abstractive summarisation → better fit than T5, Pegasus → legal needs sub-sentence paraphrasing · **Land on:** "bart-large-cnn was already fine-tuned on CNN/DailyMail, so it was a strong starting point."
 
 **Answer:**
 "I chose BART specifically because of its pre-training design. BART is pre-trained with text infilling — where a single mask token replaces variable-length spans sampled from a Poisson distribution. This directly trains the model to generate variable amounts of text from compressed inputs, which is exactly what abstractive summarisation requires. Compared to T5, which uses uniform span corruption, BART's variable-length infilling better matches the summarisation task. Compared to Pegasus, which uses gap sentence generation (masking entire sentences), BART is more flexible for our domain because legal summaries often need sub-sentence-level paraphrasing. I used `bart-large-cnn` as the baseline because it's already fine-tuned on CNN/DailyMail for summarisation, giving us a strong starting point before domain-specific fine-tuning."
@@ -1373,12 +1377,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q3: How did you handle the fact that legal documents exceed BART's 1024-token limit?
 
+**Memory hook:** *Slice, summarise, stitch* · rulings average 5,200 words → ~400-word chunks, then merge → OpenAI's 128K+ fits most → explored LED, 16,384 tokens · **Land on:** "Next, hierarchical summaries per legal section would better keep the logical structure."
+
 **Answer:**
 "Legal rulings average about 5,200 words — well beyond BART's 1024-token limit. I implemented a chunking strategy: the `chunk_text` function splits text into ~400-word chunks (approximately matching token limits after BPE tokenisation), then each chunk is summarised independently, and the chunk summaries are merged into a final summary. For the production pipeline using OpenAI models, the context window is much larger (128K+ tokens), so most rulings fit without chunking. I also explored the Longformer Encoder-Decoder (LED) from AllenAI, which supports 16,384 tokens via sliding window attention with global attention on key positions. For future work, a hierarchical approach — summarising each legal section (facts, arguments, considerations) separately, then producing a meta-summary — would better preserve the document's logical structure."
 
 ---
 
 ### Q4: Explain the difference between extractive and abstractive summarisation. Why did you choose abstractive?
+
+**Memory hook:** *Highlighter versus pen* · extractive copies sentences → abstractive writes new text → compression, restructuring, cross-sentence reasoning → TextRank, Lead-N as baselines · **Land on:** "ROUGE-L went from 0.33 with TextRank to 0.38 with BART and 0.52 with the LLM."
 
 **Answer:**
 "Extractive summarisation selects and concatenates the most important sentences verbatim from the source document — methods like TextRank build a sentence similarity graph and run PageRank. Abstractive summarisation generates new text that paraphrases and compresses the original — using seq2seq models like BART. I chose abstractive for three reasons specific to legal NLP: (1) **Compression** — legal rulings are verbose with repeated statutory language; extractive summaries of a 20-page ruling would still be several pages. (2) **Restructuring** — our output requires 11 structured sections (facts, parties, dispute, articles, etc.) that don't map 1:1 to the source document's structure. (3) **Cross-sentence reasoning** — key legal conclusions often span multiple paragraphs; a sentence-level extractive method would miss the logical chain. That said, I used TextRank and Lead-N as baselines — TextRank got ROUGE-L of 0.33, while our BART baseline achieved 0.38 and the LLM-based approach reached 0.52."
@@ -1387,12 +1395,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q5: How does SpaCy's NER work under the hood?
 
+**Memory hook:** *Step-by-step entity parser* · hash embeddings, CNN encoder → actions: BEGIN, IN, LAST, UNIT, OUT → beam search over paths → EntityRuler for legal patterns · **Land on:** "The EntityRuler runs before the statistical NER, so its matches take priority."
+
 **Answer:**
 "SpaCy uses a transition-based NER system, similar to a shift-reduce parser. The input first goes through token embedding (hash embeddings with subword features), then a multi-layer CNN encoder produces contextualised representations. The NER component processes these representations left-to-right using a transition system with actions: BEGIN (start a new entity), IN (continue current entity), LAST (end current entity), UNIT (single-token entity), and OUT (not an entity). At each step, a neural network scores all valid actions, and beam search explores multiple paths. This is different from sequence labelling approaches like BiLSTM-CRF, which score all labels simultaneously. For my legal NER, I augmented SpaCy's statistical NER with an EntityRuler component that adds rule-based patterns for highly structured entities like ECLI case IDs (`ECLI:NL:RBAMS:2024:1234`), statute references (`artikel 6:162 BW`), and Dutch court names. The EntityRuler runs before the statistical NER, so its matches take priority."
 
 ---
 
 ### Q6: What are ROUGE metrics and what do they each measure?
+
+**Memory hook:** *Words, pairs, order* · ROUGE-1: key terms → ROUGE-2: key phrases → ROUGE-L: order of ideas → report F1 scores · **Land on:** "ROUGE-L went from 0.38 to 0.52, and it best rewards the same order of ideas."
 
 **Answer:**
 "ROUGE stands for Recall-Oriented Understudy for Gisting Evaluation. ROUGE-1 measures unigram overlap between generated and reference summaries — it captures content coverage (did we mention the same key terms?). ROUGE-2 measures bigram overlap — it captures fluency and phrase-level accuracy (did we preserve key phrases like 'artikel 6:162'?). ROUGE-L measures the Longest Common Subsequence — it captures structural similarity (did we present ideas in a similar order?). Each has precision, recall, and F1 variants. For summarisation, we typically report F1 scores. In our project, ROUGE-1 F1 ranged from 0.42 (BART baseline) to 0.55 (OpenAI), ROUGE-2 from 0.19 to 0.28, and ROUGE-L from 0.38 to 0.52. ROUGE-L is generally considered the most informative for summarisation because it rewards maintaining the same sequence of ideas even with intervening different words."
@@ -1401,12 +1413,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q7: How did you handle multilingual aspects of the pipeline?
 
+**Memory hook:** *Translate or stay Dutch* · translate-then-process with deep-translator → risks nuance like 'kort geding' → native Dutch: SpaCy, mBART-50 → production uses a hybrid · **Land on:** "o3-mini writes Dutch summaries, and SpaCy runs NER natively in Dutch."
+
 **Answer:**
 "Dutch legal text posed a multilingual challenge since most SOTA summarisation models are English-focused. I implemented two approaches: (1) **Translate-then-process**: Using the `deep-translator` library to translate Dutch text to English, then applying English models like BART or OpenAI. This gives access to the best English models but risks losing legal nuances in translation — for instance, Dutch legal concepts like 'cassatie' or 'kort geding' don't have exact English equivalents. (2) **Direct multilingual processing**: Using SpaCy's Dutch model (`nl_core_news_lg`) for NER directly on Dutch text without translation, and exploring mBART-50 for Dutch-to-Dutch summarisation. In production, I use a hybrid: the OpenAI summariser receives Dutch text and produces Dutch summaries (since o3-mini handles Dutch well), while NER runs natively in Dutch using SpaCy. The system prompt explicitly instructs the model to maintain Dutch legal terminology."
 
 ---
 
 ### Q8: Why did you use Selenium instead of simple HTTP requests for scraping?
+
+**Memory hook:** *Empty page without JavaScript* · results render with JavaScript → requests.get returns an empty page → Selenium waits, clicks 'Load More' → random delays, retries · **Land on:** "Selenium clicks 'Load More' up to 2,000 times per session, which plain HTTP can't do."
 
 **Answer:**
 "rechtspraak.nl is a JavaScript-heavy single-page application. The search results and 'Load More' pagination are rendered dynamically — the initial HTML contains no result links. A simple `requests.get()` would return an empty page. Selenium with headless Chrome fully renders the JavaScript, allowing me to: (1) Wait for results to load using `WebDriverWait` with `expected_conditions`, (2) Click the 'Load More' button programmatically up to 2,000 times per session, (3) Handle dynamic URL construction with date filters. I also implemented anti-throttling measures — `random.uniform(1.5, 3.0)` second delays between clicks, custom User-Agent headers, and retry logic with exponential backoff. For the detail pages, Selenium waits up to 30 seconds for the `lib-rnl-ui-panel.rnl-details-wrapper` element to render before extracting HTML for BeautifulSoup parsing."
@@ -1415,12 +1431,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q9: Explain BART's encoder-decoder architecture and how cross-attention works.
 
+**Memory hook:** *Decoder asks, encoder answers* · 12 encoder, 12 decoder layers → encoder sees both directions → decoder sees only previous tokens → decoder gives Q, encoder gives K, V → divide by sqrt(d_k) · **Land on:** "Cross-attention lets the model focus on the relevant parts of the input for each summary word."
+
 **Answer:**
 "BART has 12 encoder layers and 12 decoder layers, each with 1024 hidden dimensions and 16 attention heads. The encoder uses full bidirectional self-attention — every token attends to every other token, building rich contextual representations of the input document. The decoder uses masked (causal) self-attention — each token can only attend to previous tokens, enabling autoregressive generation. The key connection is cross-attention in each decoder layer: the decoder's hidden states provide the query vectors Q, while the encoder's final hidden states provide keys K and values V. So when generating each summary token, the decoder attends to the entire input document through the encoder's representations. The attention formula is `softmax(QK^T / sqrt(d_k)) * V`, where dividing by `sqrt(d_k)` prevents dot products from growing too large in high dimensions. This cross-attention is what allows the model to selectively focus on relevant parts of the long input document when generating each word of the summary."
 
 ---
 
 ### Q10: How would you improve the entity extraction accuracy?
+
+**Memory hook:** *Train it, rule it, review it* · fine-tune on Dutch legal text → regex rules for ECLI, statutes → ensemble with priority rules → link mentions across the ruling → active learning, human review · **Land on:** "Right now our weakest type is LAW references, at F1 0.80."
 
 **Answer:**
 "Several approaches: (1) **Custom NER training**: Fine-tune SpaCy's NER on annotated Dutch legal texts using the BILOU scheme, particularly for entities like LAW references and PERSON names with Dutch prefixes ('van', 'de', 'van der'). (2) **More rule-based patterns**: Dutch legal text has highly structured formats for ECLI case IDs, statute references, and court names that are better captured by regex patterns than statistical models. (3) **Ensemble approach**: Combine SpaCy's statistical NER with rule-based patterns, using the EntityRuler for high-precision structured entities and statistical NER for ambiguous ones, then resolve conflicts with priority rules. (4) **Cross-document coreference**: Link entity mentions across the ruling ('de eiser' = 'mr. De Vries' = 'De Vries voornoemd'). (5) **Active learning**: Flag low-confidence entity predictions for human review, then retrain with the corrected annotations. Currently, our weakest entity type is LAW references (F1=0.80) because Dutch statute numbering formats are more varied than expected."
@@ -1429,12 +1449,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q11: What is the BIO tagging scheme and why is it used for NER?
 
+**Memory hook:** *B marks a new start* · Begin, Inside, Outside per token → 'Rechtbank Amsterdam' is B-COURT I-COURT → tells one PERSON from two → BILOU adds Last and Unit · **Land on:** "BILOU gives the model more signal and usually adds 1-2 F1 points."
+
 **Answer:**
 "BIO stands for Begin, Inside, Outside. It's a sequence labelling scheme that converts NER into a token classification problem. Each token gets one of three label types: B-ENTITY (first token of a new entity), I-ENTITY (continuation of the current entity), or O (not an entity). For example, 'Rechtbank Amsterdam' becomes B-COURT I-COURT. The key reason for BIO over simple entity tagging is handling consecutive entities of the same type — without B/I distinction, we couldn't tell if 'De Vries Van Bergen' is one PERSON or two. BILOU extends this with L (Last token of entity) and U (Unit — single-token entity), which provides the model with more signal and typically improves accuracy by 1-2 F1 points. SpaCy internally uses a transition-based system equivalent to BILOU (BEGIN, IN, LAST, UNIT, OUT actions)."
 
 ---
 
 ### Q12: How does your parallel summarisation work and why ThreadPoolExecutor over ProcessPoolExecutor?
+
+**Memory hook:** *Waiting, not thinking* · ThreadPoolExecutor, default 10 workers → each worker calls the OpenAI API → bottleneck is I/O, not CPU → GIL released while waiting → processes add pickling, memory copies · **Land on:** "With 8 workers, throughput went from ~50 to ~400 documents per hour."
 
 **Answer:**
 "I use Python's `concurrent.futures.ThreadPoolExecutor` with configurable `max_workers` (default 10) to parallelise API calls. Each worker takes a ruling text, constructs the messages list with system and user prompts, sends it to the OpenAI API, and returns the summary. `tqdm` wraps the executor's map function for progress tracking. I chose ThreadPoolExecutor over ProcessPoolExecutor because the bottleneck is I/O (waiting for API responses), not CPU. Python's GIL doesn't block I/O-bound operations — when a thread is waiting for an API response, the GIL is released, allowing other threads to execute. ProcessPoolExecutor would add unnecessary overhead from serialisation (pickling data between processes) and memory duplication. With 8 workers, throughput increases from ~50 to ~400 documents per hour. I cap workers at 10 to avoid hitting OpenAI's rate limits."
@@ -1443,12 +1467,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q13: What is beam search and how does it affect summarisation quality?
 
+**Memory hook:** *Keep the best 4 paths* · keep top-K sequences each step → greedy gives repetitive text → no_repeat_ngram_size=3, length_penalty=2.0 → bigger beams, slower generation → beam_size=4 is the balance · **Land on:** "Going to 8 beams adds only ~0.5 ROUGE points but doubles generation time."
+
 **Answer:**
 "Beam search is a decoding strategy that maintains the top-K most likely partial sequences at each generation step. With beam_size=4, at each step we expand all 4 beams, score the resulting candidates, and keep the top 4. This explores more of the search space than greedy decoding (beam_size=1) without the exponential cost of exhaustive search. For summarisation, beam search is critical because greedy decoding often produces repetitive or degenerate text. I use `no_repeat_ngram_size=3` to prevent any 3-gram from appearing twice (stops 'the court the court the court'), `length_penalty=2.0` to discourage premature stopping (penalty > 1.0 favours longer sequences), and `early_stopping=True` to stop when all beams produce the end-of-sequence token. The tradeoff: larger beams produce higher quality but slower generation. For legal summarisation, beam_size=4 gives a good balance — increasing to 8 improves ROUGE by only ~0.5 points but doubles generation time."
 
 ---
 
 ### Q14: How would you evaluate summarisation quality beyond ROUGE?
+
+**Memory hook:** *Words match, but is it true?* · ROUGE is surface-level only → BERTScore catches paraphrases → factual consistency: SummaC, QuestEval → entity overlap, legal expert review → 11-section coverage check · **Land on:** "Last, I'd cross-check summary entities against the source to catch made-up names, dates, or case numbers."
 
 **Answer:**
 "ROUGE has known limitations — it's purely surface-level and can miss semantic equivalence. For legal summarisation, I'd add: (1) **BERTScore**: Uses contextual embeddings (cosine similarity of BERT representations) instead of exact string matching — captures paraphrases like 'ruled' vs 'decided'. (2) **Factual consistency** (SummaC, QuestEval): Generates questions from the summary and checks if the source document provides the same answers — crucial for legal texts where factual accuracy is paramount. (3) **Entity overlap**: What percentage of entities in the reference appear in the generated summary (separate from ROUGE). (4) **Legal expert evaluation**: Human judges rate summaries on completeness, accuracy, and structure — the gold standard but expensive. (5) **Coverage of legal sections**: Did the summary address all 11 required sections? This is a domain-specific metric unique to our pipeline. (6) **Hallucination detection**: Cross-reference entities in the summary against the source to catch fabricated names, dates, or case numbers."
@@ -1457,12 +1485,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q15: Explain the concept of attention in transformers. How does multi-head attention improve over single-head?
 
+**Memory hook:** *Many eyes, different views* · Q, K, V from learned matrices → softmax scores weight the V vectors → split into h heads → each head catches a different relation → concatenate, then project · **Land on:** "BART-large uses 16 heads of size 64, and 16 times 64 is 1024."
+
 **Answer:**
 "Self-attention computes a weighted sum of all tokens' representations, where weights are determined by pairwise relevance. For each token, we compute Query, Key, and Value vectors by multiplying the token's embedding with learned weight matrices W_Q, W_K, W_V. The attention score between tokens i and j is `softmax(Q_i · K_j / sqrt(d_k))`, and the output for token i is the weighted sum of all V vectors using these scores. Multi-head attention splits the d_model dimensional space into h parallel attention heads, each operating on d_k = d_model/h dimensions. This allows different heads to capture different relationship types simultaneously — in our legal NER context, one head might attend to syntactic structure (subject-verb agreement), another to entity co-reference ('the defendant' → 'Mr. de Vries'), and another to legal statute patterns ('artikel' → number → 'BW'). The outputs of all heads are concatenated and linearly projected. BART-large uses 16 heads with d_k=64 each (16 × 64 = 1024 = d_model)."
 
 ---
 
 ### Q16: How would you handle a legal ruling that's 50 pages long?
+
+**Memory hook:** *Sections first, summary of summaries* · ~25,000 words, ~40,000 tokens → detect sections with regex → summarise sections, then meta-summary → overlapping chunks, stride 200 → focus on considerations and dictum · **Land on:** "For models, LED handles 16K tokens, and API models with 128K+ context take the full document."
 
 **Answer:**
 "A 50-page ruling (~25,000 words, ~40,000 BPE tokens) is far beyond even GPT-4's effective context. My approach: (1) **Section detection**: Legal rulings follow a predictable structure (procedural history → facts → arguments → considerations → dictum). I'd use regex patterns and heuristics to segment the document into logical sections. (2) **Hierarchical summarisation**: Summarise each section independently, then produce a meta-summary from the section summaries. This preserves the document's logical structure. (3) **Map-Reduce**: For the chunking approach, process overlapping chunks (stride of 200 words with chunk size 400) to avoid cutting mid-sentence, summarise each chunk, then reduce. (4) **Selective extraction**: For NER, extract entities from the full document (SpaCy has no length limit), but for summarisation, focus on the 'considerations' and 'dictum' sections which contain the key legal reasoning. (5) **Alternative models**: Use Longformer Encoder-Decoder (LED) with 16K tokens for moderate-length documents, or API-based models with 128K+ context for the full document."
@@ -1471,12 +1503,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q17: What challenges did you face with Dutch text in NLP models?
 
+**Memory hook:** *Dutch words break into pieces* · over-tokenised, 30-40% less context → legal terms with no English match → name prefixes like 'van der' → Dutch dates, long compound words · **Land on:** "I used SpaCy's Dutch model for NER and deep-translator for clean Dutch to English before BART."
+
 **Answer:**
 "Several significant challenges: (1) **Tokenisation inefficiency**: BART's BPE tokeniser was trained primarily on English text, so Dutch words get over-tokenised — 'rechtspraak' becomes 3-4 tokens vs 1 for the English equivalent 'jurisdiction'. This effectively reduces the usable context window by 30-40%. (2) **Legal terminology**: Dutch legal terms like 'cassatie' (cassation/appeal to supreme court), 'kort geding' (preliminary injunction), and 'gedaagde' (defendant) have no direct English equivalents, causing information loss in translation. (3) **Named entity patterns**: Dutch names use prefixes ('van', 'de', 'van der') that English NER models don't handle well — 'Jan van der Berg' might be split into two entities. (4) **Date formats**: Dutch uses '13 januari 2024' instead of 'January 13, 2024'. (5) **Compound words**: Dutch creates long compound words ('arbeidsovereenkomst' = employment contract) that confuse subword tokenisers. I mitigated these by using SpaCy's Dutch model for NER (handles Dutch name/date patterns natively) and the deep-translator library for clean Dutch→English conversion before BART processing."
 
 ---
 
 ### Q18: How does your system prompt design ensure structured legal summaries?
+
+**Memory hook:** *Expert role, fixed 11 sections* · system prompt: Dutch legal expert → 11 headings, bullets, neutral tone → mark missing parts, no hallucination → winner: main claim over subsidiary → consistent output across 250K+ · **Land on:** "This structure gives much higher ROUGE than a plain 'summarise this text' prompt."
 
 **Answer:**
 "I designed a two-part prompt system. The system prompt establishes the model as 'an expert in Dutch legal modelling' and specifies the downstream use case (Legal BERT predictive model), which anchors the model's output style. The user prompt is highly structured with explicit section headings (11 sections from 'Summary of Facts' to 'Other Details'), specific bullet-point formatting requirements, and a neutral factual tone requirement. Key design choices: (1) I specify both what to include AND what to indicate as missing — this prevents hallucination of unavailable information. (2) I ask for the 'winner of the case' with the qualifier 'main claim outweighing subsidiary claims' — this forces nuanced analysis rather than binary classification. (3) The prompt references legal concepts (appellant/respondent, cassation, costs allocation) to prime the model's legal reasoning. (4) Style requirements (numbered headings, bullet points, neutral tone) ensure consistent, parseable output across 250K+ summaries. This structured approach yields significantly higher ROUGE scores than unstructured 'summarise this text' prompts."
@@ -1485,6 +1521,8 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q19: If you were to rebuild this project from scratch, what would you change?
 
+**Memory hook:** *Async, Legal-BART, copy names* · Playwright async, Selenium uses ~200MB each → pre-train Legal-BART on 250K rulings → copy mechanism keeps names verbatim · **Land on:** "And I'd swap CSV files for PostgreSQL with pgvector, for scale and querying."
+
 **Answer:**
 "Three major changes: (1) **Async scraping**: Replace Selenium with Playwright (async-native) or use `httpx` with a headless browser API. Selenium is synchronous and heavy — each browser instance uses ~200MB RAM. Playwright supports async/await natively and handles JavaScript rendering. For 250K URLs, this would cut scraping time significantly. (2) **Legal-domain pre-training**: Instead of using generic BART, I'd pre-train a Legal-BART on Dutch legal corpora (all 250K rulings) using the same denoising objective. This domain-adaptive pre-training has been shown to improve downstream task performance by 5-10 F1 points in specialised domains. (3) **Entity-grounded summarisation**: Rather than running NER as a post-processing step, I'd integrate entity awareness into the summarisation itself — using techniques like copy mechanism (pointer networks) to ensure entity names are copied verbatim from the source rather than generated (preventing name hallucination). I'd also add a database backend (PostgreSQL with pgvector) instead of CSV files for better scalability and querying."
 
@@ -1492,12 +1530,16 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Q20: How do you ensure the summaries are factually accurate and don't hallucinate?
 
+**Memory hook:** *New entity means red flag* · structured prompt: say what's missing → NER on source and summary → ROUGE for shared terms → no_repeat_ngram_size, neutral tone → production: SummaC NLI scoring · **Land on:** "Summaries below a consistency threshold would go to human review."
+
 **Answer:**
 "Factual accuracy is critical in legal NLP. My approach has multiple layers: (1) **Structured prompts**: The 11-section format with explicit instruction to 'indicate briefly if parts are missing' reduces the model's tendency to fabricate information. (2) **Entity cross-validation**: I extract entities from both the original ruling and the generated summary using SpaCy NER, then check that all entities in the summary exist in the source. New entities in the summary flag potential hallucinations. (3) **ROUGE metrics**: While not a hallucination detector per se, high ROUGE scores indicate the summary uses the same terms and phrases as the source. (4) **Constrained generation**: For BART, I use `no_repeat_ngram_size` and `length_penalty` to prevent degenerate outputs. For the LLM, the system prompt emphasises 'as complete and factual as possible' and 'neutral, factual tone'. (5) **For production**, I'd add SummaC (Summary Consistency) scoring — a trained NLI model that checks if each summary sentence is entailed by the source document. Legal summaries with consistency scores below a threshold would be flagged for human review."
 
 ---
 
 ### Q21: Explain how TextRank works for extractive summarisation.
+
+**Memory hook:** *PageRank for sentences* · sentences become graph nodes → edges are cosine similarity → PageRank, d=0.85, ~20-30 iterations → pick top-K sentences → picks the middle, misses the dictum · **Land on:** "That's why it was only a baseline, ROUGE-L 0.33, and we moved to abstractive."
 
 **Answer:**
 "TextRank adapts Google's PageRank algorithm to text. First, each sentence in the document becomes a node in a graph. Edge weights between sentences are their cosine similarity (using TF-IDF or sentence embeddings). Then, the PageRank formula iteratively computes importance scores: `WS(V_i) = (1-d) + d * sum(w_ji / sum(w_jk) * WS(V_j))`, where d=0.85 is the damping factor. Intuitively, a sentence is 'important' if it's similar to many other important sentences — the same logic that makes a webpage important if many important pages link to it. After convergence (~20-30 iterations), we rank sentences by score and select the top-K. For legal text, TextRank has a specific weakness: it tends to select sentences from the middle of the document (where most cross-references cluster) rather than the dictum (final ruling), which is often the most important part. This is why we used it only as a baseline (ROUGE-L 0.33) and moved to abstractive methods."
@@ -1508,30 +1550,42 @@ matcher.add("CASE_NUMBER", [pattern])
 
 ### Red Flag 1: "You used OpenAI API — isn't that just calling someone else's model?"
 
+**Memory hook:** *One part of a bigger system* · Selenium scraper, retries for 250K URLs → 11-section prompt engineering → SpaCy NER, parallel processing → BART as a local baseline → o3-mini handles Dutch natively · **Land on:** "The prompt work alone needed deep understanding of the legal domain and the model."
+
 **How to Handle:**
 "The OpenAI integration is one component of a larger pipeline I built end-to-end. The value isn't in calling an API — it's in the complete system: the Selenium scraping engine that handles JavaScript-rendered pagination, the robust retry logic for 250K URLs, the structured prompt engineering that produces consistent 11-section legal summaries, the SpaCy NER for entity extraction, and the parallel processing architecture. I also implemented BART-based summarisation as a fully local baseline using Hugging Face Transformers — that's where the deep model understanding comes in. The OpenAI integration was a pragmatic production decision because o3-mini handles Dutch text natively and has sufficient context for most rulings. The prompt engineering alone — getting consistent, structured, factually grounded legal summaries — required deep understanding of the domain and the model's capabilities."
 
 ### Red Flag 2: "ROUGE scores seem low — ROUGE-L of 0.38 for BART?"
+
+**Memory hook:** *Low for news, normal for law* · fixed sections change word order → many ways to say one concept → references were generated, not gold → BillSum reports 0.36-0.43 · **Land on:** "BART at 0.38 is in that range, and our LLM at 0.52 is above it."
 
 **How to Handle:**
 "ROUGE scores in legal NLP are inherently lower than in news summarisation for several reasons: (1) Legal summaries restructure content into prescribed sections, so even perfect summaries won't match reference word order closely. (2) Legal text has high vocabulary diversity — many ways to express the same legal concept — which deflates unigram overlap. (3) Our reference summaries were themselves generated (not gold-standard human annotations), so the ceiling is inherently lower. For context, state-of-the-art legal summarisation benchmarks (like the BillSum dataset) report ROUGE-L of 0.36-0.43. Our BART baseline at 0.38 is within that range, and our LLM approach at 0.52 exceeds it. I'd also emphasise that ROUGE doesn't measure factual accuracy or structural completeness — our structured output format ensures all 11 legal sections are covered, which ROUGE doesn't capture."
 
 ### Red Flag 3: "How do you know the NER actually works for Dutch legal text?"
 
+**Memory hook:** *Regex for IDs, hand-check the rest* · ECLI regex, F1 of 0.94 → hand-annotated 200 rulings → weakest: PERSON, F1=0.82 → chose Dutch nl_core_news_lg · **Land on:** "For production, I'd flag low-confidence entities for human review."
+
 **How to Handle:**
 "I validated NER through two approaches: (1) **Rule-based patterns have near-perfect precision** for structured entities — ECLI case IDs have a fixed format (`ECLI:NL:COURT:YEAR:NUMBER`), so regex-based extraction achieves F1 of 0.94. Similarly, statute references follow predictable patterns ('artikel X:YYY BW'). (2) **Statistical NER was validated on a manually annotated subset** — I hand-annotated 200 rulings and measured per-entity-type precision, recall, and F1. The weakest area is PERSON entities (F1=0.82) because Dutch naming conventions with prefixes ('van', 'de', 'van der') and abbreviated titles ('mr.', 'prof.') are challenging. I specifically chose SpaCy's `nl_core_news_lg` (Dutch model) over English models to handle these patterns. For production, I'd recommend a human-in-the-loop validation step where low-confidence entity predictions are flagged for review."
 
 ### Red Flag 4: "250K documents — did you actually process all of them?"
+
+**Memory hook:** *Built for 250K, tested in slices* · 100-500 rulings for fast iteration → 5,000-10,000 for NER and ROUGE → full pipeline on chosen date ranges → stage files act as checkpoints → ~400 docs/hour, 8 workers · **Land on:** "The full corpus would take about 26 days, which is why parallel processing matters."
 
 **How to Handle:**
 "The pipeline is designed to handle 250K+ documents, which is the scale of rechtspraak.nl's published rulings. For development and evaluation, I worked with subsets at different scales: small samples (100-500 rulings) for rapid iteration and model comparison, medium batches (5,000-10,000) for NER training and ROUGE evaluation, and the full scraping pipeline was tested end-to-end for specific date ranges. The architecture — month-by-month date slicing, file-based stage outputs, retry logic, and parallel processing — is specifically designed for the full 250K scale. Each stage's output serves as a checkpoint, so processing can resume after failures. With 8 parallel workers on the OpenAI API, we achieve ~400 documents/hour, so the full corpus would take roughly 26 days of continuous processing — which is why the parallel architecture is essential."
 
 ### Red Flag 5: "Why not just use a pre-built legal NLP tool?"
 
+**Memory hook:** *English tools, Dutch problem* · Legal-BERT, LexNLP are English-focused → Dutch courts, statutes are specific → no tool does scraping, summary, NER → modular, swap one part · **Land on:** "When a better Dutch legal NER model comes out, I swap that module and keep the rest."
+
 **How to Handle:**
 "Existing legal NLP tools have two limitations for this use case: (1) Most are English-focused (Legal-BERT, LexNLP, BlackBoiler) and don't handle Dutch legal text. Dutch legal concepts, court hierarchies, and statute numbering systems are specific to the Netherlands. (2) No existing tool combines scraping from rechtspraak.nl + structured summarisation + Dutch NER in a single pipeline. This project fills that gap with a modular design where each component (scraper, summariser, NER) can be independently upgraded. For example, when better Dutch legal NER models become available, I can swap that module without changing the scraping or summarisation stages."
 
 ### Red Flag 6: "What about privacy and data compliance?"
+
+**Memory hook:** *Public records, still careful* · rulings are public by law → many already anonymised by courts → NER finds PERSON for anonymisation → polite scraping, random delays → API use doesn't feed training · **Land on:** "In production, I'd add anonymisation as a stage between scraping and summarisation."
 
 **How to Handle:**
 "Dutch court rulings published on rechtspraak.nl are public records by law — the Netherlands has a strong tradition of open justice. The data is explicitly made available for public access. However, I took precautions: (1) Many rulings are already anonymised by the courts (names replaced with '[eiser]', '[gedaagde]'). (2) For non-anonymised rulings, my NER module can identify PERSON entities for downstream anonymisation. (3) I implemented rate limiting and polite scraping practices (random delays, reasonable request frequency) to avoid overloading the government server. (4) The OpenAI API processes text but I don't store outputs in their systems (API usage doesn't feed into training by default). For a production deployment, I'd add explicit anonymisation as a pipeline stage between scraping and summarisation."
@@ -1584,6 +1638,8 @@ matcher.add("CASE_NUMBER", [pattern])
 | Multilingual ML | Dutch text handling, translation, multilingual models |
 
 ### 7.4 30-Second Elevator Pitch
+
+**Memory hook:** *Scrape, summarise, tag entities* · 250K+ Dutch legal rulings → Selenium scraper, JavaScript pagination → BART and OpenAI, 11 sections → SpaCy NER: judges, statutes, case IDs · **Land on:** "The LLM approach reaches ROUGE-L 0.52, built for civic tech, legal research, and Legal BERT training."
 
 > "I built an end-to-end NLP pipeline for summarising 250K+ Dutch legal rulings from the Netherlands' official judiciary portal. The system has three stages: a Selenium-based scraper that handles JavaScript-rendered pagination and date filtering, a dual summarisation engine using both BART from Hugging Face and OpenAI with structured legal prompts producing 11-section summaries, and a SpaCy NER module extracting legal entities like judges, statutes, and case IDs. The pipeline processes documents in parallel with configurable workers, handles the Dutch language through both translation and multilingual models, and achieves ROUGE-L scores of 0.52 on the LLM-based approach. It's designed for civic tech, legal research, and downstream applications like Legal BERT training."
 

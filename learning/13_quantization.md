@@ -1564,6 +1564,8 @@ Canary strategy:
 
 ## **Q1: "What is model quantization and why do we need it?"**
 
+**Memory hook:** *Lossy ZIP for neural networks* · lower precision, FP16 down to INT4 → cost, speed, energy, portability → weights are redundant, cluster near zero · **Land on:** "Weights are highly redundant, which is why quantization works with minimal accuracy loss."
+
 **Strong answer:**
 
 > "Quantization reduces the numerical precision of model weights — and optionally activations — from high-precision formats like FP16 (16 bits) down to INT8 (8 bits) or even INT4 (4 bits). Think of it as a lossy ZIP for neural networks.
@@ -1575,6 +1577,8 @@ Canary strategy:
 ---
 
 ## **Q2: "Explain the difference between GPTQ, AWQ, and NF4."**
+
+**Memory hook:** *Hessian, salient channels, normal bins* · all three are 4-bit PTQ → GPTQ: Hessian, column by column → AWQ: protect salient channels → NF4: quantile bins, QLoRA · **Land on:** "AWQ or GPTQ for pure inference serving, NF4 when you plan to fine-tune after."
 
 **Strong answer:**
 
@@ -1592,6 +1596,8 @@ Canary strategy:
 
 ## **Q3: "How does quantization affect model accuracy? What's the typical degradation?"**
 
+**Memory hook:** *Bits, method, model size* · INT8 under 1% → INT4 under 2-3% with GPTQ, AWQ → bigger models tolerate more → task-specific benchmarks, not just perplexity · **Land on:** "Quantize to INT4, run the full eval suite, and try INT8 if it degrades too much."
+
 **Strong answer:**
 
 > "The accuracy impact depends on three factors: the bit-width, the quantization method, and the model size.
@@ -1608,6 +1614,8 @@ Canary strategy:
 
 ## **Q4: "What's the difference between PTQ and QAT? When would you use each?"**
 
+**Memory hook:** *Calibrate after vs train with it* · PTQ: calibration set, minutes, no training → QAT: fake quantization nodes, STE → INT8 PTQ is enough, INT4 QAT gains 2-3% → LLMs use enhanced PTQ · **Land on:** "PTQ is cheap and fast, QAT is expensive but more accurate."
+
 **Strong answer:**
 
 > "**PTQ (Post-Training Quantization)** takes a trained model, runs a small calibration dataset through it to determine value ranges, and maps weights to lower precision. It takes minutes, requires no training, and needs only 100-1000 unlabeled samples.
@@ -1621,6 +1629,8 @@ Canary strategy:
 ---
 
 ## **Q5: "How would you deploy a quantized 7B model in production?"**
+
+**Memory hook:** *Seven steps, canary last* · AWQ INT4, 13GB to about 3.8GB → calibrate on real traffic → validate, under 3% gate → vLLM on Kubernetes → 5% canary for 48 hours · **Land on:** "Same quality within 2-3%, 80% lower serving cost, 2-3× higher throughput."
 
 **Strong answer:**
 
@@ -1646,6 +1656,8 @@ Canary strategy:
 
 ## **Q6: "What is the SmoothQuant technique and when would you use it?"**
 
+**Memory hook:** *Move outliers into weights* · activation outliers 100× larger → insert scaling matrix S → α controls the shift → W8A8 unlocks INT8 GEMM · **Land on:** "Use SmoothQuant when throughput is the main concern and you have fast INT8 tensor cores."
+
 **Strong answer:**
 
 > "SmoothQuant solves the activation quantization problem. In large language models, certain activation channels have magnitudes 100× larger than the rest — these outliers make INT8 activation quantization fail because the scale is dominated by outliers, collapsing small values to zero.
@@ -1659,6 +1671,8 @@ Canary strategy:
 ---
 
 ## **Q7: "What is double quantization in NF4, and why does it matter?"**
+
+**Memory hook:** *Quantize the scale factors too* · FP32 scale per 64 weights → 0.5 extra bits each → quantize scales to FP8 → about 4.127 vs 4.5 bits · **Land on:** "For a 7B model, that's about 325 MB saved."
 
 **Strong answer:**
 

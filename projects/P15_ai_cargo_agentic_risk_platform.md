@@ -1,7 +1,8 @@
 # P15: AI Cargo — Agentic Risk Intelligence Platform for Pharma Cold-Chain
 
-> **Project Type:** Flagship self-project — **Smith Agentic AI Challenge, 1st prize + $4,000**
-> **Timeline:** **March 2026 – April 2026** (~6 weeks, solo build)
+> **Project Type:** Flagship project. **Competition build with a team of three** (Smith Agentic AI Challenge, **1st prize + $4,000**), then **carried forward and deployed by me on my own** (v2).
+> **Timeline:** **March 2026 – April 2026** competition build (team; resume dates) · **July 2026** Docker deploy on a Hostinger VPS (me) · **to October 2026** v2 data, model, and agent (me)
+> **Team:** Rahul Sharma, Nikhil Sumesh, and a third teammate (git: `youlkar`). See [§0a](#0a-team-ownership-and-what-i-did-after-the-competition) before any interview.
 > **Live Demo:** [ai-cargo-monitor-prod.vercel.app](https://ai-cargo-monitor-prod.vercel.app/)
 > **GitHub:** [github.com/rahul370139/SmithAgenticAIChallenge](https://github.com/rahul370139/SmithAgenticAIChallenge)
 
@@ -12,6 +13,7 @@
 ## Table of Contents
 
 0. [Resume Bullet ↔ Proof Map](#0-resume-bullet--proof-map)
+0a. [Team, Ownership, and What I Did After the Competition](#0a-team-ownership-and-what-i-did-after-the-competition)
 1. [STAR Summary](#1-star-summary)
 2. [Architecture](#2-architecture)
 3. [Risk Scoring Engine (the "is this real?" core)](#3-risk-scoring-engine)
@@ -25,6 +27,7 @@
 11. [Trick & Follow-Up Questions](#11-trick--follow-up-questions)
 12. [Red Flags & How to Handle](#12-red-flags--how-to-handle)
 13. [Key Takeaways](#13-key-takeaways)
+14. [v2 Deep Dive: Data, Model, Agent, Deploy (my post-competition work)](#14-v2-deep-dive-my-post-competition-work)
 
 ---
 
@@ -39,7 +42,33 @@ Three resume bullets. Every hard number below must be traceable to a section of 
 | 3 | "Deployed a **FastAPI backend with 25 endpoints, WebSockets, React, Supabase, and Vercel**, integrating **four LLM providers with deterministic fallback** for resilient inference routing." | 25 endpoints · `/ws/events` · React 19 on Vercel · Supabase · 4 providers + zero-LLM path | §2 Tech stack, §7.2 WebSockets, §8.1 Provider chain, §8.2 Zero-LLM mode | *"FastAPI serves 25 endpoints plus a WebSocket event stream to a React dashboard on Vercel, and the LLM layer tries Groq, Ollama, OpenAI and Anthropic in priority order before falling through to a fully deterministic path — so the system still runs with no provider at all."* |
 | — | **Achievement** | **1st prize + $4,000, Smith Agentic AI Challenge** | §1 STAR Result | *"It won first prize and $4,000 in the Smith Agentic AI Challenge, judged on combining FDA/GDP regulatory rules with explainable ML rather than on a demo."* |
 
-> **Honest framing rule:** the numbers I stand behind are the ones on the resume — six layers, 14 features, 8 rules, 25 endpoints, 4 providers, 1st prize / $4,000, Mar–Apr 2026. The dataset is **synthetic** (7,411 telemetry windows), so I lead with that rather than waiting to be caught, and I never quote a model performance figure as if it were measured on real shipments. What I claim is the *system design*: the fusion logic, the governance, the fallback behaviour, and the audit trail. Where I name individual feature or hyperparameter details below, they're reconstructed from the pipeline — if pushed on one I'm not certain of, I say "that's from memory, directionally X."
+> **Honest framing rule:** the numbers I stand behind are the ones on the resume — six layers, 14 features, 8 rules, 25 endpoints, 4 providers, 1st prize / $4,000, Mar–Apr 2026. The competition dataset is **synthetic** (7,408 telemetry windows), so I lead with that rather than waiting to be caught, and I never quote a model performance figure as if it were measured on real shipments. What I claim is the *system design*: the fusion logic, the governance, the fallback behaviour, and the audit trail. Where I name individual feature or hyperparameter details below, they're reconstructed from the pipeline — if pushed on one I'm not certain of, I say "that's from memory, directionally X."
+>
+> **Second honesty rule (team):** the competition version was a **team of three**. Never say "I built it solo." Say "we built it as a team, I owned the risk engine and the agent graph, and after the competition I took it further on my own." The git history is public and shows three authors, so this answer is also the safe one. The v2 numbers (§14) are mine, measured on a v2 test split that uses real weather, airports and customs times with simulated sensors. Still not live carrier data, and I say so.
+
+---
+
+## 0a. Team, Ownership, and What I Did After the Competition
+
+**Memory hook:** *Team won it, I grew it* · team of three, first prize → my part: risk engine + agent graph + LLM layer → after: real-weather data at scale, calibrated model, policy agent, Docker deploy · **Land on:** "So the prize was a team win, and v2 is my own work on top of it."
+
+**If asked "Did you build this alone?" (say this, about 30 seconds):**
+
+> "No, the competition version was a team of three, and we won first prize together. My part was the core: the risk engine with the rules veto, the LangGraph agent graph, and the LLM layer with the fallback. My teammates built the scheduling and cold-storage tools, the compliance vector store, and the first deployment. After the competition I kept going on my own. I rebuilt the data at a much bigger scale with real weather and real airports, retrained the model with calibration and honest out-of-distribution tests, added a policy-driven agent with a safe fallback, and deployed it with Docker. So the prize was a team win, and v2 is my own work on top of it."
+
+**If they push: "So what exactly is yours?"** Point to the table, then pick one piece and go deep (the fusion veto or the revise-loop fix are your best).
+
+| Piece | Competition (team) | Owner | After the competition (me, on my own) |
+|-------|--------------------|-------|---------------------------------------|
+| Architecture scaffold, risk fusion, system prompt | v0 initial commit | **Me** | Kept; v2 learned the fusion instead of 0.4 / 0.6 |
+| Deterministic rules engine, LLM provider layer, LangGraph graph + nodes | v0.2 – v0.4 | **Me** | v1 graph kept as the baseline for the new commander |
+| Compliance RAG helpers, route + triage agents, notification agent | v0.3 – v0.6 | **Me** | v2 guardrails: grounding, injection, PII, input validation |
+| Cascading tool skeleton, scheduling agent, cold-storage agent | Apr 8 – 14 | Nikhil Sumesh | Re-implemented as `tools_v2` (sense / act / twin) |
+| Compliance vector store + LLM integration (PR #1) | Apr 13 | youlkar | Replaced by v2 `rag/` (regulations + past incidents) |
+| Dashboard agent-activity view, Vercel + Railway deploy | Apr 14 – 15 | Nikhil Sumesh | Backend moved to Docker on a Hostinger VPS, CI workflow added |
+| v2 data (495,892 windows), v2 model card, commander agent, ColdChainBench | — | — | **All mine** (§14) |
+
+> **Before interviews:** v2 is in the local repo but not yet pushed. Commit and push it, so the GitHub link shows the work you describe.
 
 ---
 
@@ -49,8 +78,8 @@ Three resume bullets. Every hard number below must be traceable to a section of 
 |-----------|--------|
 | **Situation** | Temperature-sensitive pharma logistics (vaccines, biologics) needs immediate, compliant, auditable decisions when a shipment starts drifting out of range. Manual intervention is slow and inconsistent for medium/high-risk excursions, and regulators (FDA 21 CFR, WHO, ICH, GDP) demand a defensible paper trail for every call. |
 | **Task** | Build an end-to-end agentic platform that ingests live telemetry, scores spoilage risk reliably, and orchestrates mitigation (compliance logging, cold-storage backup, rerouting, notifications, insurance) — while keeping a human in control and every decision auditable. |
-| **Action** | Built a 6-layer system: Supabase data pipeline → hybrid risk engine (14 features, 8 deterministic rules, XGBoost+Optuna+SHAP, rules/ML fusion with a safety veto) → context assembler → a **LangGraph** "act-first, always-review" orchestrator running 8 LangChain tools with cascade enrichment → RAG-backed compliance validation (pgvector) → FastAPI backend (25 endpoints + WebSocket) and a React dashboard. Provider-agnostic LLM layer (Groq/Ollama/OpenAI/Anthropic) with a full deterministic fallback so it runs with **zero LLM**. |
-| **Result** | Live production demo; **won 1st prize and $4,000 in the Smith Agentic AI Challenge**, on the strength of **combining FDA/GDP regulatory rules with explainable ML** rather than on demo polish. Every MEDIUM+ event runs its mandatory tools, reflects on the real results, and pauses at a human-review gate; every decision writes an immutable SHAP-annotated audit record. Demonstrates practical agent orchestration with governed autonomy, not a demo-ware chatbot. Built solo over ~6 weeks (Mar–Apr 2026). |
+| **Action** | As a team of three we built a 6-layer system (my parts: the risk engine and fusion, the LangGraph graph and nodes, the LLM provider layer): Supabase data pipeline → hybrid risk engine (14 features, 8 deterministic rules, XGBoost+Optuna+SHAP, rules/ML fusion with a safety veto) → context assembler → a **LangGraph** "act-first, always-review" orchestrator running 8 LangChain tools with cascade enrichment → RAG-backed compliance validation (pgvector) → FastAPI backend (25 endpoints + WebSocket) and a React dashboard. Provider-agnostic LLM layer (Groq/Ollama/OpenAI/Anthropic) with a full deterministic fallback so it runs with **zero LLM**. |
+| **Result** | Live production demo; **won 1st prize and $4,000 in the Smith Agentic AI Challenge**, on the strength of **combining FDA/GDP regulatory rules with explainable ML** rather than on demo polish. Every MEDIUM+ event runs its mandatory tools, reflects on the real results, and pauses at a human-review gate; every decision writes an immutable SHAP-annotated audit record. Demonstrates practical agent orchestration with governed autonomy, not a demo-ware chatbot. Competition version built by a **team of three** (Mar–Apr 2026); I owned the risk engine, the LangGraph graph and the LLM layer, then carried it forward **on my own**: v2 data at scale with real weather, a calibrated model with out-of-distribution tests, a policy-driven commander agent, and a Docker deploy (§0a, §14). |
 
 ### Why this project matters in interviews
 
@@ -62,7 +91,7 @@ It hits four things at once that most candidate projects don't: **(1)** agent or
 
 ```
 SUPABASE (cloud data platform)
-  window_features (7,411 rows) | product_profiles | facilities | product_costs
+  window_features (7,408 rows) | product_profiles | facilities | product_costs
   compliance_knowledge (pgvector) | compliance_docs (FDA/WHO/ICH PDFs)
         │
         ▼
@@ -196,10 +225,10 @@ State is a shared `OrchestratorState` TypedDict. Each node is chosen at build ti
 
 ### 4.3 The design lesson (my favorite talking point)
 
-The earliest version was "plan → maybe-loop → act." The reflect→revise loop kept **re-triggering already-succeeded tools** and proposing *optional* tools (rerouting, triage) as "gaps" — the LLM was *helpfully hallucinating work*. On the dashboard it looked busy, so it was easy to miss: **technically functional but untrustworthy.** Two fixes:
+The earliest version let the LLM write the revise step from a prompt. The job of that step is to look at the real tool output and propose a retry only when a required tool failed or its result was bad (for example cold storage returned a poor facility). What the model did instead was suggest the optional tools, rerouting, triage, scheduling, on run after run, and it did not point at the tool that actually had the problem. On the dashboard that looked thorough. It was the wrong work. Two fixes:
 
 1. **A hard filter in code, not the prompt.** `revise` can only emit tools in `mandatory_set ∪ failed_set`; anything else is rejected before execution. I stopped trusting a prompt to constrain behavior code could guarantee.
-2. **Redesigned to "act-first, always-review."** MEDIUM+ runs once, *observes* real results, reflects on those, and the human gate fires every time. That killed the phantom re-execution and made runs reproducible.
+2. **Redesigned to "act-first, always-review."** MEDIUM+ runs once, *observes* real results, reflects on those, and the human gate fires every time. A bad suggestion can't loop, and a succeeded tool is not proposed again unless its output was flagged as bad.
 
 > Lesson: *an agent that looks busy is not an agent that's correct; the cheapest guardrail is usually deterministic code wrapping the model, not a longer prompt.*
 
@@ -247,7 +276,8 @@ This is the layer the first resume bullet means by **“live shipment telemetry�
 
 - Telemetry windows land in Supabase (`window_features`). A **Realtime** subscription (`stream_listener`) wakes on insert/update, runs the hybrid scorer, and — if the fused tier is MEDIUM or above — hands the window to the LangGraph orchestrator.
 - Every Supabase fetch has a **local JSON/CSV fallback**, so the demo still scores offline. Swapping a real carrier feed is a client/config change, not a rewrite of the fusion or agent graph.
-- Dataset honesty: **7,411 synthetic windows**. Lead with that. What is real is the *pipeline*: ingest → score → (maybe) agent → audit → dashboard.
+- Dataset honesty: **7,408 synthetic windows** (competition version). Lead with that. What is real is the *pipeline*: ingest → score → (maybe) agent → audit → dashboard.
+- **v2 update (my post-competition work):** the same physics now runs at scale, **495,892 windows** over 5,000 shipments, with **real** airports, lanes, ERA5 weather and World Bank customs times. Sensors and faults are still simulated. See §14.
 
 ### 7.2 WebSockets, dashboard, and the 25 endpoints
 
@@ -283,34 +313,100 @@ This is the layer the first resume bullet means by **“live shipment telemetry�
 ## 10. Interview Q&A
 
 **Q1: Walk me through AI Cargo end to end.**
+
+**Memory hook:** *Raw row to reviewed decision* · telemetry into Supabase → 14 features, 8 rules, XGBoost → fuse 0.4 / 0.6 with a veto → agent plans, runs, observes, reflects → human gate + SHAP audit · **Land on:** "And if every LLM is down, it still runs as a deterministic pipeline."
+
 > A shipment streams telemetry windows into Supabase. Layer by layer: I engineer 14 features, score each window with 8 deterministic safety rules and an XGBoost model, then fuse them — `0.4·rules + 0.6·ML` with a hard veto so a strong rule can't be overridden. The fused score maps to a tier. LOW is monitoring-only; MEDIUM and above enter a LangGraph agent that plans tool actions, executes them, observes the real results, reflects against the mandatory tools for that tier, optionally revises, and then always pauses at a human-review gate. Eight tools handle compliance, cold-storage, rerouting, scheduling, insurance, notification, triage, and approvals, with cascade enrichment passing one tool's output into the next. Compliance is RAG-backed over FDA/WHO/ICH docs in pgvector. Everything writes an immutable SHAP-annotated audit record, and the whole thing degrades to a deterministic, zero-LLM pipeline if a provider is down.
 
 **Q2: Why fuse rules and ML instead of just using the model?**
+
+**Memory hook:** *The model never votes alone* · ML catches subtle patterns → veto: a strong rule can't be talked down → rules give the regulator a reason · **Land on:** "Same idea as a fraud system: hard blocklists on top of a score."
+
 > Trust and safety. The ML model catches subtle, learned patterns the rules miss, but I never let it be the only vote on a $100k biologic. The deterministic veto guarantees a hard safety rule can't be talked down by a benign prediction, and rules give me an auditable, regulator-friendly reason even when the model is uncertain. It's the same philosophy as a fraud system with hard blocklists on top of a score.
 
 **Q3: Why PR-AUC and not accuracy?**
+
+**Memory hook:** *"Always fine" scores high and helps no one* · spoilage is rare → PR-AUC looks at the spoilage class → threshold by recall at precision 0.70 → scale_pos_weight + Optuna on PR-AUC · **Land on:** "A missed spoiled shipment costs far more than one extra check."
+
 > Spoilage is rare, so a model that predicts "fine" every time scores high accuracy and is useless. PR-AUC focuses on the positive (spoilage) class, and I actually select the operating threshold by recall at a fixed precision of 0.70 — because a false negative (missed spoilage) is far more expensive than a false positive (an unnecessary check). I also set `scale_pos_weight` for the imbalance and tuned with Optuna on PR-AUC directly.
 
 **Q4: How does the LangGraph agent avoid doing dumb things?**
-> Three guardrails. First, act-first-always-review: MEDIUM+ events always end at a human gate, so no consequential action is autonomous. Second, a hard code filter — the revise step can only emit mandatory or failed tools, so the LLM can't invent unnecessary work even if it wants to. Third, the reflect step is scoped to a fixed mandatory-tool list per tier, so optional tools are never flagged as "gaps." I learned all three the hard way when an early version kept re-running succeeded tools and looked busy without being correct.
+
+**Memory hook:** *Three fences* · human gate on every MEDIUM+ → code filter on revise: required, failed, or flagged → reflect checks a fixed mandatory list · **Land on:** "The dashboard looked thorough. The node logs showed it was the wrong work."
+
+> Three guardrails. First, act-first-always-review: MEDIUM+ events always end at a human gate, so no consequential action is autonomous. Second, a hard code filter — the revise step can only emit a tool that is mandatory for the tier, that failed, or whose output was flagged as bad, so optional suggestions like triage and rerouting get dropped. Third, the reflect step is scoped to a fixed mandatory-tool list per tier, so optional tools are never flagged as "gaps." I learned this when an early version kept suggesting the optional tools and skipping the one with the bad result. The dashboard looked thorough. The node logs showed it was the wrong work.
 
 **Q5: What was the hardest bug?**
-> The reflect→revise loop re-triggering already-succeeded tools and proposing optional tools as gaps. It was invisible because the dashboard just looked active. I instrumented every node's input/output, traced it to the LLM "helpfully" flagging optional tools, and fixed it with a deterministic hard filter plus the act-first redesign. The meta-lesson: constrain agent behavior in code, not in the prompt, whenever the code *can* guarantee it.
+
+**Memory hook:** *Busy agent, wrong work* · revise skipped the broken tool → looked careful on the dashboard → logged every node in and out → hard filter in code · **Land on:** "Constrain the agent in code, not in the prompt, when code can guarantee it."
+
+> The revise step. It was supposed to look at the real output and retry the tool that failed or came back bad. Instead, every run, it suggested the optional tools, rerouting, triage, scheduling, and it did not suggest the one with the problem. Invisible on the dashboard, because more suggestions look like a careful agent. I logged every node's input and output, saw the pattern, and put a hard filter in code: a suggestion only survives if the tool is required, failed, or quality-flagged. The meta-lesson: constrain agent behavior in code, not in the prompt, whenever the code can guarantee it.
 
 **Q6: How would you sanity-check whether a risk signal is real?**
+
+**Memory hook:** *Six checks before I believe it* · never one vote → unknown escalates → SHAP top five → PR-AUC, not accuracy → split by shipment → human on the risky path · **Land on:** "Rule out an instrumentation bug before believing the number."
+
 > Never let the model be the only vote (veto + rules); make "unknown" escalate rather than default safe; demand an inspectable explanation (SHAP top-5); read PR-AUC/recall-at-precision rather than accuracy; split by entity to rule out leakage; and put a human on the consequential path. Same discipline I'd apply to an apparent conversion lift — check power, segment it, rule out an instrumentation bug before believing the number.
 
 **Q7: Why LangGraph over a plain agent loop or LangChain AgentExecutor?**
+
+**Memory hook:** *A map, not a maze* · typed shared state + conditional edges → easy to diagram, gate, and audit → a free ReAct loop is hard to bound · **Land on:** "For a regulated workflow, explicit topology beats emergent behavior."
+
 > I wanted explicit, inspectable control flow with a typed shared state and conditional edges — LangGraph gives me a real state machine I can diagram, gate, and make deterministic node-by-node. A free-form ReAct loop is harder to bound, harder to audit, and harder to force a human gate into. For a governed, regulated workflow, explicit topology beats emergent behavior.
 
 **Q8: How do you make it production-reliable?**
+
+**Memory hook:** *It works on a plane* · provider failover → deterministic twin for every agent node → local fallback for every Supabase call → append-only audit, confidence, WebSocket · **Land on:** "The demo still works with no internet and no API keys."
+
 > Provider-agnostic LLM with priority failover; a full deterministic twin for every agentic node so it runs with zero LLM; local JSON/CSV fallback for every Supabase call; immutable append-only audit logs; calibrated confidence on every decision; and a WebSocket event stream for live observability. The design goal was "the demo still works on a plane with no internet and no API keys."
 
 **Q9: How does the RAG compliance check work, and how do you keep it honest?**
+
+**Memory hook:** *Audit first, then ask the LLM* · regulations chunked + embedded in pgvector → top regulations by cosine → LLM gives a structured, cited decision → deterministic fallback · **Land on:** "The LLM proposes, the human disposes."
+
 > Regulatory PDFs are chunked, embedded with all-MiniLM-L6-v2, and stored in pgvector. For an event I retrieve the top regulations by cosine similarity and have the LLM produce a structured decision grounded in those citations. To keep it honest: I always write the immutable audit log first regardless of the LLM, I fall back to a deterministic tier-based decision if the LLM fails, and the disposition (quarantine/destroy/etc.) plus approval level is surfaced to the human — the LLM proposes, the human disposes.
 
 **Q10: What would you improve with more time?**
+
+**Memory hook:** *Five upgrades, two already done* · Postgres for approval state → JWT auth → HNSW index → agent eval harness → calibrated probabilities · **Land on:** "After the competition I built the last two myself, in v2."
+
 > Persist orchestrator/approval state in Postgres instead of in-memory; add proper auth (JWT) on the endpoints; move to `pgvector` HNSW as the compliance corpus grows; add a small eval harness for the agent (golden incidents → expected tool sets) so I can regression-test prompt/model changes; and calibrate the XGBoost probabilities (Platt/isotonic) so the fused score is a true probability.
+>
+> **v2 update (say this now):** "After the competition I did two of these myself. The model is isotonic-calibrated, and there is an agent benchmark, ColdChainBench, with 200 scenarios. The v2 commander also keeps its state in a SQLite checkpoint, so a paused approval survives a restart. Auth and a bigger vector index are still open."
+
+**Q11: Did you build this alone?**
+
+**Memory hook:** *Team won it, I grew it* · team of three, first prize → my part: risk engine, agent graph, LLM layer → after: real-weather data, calibrated model, policy agent, Docker deploy · **Land on:** "So the prize was a team win, and v2 is my own work on top of it."
+
+> "No, the competition version was a team of three, and we won first prize together. My part was the core: the risk engine with the rules veto, the LangGraph agent graph, and the LLM layer with the fallback. My teammates built the scheduling and cold-storage tools, the compliance vector store, and the first deployment. After the competition I kept going on my own. I rebuilt the data at a bigger scale with real weather and real airports, retrained the model with calibration and out-of-distribution tests, added a policy-driven agent with a safe fallback, and deployed it with Docker. So the prize was a team win, and v2 is my own work on top of it."
+>
+> *Why not just say "yes":* the GitHub history shows three authors. Saying "team, and here is my part" sounds confident. Saying "solo" and being corrected sounds like a lie, even when most of the hard parts were yours.
+
+**Q12: What did you change after the competition, and why?**
+
+**Memory hook:** *Three weak spots, three fixes* · small synthetic data → real weather at scale · label copied the sensor → product-core label · guessed 0.4 / 0.6 → learned fusion + calibration · then policy agent + Docker · **Land on:** "Every fix came from a weakness I knew an interviewer would find."
+
+> "After the win I looked at what a tough reviewer would attack, and there were three things. One, the data was small and fully synthetic. So I kept the same thermal physics but ran it at scale: 5,000 shipments, about 496 thousand windows, on real airports and lanes, with real ERA5 weather and World Bank customs times, plus sensor faults like drift, stuck readings and dropouts. Two, the old label was almost a copy of the current sensor flag. Now I predict whether the *product core* goes out of range in the next six hours. The core lags the air, so the model has to forecast, not copy. Three, the 0.4 / 0.6 blend was a guess. Now the fusion is learned, the model is calibrated, and there is a conformal check that sends uncertain cases to a person. On the agent side I added a tool-calling commander, a YAML policy that allows, queues or denies every action, and a deterministic playbook as the fail-safe. Then I deployed the backend with Docker on a VPS and added a CI workflow."
+
+**Q13: What are the v2 results, honestly?**
+
+**Memory hook:** *Easy number, honest number* · test PR-AUC 0.95 vs rules 0.82 vs baseline 0.65 → onset-only: model 0.60, rules 0.19 → unseen lanes: fused 0.78 · **Land on:** "I lead with the onset number, because that's the one that proves forecasting."
+
+> "On held-out test shipments, the calibrated model gets a PR-AUC of 0.95, with calibration error around half a percent. The rules alone get 0.82, and a simple 'sensor is out right now' baseline gets 0.65. But that headline is flattering, because many positive windows are already in an excursion. So I also report onset-only: windows where the product is fine now and goes out later. There the model gets 0.60 and the rules get 0.19. And on lanes it never saw, African gateway routes, the fused PR-AUC falls to 0.78. I show the hard numbers on purpose. They tell you if it really forecasts."
+>
+> *Exact values (from `artifacts/v2/metrics_v2.json`):* test ml_calibrated PR-AUC 0.952, ROC-AUC 0.985, ECE 0.0053, recall at precision 0.70 = 0.938 · fused_v2 0.943 · rules_only 0.816 · persistence 0.655 · onset-only: ml 0.602 (recall 0.486), fused 0.556, rules 0.186 · ood_lane fused 0.778 (onset 0.384) · conformal coverage 0.932 at a 0.95 target · time-to-breach p50 error 0.55 h.
+
+**Q14: Your learned fusion gave the rules no weight. Are the rules useless?**
+
+**Memory hook:** *Rules are a floor, not a ranker* · learned the blend on a calibration split → rules got a negative weight → dropped from the blend → kept as the hard veto at 0.8 · **Land on:** "The rules don't help ranking. They guarantee a floor."
+
+> "For ranking, yes, and that surprised me. When I learned the fusion with a logistic stacker on a calibration split, the rules score got a negative weight, so I dropped it from the blend. The fused score is now the calibrated ML score. But the rules still have a job: if a hard rule fires at 0.8 or above, the final score can't go below it. So the rules don't help ranking, they guarantee a floor. In a regulated system that is the right job for them."
+
+**Q15: How do you know the agent is any good?**
+
+**Memory hook:** *Test the agent like a model* · 200 scenarios with a known cause → score cause, compliance, destruction, injection → playbook 45% vs do-nothing 9.5% · **Land on:** "Zero destroy actions and zero injection follows. That's the safety bar."
+
+> "I built a small benchmark, ColdChainBench. It has 200 incident scenarios from the v2 simulator where I know the true root cause. Each policy is scored on four things: did it find the root cause, did it stay compliant, did it ever propose destroying product, and did it follow an instruction hidden in carrier text. The deterministic playbook finds the root cause 45% of the time, against 9.5% for doing nothing, with full compliance, zero destruction and zero injection follows. 45% sounds low, but many scenarios can't be diagnosed yet at that moment, and the playbook says 'unknown' instead of guessing. The LLM commander runs through the same harness when a key is set, and I compare it to the playbook, not to nothing."
 
 ---
 
@@ -322,17 +418,27 @@ These are the adversarial follow-ups after the 30-second pitch. Answer the **def
 
 #### T1: "You said real time. The data is synthetic. So is it real time?"
 
-> "The *pipeline* is real time: a Supabase Realtime insert wakes the scorer, MEDIUM+ enters the agent, and the dashboard gets a WebSocket event. The *dataset* is synthetic — 7,411 windows. I lead with that. Real time is an architecture claim, not a claim that I instrumented a live carrier. Swapping a real feed is a client change; the fusion, veto, and HITL graph stay."
+**Memory hook:** *Pipeline real, data synthetic* · Realtime insert wakes the scorer → MEDIUM+ goes to the agent → WebSocket to the dashboard → data: 7,408 synthetic windows · **Land on:** "Real time is an architecture claim, not a live-carrier claim."
+
+> "The *pipeline* is real time: a Supabase Realtime insert wakes the scorer, MEDIUM+ enters the agent, and the dashboard gets a WebSocket event. The *dataset* is synthetic — 7,408 windows. I lead with that. Real time is an architecture claim, not a claim that I instrumented a live carrier. Swapping a real feed is a client change; the fusion, veto, and HITL graph stay."
+>
+> **v2 add-on:** "After the competition I made the inputs much more real: real airports, lanes, ERA5 weather and customs times, about 496 thousand windows. The sensors are still simulated, and I say that."
 
 ---
 
 #### T2: "0.4 / 0.6 — did you tune that, or did you pick it because it looks balanced?"
 
+**Memory hook:** *A prior, then a fit* · competition: 0.4 / 0.6 was a starting prior → veto at 0.8 is the safety net → v2: learned it, rules got a negative weight · **Land on:** "So now the blend is learned, and the rules work through the veto."
+
 > "It's a starting prior, not a fitted meta-model. Rules get 0.4 so they always vote; ML gets 0.6 so subtle patterns can move the score. The **veto** is the safety mechanism: if `det_score ≥ 0.8`, ML cannot talk the score down. With labelled outcomes I would learn the blend (stacking or a logistic meta-model) and calibrate. I will not pretend 0.4/0.6 was Optuna's answer."
+>
+> **v2 add-on:** "After the competition I did learn it, with a logistic stacker on a calibration split. The rules score got a negative weight, so the blend is now the calibrated ML score, and the rules act only through the veto. That was a useful, honest finding."
 
 ---
 
 #### T3: "SHAP with correlated temperature features — aren't the attributions lying?"
+
+**Memory hook:** *SHAP explains, rules are physics* · correlated temp features split the credit → SHAP is the audit "why", not a causal ranking → drop near-duplicates before training · **Land on:** "SHAP is the model's local story. The rules table is the physics."
 
 > "TreeSHAP is still additive, but when `rolling_temp_std_3`, `temp_slope_c_per_hr`, and `minutes_outside_range` move together, credit gets split in a way that is not unique. I use SHAP as an **audit why** — top-five drivers for the human — not as a causal ranking. The rules table is the causal/physics layer; SHAP is the model's local explanation. If two features are near-duplicates I would drop one before training, not after explaining."
 
@@ -340,17 +446,25 @@ These are the adversarial follow-ups after the 30-second pitch. Answer the **def
 
 #### T4: "Why PR-AUC and not ROC-AUC? ROC looks prettier."
 
+**Memory hook:** *ROC flatters rare events* · lots of true negatives hide failure → PR-AUC is about the spoilage class → operating point at precision 0.70 · **Land on:** "Optuna optimized PR-AUC, not accuracy, not ROC."
+
 > "Spoilage is rare. ROC-AUC can look strong while the model is useless on the positive class — lots of true negatives inflate the false-positive rate denominator. PR-AUC is precision vs recall on the spoilage class. I also pick the operating point by **recall at precision ≥ 0.70**, because a missed spoiled shipment is the expensive error. Optuna optimized PR-AUC, not accuracy, not ROC."
 
 ---
 
 #### T5: "XGBoost doesn't relearn online. What happens when a new product or route shows up?"
 
+**Memory hook:** *Batch model, rules catch the new* · trained in batch, scored online → new product: rules + product profile first → retrain on a schedule or when PSI drops → v2 tests it · **Land on:** "I never claimed online learning."
+
 > "It doesn't. This is a batch-trained model on historical windows, scored online. A new product with a different temp band is handled first by the **deterministic rules** and product profile, not by hoping the trees generalize. I would retrain on a schedule (or when PSI / PR-AUC on a sliding window drops), with a shipment-level split so we don't leak. I never claimed online learning."
+>
+> **v2 add-on:** "In v2 I test this directly. One product and one region are held out of training. On the unseen product the calibrated model still gets PR-AUC 0.95. On the unseen lanes it drops to about 0.8, and PSI flags both as drift. That drop is exactly why a new lane should go through rules and a person first."
 
 ---
 
 #### T6: "Telemetry arrives out of order. Does your rolling std still mean anything?"
+
+**Memory hook:** *Event time, not arrival time* · a late window breaks slope and std → buffer, order by timestamp, then roll → rules still fire on the raw point · **Land on:** "An unknown ML score escalates to MEDIUM. It does not fail open."
 
 > "If I compute rolling features on arrival order, a late window corrupts the slope and the 3-window std. The correct key is **event time**, not ingest time: buffer, order by timestamp within shipment, then roll. For the demo, windows are already ordered. In a real feed I would watermark and hold a short buffer, and the rules (`minutes_outside_range`, freeze) still fire on the raw point even if the ML window is incomplete — unknown ML score escalates to MEDIUM, it does not fail open."
 
@@ -358,11 +472,15 @@ These are the adversarial follow-ups after the 30-second pitch. Answer the **def
 
 #### T7: "25 endpoints — prove it. Name them."
 
+**Memory hook:** *Families, not a fake list* · scoring + shipments → orchestrator run + re-run → approvals → LLM config → audit reads → health + WebSocket · **Land on:** "The live demo and GitHub are the source of truth."
+
 > "I will not recite a fabricated list of twenty-five paths. I will walk the **families**: scoring and shipments, orchestrator run and selective re-run, approvals confirm/execute, LLM configure/status, audit and compliance reads, health, plus `/ws/events`. The resume number is the FastAPI surface area of the repo. If you want to count, the live demo and GitHub are the source of truth."
 
 ---
 
 #### T8: "How would you A/B a change to the risk model in a regulated cold-chain?"
+
+**Memory hook:** *Shadow, canary, then promote* · new model scores in shadow → compare PR-AUC, recall, disagreement, veto rate → canary on a low-cost product → no rise in missed HIGH / CRITICAL · **Land on:** "You don't randomly assign live vaccine shipments to a riskier model."
 
 > "You do not randomly assign live vaccine shipments to a riskier model. Shadow first: new model scores every window, old model still drives the agent, you compare PR-AUC, recall@0.70, tier disagreement rate, and veto-fire rate. Then a **canary** on a low-cost product class with a human still on MEDIUM+. Promote only if disagreement is reviewed and the expensive errors (missed HIGH/CRITICAL) do not increase. Same discipline as a credit-policy change — not a consumer-button A/B."
 
@@ -370,11 +488,15 @@ These are the adversarial follow-ups after the 30-second pitch. Answer the **def
 
 #### T9: "LangGraph vs a for-loop that calls tools. Why is this not over-engineered?"
 
+**Memory hook:** *The graph is the audit surface* · typed state + forced human gate → deterministic twin per node → a for-loop can't show which node decided what · **Land on:** "I want a state machine I can diagram, not an emergent loop."
+
 > "The graph is the audit surface: typed state, conditional edges, a forced human gate, and a deterministic twin per node. A for-loop can call the same eight tools; it cannot show a reviewer *which node decided what* or fail over to zero-LLM without a second codebase. For a regulated workflow I want a state machine I can diagram, not an emergent ReAct loop."
 
 ---
 
 #### T10: "Four LLM providers — isn't that resume padding?"
+
+**Memory hook:** *Failover, not brand count* · Groq → Ollama → OpenAI → Anthropic → all down: zero-LLM path still scores, plans, waits for a human · **Land on:** "The prize story is governed autonomy, not provider count."
 
 > "The point is **failover and a zero-LLM path**, not that I need four brands. Priority is Groq → Ollama → OpenAI → Anthropic, hot-reconfigurable. If all four are down, `CARGO_LLM_ENABLED=0` still scores, templates a plan, executes tools, checklists the reflect step, and waits on the human. The prize story is governed autonomy, not provider count."
 
@@ -382,13 +504,19 @@ These are the adversarial follow-ups after the 30-second pitch. Answer the **def
 
 #### T11: "NaN → 0.5 MEDIUM. Isn't that just guessing?"
 
+**Memory hook:** *Fail loud, not open* · missing scores map to 0.5, MEDIUM → means escalate, not safe → human sees "unknown" in the audit · **Land on:** "The dangerous bug is fail-open."
+
 > "It's a **fail-loud** default, not a prediction. Missing det and missing ML both mapping to 0.5 means 'escalate, don't silently mark safe.' The dangerous bug is fail-open. A human then sees 'unknown scores' in the audit, not a green LOW."
 
 ---
 
 #### T12: "Would you let this destroy a shipment autonomously if the model is 0.99?"
 
+**Memory hook:** *Propose, never destroy* · disposition is proposed, not run → HIGH / CRITICAL always hit human review → autonomy earned: shadow, canary, still a human · **Land on:** "A 0.99 from synthetic data is the last thing I'd let touch a destroy action."
+
 > "No. Disposition is proposed, not executed. HIGH/CRITICAL always hit `human_review`. A 0.99 from a model trained on synthetic windows is the last thing I would let touch a destroy action. Autonomy is earned on a real labelled feed, with shadow mode, then canary, then still a human on destroy/quarantine."
+>
+> **v2 add-on:** "In v2 this is a hard policy rule, not a habit. The YAML policy denies rejection or destruction outright, because under EU GDP and 21 CFR 211 that is a QA release decision. The agent can only propose quarantine, and the benchmark checks that the destruction rate stays at zero."
 
 ---
 
@@ -400,7 +528,10 @@ These are the adversarial follow-ups after the 30-second pitch. Answer the **def
 | "In-memory approvals don't scale." | Correct; it's demo-grade. Persist to Postgres; the orchestrator already writes durable audit logs, so the durable source of truth exists. |
 | "Isn't the LLM the weak link?" | That's exactly why every agentic node has a deterministic twin, tool calls are schema-validated and hard-filtered, and a human gates all consequential actions. The LLM improves quality; it's never the safety mechanism. |
 | "Why not fully autonomous?" | Regulated cold-chain: a wrong autonomous "destroy" or "reroute" is expensive and non-compliant. Autonomy is *earned* by being right over time; I default to human-gated. |
-| "0.4/0.6 fusion weights seem arbitrary." | They're a starting prior; the veto is the real safety net. With labeled outcomes I'd learn the weights (stacking/logistic meta-model) and calibrate. |
+| "0.4/0.6 fusion weights seem arbitrary." | They're a starting prior; the veto is the real safety net. With labeled outcomes I'd learn the weights (stacking/logistic meta-model) and calibrate. **v2: done.** The learned stacker gave the rules a negative weight, so the blend is now the calibrated ML score, and the rules act only through the 0.8 veto (Q14). |
+| "GitHub shows three authors. Was this really yours?" | Say it first, before they ask: "It was a team of three for the competition. My commits are the risk engine, the agent graph and the LLM layer. v2 is mine alone, after the competition." Then go deep on one piece you own. Never "yes, solo". |
+| "The original repo is your teammate's." | True: `origin` is `nsumesh/SmithAgenticAIChallenge` and the link on my resume is my fork. The fork is where v2 lives. Push it before interviews so the code matches the story. |
+| "45% root-cause accuracy is low." | It's the deterministic fail-safe, scored against a known cause. It is strong where the trace shows the cause (door breach 14/15, conditioning error 14/15, tarmac delay 13/14) and gets zero on compressor fault, missed connection, port congestion, power outage and weather divert. Those are the next work, and the LLM commander is compared to this baseline, not to nothing. |
 
 ---
 
@@ -409,4 +540,116 @@ These are the adversarial follow-ups after the 30-second pitch. Answer the **def
 - **What it demonstrates:** governed agent orchestration (LangGraph) + trustworthy hybrid ML (rules+XGBoost+SHAP, PR-AUC) + RAG compliance + human-in-the-loop + real production reliability (provider failover, zero-LLM fallback, immutable audit).
 - **Signals:** you can build agents that *run tools reliably*, you understand *when not to trust a model*, and you think about *audit, fallback, and observability* — not just the happy path.
 - **Best-fit roles:** Applied AI Engineer, Agentic AI, AI Platform, Forward-Deployed Engineer.
-- **30-second pitch:** *"AI Cargo is an agentic risk platform for pharma cold-chain. A hybrid rules+XGBoost engine scores spoilage with a safety veto, a LangGraph agent plans and runs eight tools with cascade enrichment, and every medium-or-higher event pauses for a human with a full SHAP-annotated audit trail. It runs provider-agnostic and degrades to a deterministic zero-LLM pipeline — it won first prize in the Smith Agentic AI Challenge."*
+### v2 (same repo, not a new project)
+
+The original physics generator is now `streaming/physics.py` and `streaming/data_gen.py`. v1 rows stay in the table as `v1_seed`. New rows add real lanes and ERA5 weather, a product-core label (so the label is no longer a copy of the current sensor flag), and sensor faults. The commander in `agents/` calls tools in a loop; `policies/cold_chain_policy.yaml` allows, queues, or denies each action; `interrupt()` pauses for a person. With no LLM it runs `agents/playbook.py`, which is also the ColdChainBench baseline (`python -m evals.harness`).
+
+- **30-second pitch:** *"AI Cargo is an agentic risk platform for pharma cold-chain. A hybrid rules+XGBoost engine scores spoilage with a safety veto, a LangGraph agent plans and runs eight tools with cascade enrichment, and every medium-or-higher event pauses for a human with a full SHAP-annotated audit trail. It runs provider-agnostic and degrades to a deterministic zero-LLM pipeline — it won first prize in the Smith Agentic AI Challenge."* (Older wording. Use the team version below.)
+- **30-second pitch (team + v2, use this one):**
+
+  **Memory hook:** *Rules veto, agent plans, human signs* · cold-chain risk, rules plus ML with a veto → LangGraph agent runs the tools → human signs off on MEDIUM and up → team of three, first prize → my v2: real weather, calibrated, deployed · **Land on:** "The prize was a team win, and v2 is my own work on top of it."
+
+  *"AI Cargo is a risk platform for pharma cold-chain shipments. Compliance rules and an ML model score the spoilage risk, and a rule can veto the model. A LangGraph agent then plans and runs the tools, and anything medium-risk or higher waits for a person to sign off, with a full audit trail. We built it as a team of three and won first prize in the Smith Agentic AI Challenge. My part was the risk engine, the agent graph and the LLM layer. After the competition I carried it forward on my own: about 496 thousand windows on real airports and real weather, a calibrated model, a policy-driven agent with a benchmark, and a Docker deploy."*
+
+---
+
+## 14. v2 Deep Dive: My Post-Competition Work
+
+**Memory hook:** *Real inputs, honest scores, safe agent* · data: 495,892 windows on real airports and ERA5 weather → model: calibrated, onset 0.60 vs rules 0.19 → agent: policy file, human pause, playbook fail-safe → ColdChainBench, 200 scenarios → Docker on a VPS + CI · **Land on:** "Every v2 piece answers a question a tough reviewer asked, and each one is measured."
+
+Everything in this section is **my own work after the competition** (May to October 2026). Sources in the repo: `DATA_CARD.md`, `MODEL_CARD.md` (generated from `artifacts/v2/metrics_v2.json`, trained 2026-10-23), `reports/coldchainbench.json`, `HOSTINGER_DEPLOY.md`, `.github/workflows/ci.yml`. If a number here and the repo disagree, the repo wins.
+
+### 14.1 Data: real inputs, simulated physics
+
+| | v1 (competition) | v2 (mine) |
+|---|---|---|
+| Size | 140 shipments, 7,408 windows | **5,000 shipments, 495,892 windows**, 8,508 legs, 150 containers, 57 lanes between 49 real airports |
+| v1 rows | — | Kept unchanged, tagged `v1_seed`; S141 to S5000 add 488,484 windows |
+| Weather | Random choice ("clear", "rain"…) | **Real ERA5 hour** at the leg's actual airport (Open-Meteo, 750,288 airport-hours) |
+| Customs | — | World Bank LPI customs index, 28 of 28 countries (mapping to hours is mine) |
+| Itinerary | One phase per leg | Loading → road → ramp → flight → customs → cold store → last mile |
+| Label | Air probe out of range (almost the input itself) | **Product core** out of band in the next 6 h (`target_product_excursion_6h`); the core lags the air |
+| P(label = 1 given the sensor is out now) | **1.00** | **0.68** |
+| Sensor faults | None | Drift, stuck, spike, dropout on 844 legs; 3,712 windows read out of range while the product is fine; 3.5% missing ticks |
+| Ground truth for agent tests | None | Root cause (14 types), event-active flag, sensor fault, true product temperature (`gt_*`, never used as features) |
+
+**Real:** airports, lanes, weather, customs index, WHO / USP temperature bands, 539 openFDA temperature recalls (used by the agent), 103 facility locations. **Simulated:** container thermal response, disruptions, faults, sensor readings. *Say it this way:* "No public dataset of real pharma shipment telemetry exists at this scale, so I made every outside input real and kept the simulated part physics-based and testable."
+
+### 14.2 Model: calibrated, with honest splits
+
+- **77 features**, computed per leg in event-time order from **past windows only**: product-relative margins, rolling stats, cumulative excursion minutes, an observable product-core estimate, sensor-health signals (stuck, spike, missing ticks), ambient temperature, and phase / packaging / mode / product one-hots. `gt_*` columns, labels and IDs are excluded.
+- **XGBoost + Optuna**, 20 trials, GroupKFold(3) by shipment. Best CV PR-AUC **0.9005**.
+- **Isotonic calibration** on `cal_a` shipments. **Learned fusion** (logistic stacking) on `cal_b`: the rules score got a **negative weight**, so it was dropped; the blend is logit(ml_calibrated) with coef 0.8345, intercept -0.5301. **Hard veto kept:** if det_score ≥ 0.8, the final score is at least the rule score.
+- **Class-conditional split conformal**, α = 0.05. A window whose prediction set is empty or has both classes is flagged `uncertain`, and the policy sends it to a person.
+- **Time-to-breach**: XGBoost multi-quantile model (p10, p50, p90).
+- **Splits by shipment:** train 1,955 · cal_a 206 · cal_b 200 · test 415 shipments. Three out-of-distribution splits: **unseen lanes** (all African gateways: NBO, LOS, ACC, JNB, CAI), **unseen product** (P05), **unseen season** (departures on or after 2026-07-01).
+
+**PR-AUC by split** (from `MODEL_CARD.md`):
+
+| Split | ml_calibrated | fused_v2 | rules_only | persistence (sensor out now) |
+|---|---|---|---|---|
+| test | **0.952** | 0.943 | 0.816 | 0.655 |
+| test, onset only | **0.602** | 0.556 | 0.186 | 0.137 |
+| unseen lanes | 0.808 | 0.778 | 0.582 | 0.324 |
+| unseen lanes, onset only | 0.449 | 0.384 | 0.179 | 0.089 |
+| unseen season | 0.927 | 0.920 | 0.835 | 0.617 |
+| unseen product | 0.945 | 0.926 | 0.794 | 0.566 |
+
+Also on test: ECE **0.0053** (raw model 0.0493), recall at precision 0.70 = **0.938**, onset recall 0.486. Conformal coverage **0.932** against a 0.95 target (0.905 on unseen lanes). Time-to-breach p50 error **0.549 h** (onset 1.595 h). Drift (PSI): test stable; every OOD split flagged significant (for example ambient temperature 1.22 on the unseen season). Tier mix over all windows: LOW 90.45%, CRITICAL 8.57%, MEDIUM 0.57%, HIGH 0.41%.
+
+*Why fused is a little below ML:* the veto costs a bit of PR-AUC and buys a hard guarantee that a critical rule can't be argued down. I say that trade out loud.
+
+### 14.3 Agent: the v2 commander
+
+- `agents/graph.py`: a LangGraph **commander** that calls tools in a loop. `interrupt()` pauses for the reviewer, and a **SqliteSaver** checkpoint means a paused approval survives a restart.
+- `policies/cold_chain_policy.yaml`: **the LLM proposes, this file decides.** Every action is `allow`, `require_approval`, or `deny`. Rejecting or destroying product is **denied** (a QA release decision under EU GDP 6.3 and 21 CFR 211.142; the agent may only recommend it). Global rules can only make a decision stricter: below MEDIUM nothing but logging runs without a human, auto-approved spend is capped at $3,000 per incident, and `uncertain` windows or a suspected faulty sensor always go to a person.
+- `agents/specialists.py`: diagnostician, planner and QA specialists, each with its own **role allowlist** (a diagnostician can't book anything).
+- `tools_v2/`: `sense` (read), `act` (change the world), `twin` (simulate before acting).
+- `guardrails/`: grounding, prompt injection, PII, input validation, policy, and a `tool_guard` budget.
+- `rag/`: BM25 retrieval over openFDA recalls and past incidents.
+- `agents/playbook.py`: the **deterministic fail-safe** when `CARGO_LLM_ENABLED=0`. It is also the benchmark baseline.
+
+### 14.4 ColdChainBench: testing the agent like a model
+
+200 incident scenarios from the v2 simulator, each with a known root cause. Each policy is scored on root-cause accuracy, compliance, destruction proposals, and whether it followed an instruction hidden in carrier text.
+
+| Policy | Root cause | Compliance | Destruction | Injection followed |
+|---|---|---|---|---|
+| do_nothing | 9.5% (only the 19 "unknown" cases) | 1.0 | 0 | 0 |
+| playbook_v2 | **45%** | 1.0 | 0 | 0 |
+
+**Strong** where the trace shows the cause: door breach 14/15, conditioning error 14/15, tarmac delay 13/14, setpoint error 10/14, ground delay 10/15, unknown 14/19. **Zero** on compressor fault, missed connection, port congestion, power outage and weather divert. That list is my next work. A scenario is labelled `unknown` when the event hasn't yet shown up in temperature, doors, battery or delay, because guessing from a flat trace would be wrong.
+
+### 14.5 Deploy and CI
+
+- **July 14, 2026:** backend in Docker on a Hostinger VPS (same pattern as PathWise: `Dockerfile`, `docker-compose.yml`, port 8000). Frontend stays on Vercel.
+- **CI** (`.github/workflows/ci.yml`): `ruff` lint, `pytest -m "not slow and not network"` with `CARGO_LLM_ENABLED=0` and mock notifications, plus a Docker build job. Tests run with no LLM key, so CI proves the fail-safe path.
+- **Repo status:** `origin` is the team repo (`nsumesh/SmithAgenticAIChallenge`); my fork is `rahul370139/SmithAgenticAIChallenge` (the link on the resume). The v2 work is local and uncommitted. **Push it to the fork before interviews.**
+
+### 14.6 Honest limits (say them before they ask)
+
+1. Labels come from a physics simulator driven by real weather and lanes. They are **not observed spoilage**.
+2. Thermal parameters come from v1. They are not fitted to real logger traces.
+3. Facility capacity, carrier assignment and lane weights are synthetic.
+4. Conformal guarantees are marginal. Coverage drops on the OOD splits, and that drop is what the drift monitor watches.
+5. The playbook gets zero on five root causes. The LLM commander has to beat the playbook, not "do nothing".
+
+### 14.7 v2 follow-ups you will get
+
+**Q: Why calibrate? The raw model has a higher PR-AUC.**
+
+**Memory hook:** *Ranking vs meaning* · raw PR-AUC 0.958, calibrated 0.952 → ECE 0.0493 down to 0.0053 → tiers, conformal and the policy read the probability · **Land on:** "PR-AUC is about ranking. The policy needs the probability to mean what it says."
+
+> "Ranking barely changed, 0.958 raw against 0.952 calibrated. But calibration error dropped from about 5% to half a percent. That matters because the tiers, the conformal check and the policy all read the probability itself. If the model says 30%, it should be right about 30% of the time, or the thresholds mean nothing."
+
+**Q: How did you avoid leakage with 77 features?**
+
+**Memory hook:** *Past only, split by shipment* · features from past windows, event-time order → `gt_*`, labels, IDs excluded → GroupKFold and every split by shipment → OOD splits on top · **Land on:** "No future data, no hidden truth, and no shipment on both sides of a split."
+
+> "Three rules. Features are computed per leg in event-time order from past windows only. The hidden ground-truth columns, the labels and the IDs never go in. And every split is by shipment, including the GroupKFold inside Optuna, so windows from one shipment can't sit in both train and test. On top of that I hold out whole lanes, a product and a season."
+
+**Q: Why a YAML policy if the agent already has a system prompt?**
+
+**Memory hook:** *Prompt suggests, policy decides* · LLM proposes an action → policy says allow, approval, or deny → destruction always denied → benchmark checks destruction stays 0 · **Land on:** "If code can guarantee a rule, I don't leave it to a prompt."
+
+> "A prompt is a request. The policy file is enforced in code. The model proposes an action, and the policy decides: allow, require approval, or deny, with the reason sent back to the agent. Destroying product is always denied, because that's a QA decision under GDP. Spend has a cap, and uncertain cases always go to a person. The benchmark then checks that the destruction rate stays at zero."

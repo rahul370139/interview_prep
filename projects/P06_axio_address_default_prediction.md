@@ -1789,6 +1789,8 @@ class CustomerKYC(BaseModel):
 
 #### Q1: "Walk me through this project."
 
+**Memory hook:** *Messy JSON to clean signals* · Raw KYC JSON, no format → Parser lifts coverage 37% → Lifestyle features, selection cuts 42% → K-Means segments as features → XGBoost, 95% F1 research hold-out · **Land on:** "Power BI dashboards replaced the Excel pack and cut reporting turnaround about 30%."
+
 **Answer (2-minute version):**
 
 > "At Amazon Pay India I worked as a Research Analyst on fraud-risk and default modelling. The core challenge was that customer data, especially addresses from KYC onboarding, was stored as raw unstructured JSON with no standardized format — so location-based risk features barely fired.
@@ -1806,6 +1808,8 @@ class CustomerKYC(BaseModel):
 ---
 
 #### Q2: "Why was address data so important for default prediction?"
+
+**Memory hook:** *One address, four signals* · Completeness: fraud signal → City tier: geographic risk → KYC vs bureau mismatch → Pin code default rates · **Land on:** "Address completeness alone ranked in the top 6 features, which validated the parser effort."
 
 **Answer:**
 
@@ -1825,6 +1829,8 @@ class CustomerKYC(BaseModel):
 
 #### Q3: "How did you handle class imbalance in the default prediction model?"
 
+**Memory hook:** *Fix it at four levels* · ~10% default, moderate imbalance → SMOTE on training only → scale_pos_weight about 9:1 → F1 not accuracy, β=2 → Stratified K-fold validation · **Land on:** "Missing a defaulter costs 20× more than wrongly flagging a good customer, so recall weighs more."
+
 **Answer:**
 
 > "Our dataset had roughly a 10% default rate — moderate imbalance. I tackled this at multiple levels:
@@ -1841,6 +1847,8 @@ class CustomerKYC(BaseModel):
 
 #### Q4: "Explain how you used clustering for customer segmentation."
 
+**Memory hook:** *Four groups, four risk levels* · K-Means on financial, behavioral features → StandardScaler first → Elbow and silhouette: 4 → 3% low risk, 35% very high · **Land on:** "cluster_default_rate became a top-5 predictor, and the risk team used the segments for underwriting."
+
 **Answer:**
 
 > "I applied K-Means clustering on a combination of financial and behavioral features: income, EMI-to-income ratio, spending patterns, bounce rates, and address completeness.
@@ -1856,6 +1864,8 @@ class CustomerKYC(BaseModel):
 ---
 
 #### Q5: "What feature selection techniques did you use and why multiple?"
+
+**Memory hook:** *Four judges, two votes* · Correlation drops redundant features → Chi-squared for categoricals → Mutual information: non-linear → LASSO zeroes weak coefficients · **Land on:** "I kept features picked by 2 or more methods, so no one method made the final call."
 
 **Answer:**
 
@@ -1875,6 +1885,8 @@ class CustomerKYC(BaseModel):
 
 #### Q6: "How did you design the Power BI dashboards for executives?"
 
+**Memory hook:** *Story, not data dump* · Is the portfolio healthy? → Page 1: health KPIs → Page 2: risk segments → Page 3: drill-down → Green good, red alert · **Land on:** "Every number had context: a target, a benchmark, or a trend."
+
 **Answer:**
 
 > "The key principle was storytelling over data dumping. Non-technical executives don't want 50 metrics on a screen — they want to know 'is the portfolio healthy?' and 'what should we do?'
@@ -1893,6 +1905,8 @@ class CustomerKYC(BaseModel):
 
 #### Q7: "What is OCF and why did you design metrics around it?"
 
+**Memory hook:** *Paper interest versus real cash* · OCF: real cash from operations → Collection efficiency, PAR30 → Net interest margin, OCF-to-Disbursement → Management and investors · **Land on:** "Investors wanted confidence that the lending model was fundamentally sound and cash-generative."
+
 **Answer:**
 
 > "OCF — Operating Cash Flow — measures the actual cash a business generates from operations. For a lending company like Axio, it's critical because revenues on paper (accrued interest) can look healthy even when customers aren't actually paying.
@@ -1904,6 +1918,8 @@ class CustomerKYC(BaseModel):
 ---
 
 #### Q8: "How did you validate your model's performance?"
+
+**Memory hook:** *Five checks, no leaks* · 5-fold stratified CV, ±0.01 → 20% time-ordered hold-out → SMOTE inside training folds only → Top features make domain sense → KS tests, train vs test · **Land on:** "The test F1 of 0.95 matched CV, so there was no overfitting."
 
 **Answer:**
 
@@ -1923,6 +1939,8 @@ class CustomerKYC(BaseModel):
 
 #### Q9: "What challenges did you face with Indian address data specifically?"
 
+**Memory hook:** *Behind the temple, no pin* · Landmarks, mixed languages → Bangalore, Bengaluru, Blore → 15-20% bad pin codes → Abbreviation expansion first → Many sources per customer · **Land on:** "Reconciling addresses across sources was key to our consistency-based fraud signals."
+
 **Answer:**
 
 > "Several unique challenges:
@@ -1940,6 +1958,8 @@ class CustomerKYC(BaseModel):
 ---
 
 #### Q10: "How did lifestyle features improve the model?"
+
+**Memory hook:** *Willing versus able* · 3-5 points F1 over bureau-only → EMI over 60%: 5× default → Cash withdrawal over 30% → Spending entropy → Bounce rate most predictive · **Land on:** "Lifestyle shows willingness to repay, bureau shows ability. Both give a more complete picture."
 
 **Answer:**
 
@@ -1959,6 +1979,8 @@ class CustomerKYC(BaseModel):
 
 #### Q11: "What was your approach to building the address parser? Why not use an existing geocoding API?"
 
+**Memory hook:** *Privacy, cost, control* · KYC addresses are PII → APIs expensive, rate-limited → Need completeness, not coordinates → Regex, dictionary, EntityRuler, pin codes · **Land on:** "It handled about 85% of addresses well. The other 15% went to manual review."
+
 **Answer:**
 
 > "I considered external APIs like Google Geocoding and India-specific services, but there were three constraints:
@@ -1977,6 +1999,8 @@ class CustomerKYC(BaseModel):
 
 #### Q12: "How do you explain the model's predictions to business stakeholders?"
 
+**Memory hook:** *Global, segment, individual* · Global: feature importance → Top three match intuition → Segment: cluster profiles → Individual: SHAP reasons · **Land on:** "Power BI was the main channel, so executives could self-serve without a data scientist."
+
 **Answer:**
 
 > "At multiple levels:
@@ -1993,6 +2017,8 @@ class CustomerKYC(BaseModel):
 
 #### Q13: "If you had more time, what would you have done differently?"
 
+**Memory hook:** *Learn, connect, go live* · Sequence model for addresses → Graph features for fraud rings → Real-time scoring API · **Land on:** "Real-time scoring would enable instant credit decisions and cut time-to-disbursement."
+
 **Answer:**
 
 > "Three things:
@@ -2006,6 +2032,8 @@ class CustomerKYC(BaseModel):
 ---
 
 #### Q14: "How did you handle missing data in the feature engineering pipeline?"
+
+**Memory hook:** *Ask why it is missing* · Bureau: missing flag, no imputing → Transactions: median by income segment → Address: partial parse, completeness score → Never impute the target · **Land on:** "I fit imputation on training data first, then applied the same values to validation and test."
 
 **Answer:**
 
@@ -2022,6 +2050,8 @@ class CustomerKYC(BaseModel):
 ---
 
 #### Q15: "What statistical tests did you use and why?"
+
+**Memory hook:** *Match the test to data* · Normal: Welch's t-test → Skewed: Mann-Whitney U → Categorical: chi-squared, Cramér's V → Whole shape: KS test → Correct for multiple tests · **Land on:** "With 50+ features at α=0.05, you get false positives by chance, so I used Bonferroni or FDR."
 
 **Answer:**
 
@@ -2041,6 +2071,8 @@ class CustomerKYC(BaseModel):
 
 #### Q16: "How would you monitor this model in production?"
 
+**Memory hook:** *Inputs, outputs, real outcomes* · Input drift with PSI → PSI > 0.25: model review → Output score distribution → Actual vs predicted, 6-12 months · **Land on:** "Automate all three checks with green, amber, and red escalation rules."
+
 **Answer:**
 
 > "Three monitoring dimensions:
@@ -2057,6 +2089,8 @@ class CustomerKYC(BaseModel):
 
 #### Q17: "What was the most impactful insight from this project?"
 
+**Memory hook:** *Address quality shows intent* · Complete addresses, lower defaults → Behavioral signal: good faith, traceability → Vague address, hard to trace · **Land on:** "This led to address completeness checks earlier in onboarding, before loan approval."
+
 **Answer:**
 
 > "The single most impactful insight was that **address quality is a proxy for borrower intent**. Customers who provided complete, verifiable addresses — with full pin code, proper building name, correct city-state mapping — had dramatically lower default rates than those with vague or incomplete addresses.
@@ -2068,6 +2102,8 @@ class CustomerKYC(BaseModel):
 ---
 
 #### Q18: "How did you ensure reproducibility of your results?"
+
+**Memory hook:** *Same seed, same result* · Fixed random seeds → Scripts, not notebook cells → Timestamped data snapshots → Config files, not hardcoded · **Land on:** "Each experiment was logged with features, parameters, and metrics, creating an audit trail."
 
 **Answer:**
 
@@ -2110,11 +2146,15 @@ These are the adversarial follow-ups after the 2-minute walkthrough. Answer the 
 
 #### T1: "95% F1 on fraud/default — are you serious?"
 
+**Memory hook:** *Research set, not live book* · Precision 0.94, recall 0.96 → Not a production F1 → Clean labels, train-only SMOTE → Cost-weighted threshold · **Land on:** "If this went live, I'd re-measure out-of-time and expect the number to come down."
+
 > "On a labelled research hold-out, yes — precision about 0.94, recall about 0.96. I will not claim that as a live-book production F1. Labels were cleaner than production, SMOTE was train-only, and the threshold was cost-weighted because a false negative is much more expensive than a false positive. If this went live I would re-measure on a time-ordered out-of-time slice and expect the number to come down."
 
 ---
 
 #### T2: "Chi-squared needs expected counts ≥ 5. Did you check?"
+
+**Memory hook:** *Tiny cells, fake significance* · Collapsed rare levels into OTHER → Small cells: anti-conservative → Dependence filter, not causal → City and state are nested · **Land on:** "LASSO is what breaks that collinearity later."
 
 > "Yes — that is why I collapsed rare categorical levels into OTHER before the test. Chi-squared on a 2 × K table with tiny cells is anti-conservative; you get fake significance. I also treat chi-squared as a **dependence** filter, not a causal ranking. City and state will both look 'significant' because they are nested; LASSO is what breaks that collinearity later."
 
@@ -2122,11 +2162,15 @@ These are the adversarial follow-ups after the 2-minute walkthrough. Answer the 
 
 #### T3: "Why mutual information and not just correlation?"
 
+**Memory hook:** *Correlation sees only straight lines* · Pearson: linear only → EMI, cash ratio can be U-shaped → MI catches non-linear dependence · **Land on:** "Correlation stayed in the pipeline as a sanity vote, not the only filter."
+
 > "Pearson correlation only sees linear association. EMI-to-income and cash-withdrawal ratio can be U-shaped or thresholded — low and very high both risky. Mutual information $I(X;Y) = H(Y) - H(Y|X)$ picks up that non-linear dependence. Correlation stayed in the pipeline as a sanity vote, not as the only filter."
 
 ---
 
 #### T4: "LASSO with correlated features — which one survives?"
+
+**Memory hook:** *Keeps one twin, zeroes other* · L1 keeps one of pair → Good for lean, named inputs → Zeroed does not mean unimportant → Keep interpretable one by rule · **Land on:** "I kept the more interpretable feature by rule, not whichever LASSO picked on that seed."
 
 > "L1 tends to keep one of a correlated pair and zero the other. That is useful when the goal is a **lean, named** input set, and dangerous if you interpret the zeroed feature as 'unimportant.' I never used LASSO ranks as causal importance. If two features were both domain-critical (say EMI-to-income and DTI), I kept the more interpretable one by rule, not by whichever LASSO happened to pick on that seed."
 
@@ -2134,17 +2178,23 @@ These are the adversarial follow-ups after the 2-minute walkthrough. Answer the 
 
 #### T5: "What is the denominator on +37% coverage?"
 
+**Memory hook:** *Recovered, not invented* · Usable: pin, city, state → Relative lift over before → Structure recovered from the blob · **Land on:** "I will not quote fake before-and-after numbers unless I have the notebook."
+
 > "Usable = record has standardized pin + city + state after parse. Lift is relative: (usable_after − usable_before) / usable_before. Most of the 37% is structure recovered from the blob — pins in free text, Bangalore/Bengaluru, MH/Maharashtra — not addresses I invented. I will not quote a fake 40% → 55% unless I have the notebook."
 
 ---
 
 #### T6: "How did you count the 42% dimensionality cut?"
 
+**Memory hook:** *Count features, not rows* · Denominator: engineered candidates → Kept: two or more votes → 42% = 1 minus kept/candidates · **Land on:** "It is not PCA explained variance, and it is not deleted rows."
+
 > "Candidates after feature engineering in the numerator's denominator; survivors with ≥ 2 votes from chi-squared, MI, LASSO (and correlation as a fourth vote) in the numerator. $42\% = 1 - N_{\text{kept}} / N_{\text{candidates}}$. It is not PCA explained variance and it is not 'we deleted 42% of rows.'"
 
 ---
 
 #### T7: "−30% reporting — vs what baseline?"
+
+**Memory hook:** *Excel pack to Power BI* · Data-ready to exec-ready time → Before: Excel plus screenshots → After: refreshable Power BI → Not load time, not defaults · **Land on:** "I don't have the hour log, but I stand behind the 30% process cut."
 
 > "Calendar time from data-ready to exec-ready pack. Baseline was Excel assembly plus screenshot-into-deck. After was a refreshable Power BI model for OCF, credit KPIs, and portfolio risk. Not dashboard load time, not default-rate improvement. I don't have the hour log in front of me; I stand behind the 30% process cut."
 
@@ -2158,11 +2208,15 @@ These are the adversarial follow-ups after the 2-minute walkthrough. Answer the 
 
 #### T9: "Why not BERT / a neural NER for addresses?"
 
+**Memory hook:** *No labels, regular patterns* · No labelled Indian-address data → Pin, house number are regular → Regex, gazetteer, rule NER won · **Land on:** "With thousands of annotated addresses I'd revisit a fine-tuned transformer. We didn't have them."
+
 > "No labelled Indian-address span data at intern/analyst scale, and the entities we needed — pin, house number, 'Blore' — are regular enough that regex + gazetteer + a small rule NER beat a Western spaCy model. I would revisit a fine-tuned transformer if we had thousands of annotated addresses and a production error budget. We didn't."
 
 ---
 
 #### T10: "Is address completeness causal for default?"
+
+**Memory hook:** *Proxy, not cause* · No, it's a proxy → Fraud, rushed, or village address → Feature and data-quality metric · **Land on:** "I'd never tell a credit committee to reject a short address without a policy owner behind it."
 
 > "No. It is a **proxy**. Vague KYC can mean fraud, rushed onboarding, or a genuine customer with a village address that does not parse. I used it as a feature and as a data-quality metric. I would never tell a credit committee 'reject because the address is short' without a policy owner behind that rule."
 
@@ -2170,11 +2224,15 @@ These are the adversarial follow-ups after the 2-minute walkthrough. Answer the 
 
 #### T11: "K-Means on mixed numeric/categorical risk data — why not GMM or hierarchical?"
 
+**Memory hook:** *Stable and named beats optimal* · Scale numerics, dummy categoricals → Silhouette and elbow enough → Segments became model features → GMM soft, hierarchical scales worse · **Land on:** "I care that segments were stable and interpretable, not globally optimal."
+
 > "After scaling numerics and dummy-encoding a small set of categoricals, K-Means with silhouette / elbow was enough to get named risk segments that became `cluster_id` and `cluster_default_rate` features. GMM would give soft membership; hierarchical does not scale as cleanly. I care that segments were **stable and interpretable**, not that they were the globally optimal clustering."
 
 ---
 
 #### T12: "You say Amazon Pay but the note still says Axio in places."
+
+**Memory hook:** *Old label, same pipeline* · Older drafts said Axio/CapitalFloat → Same JSON, address, Power BI work → Speak Amazon Pay, Research Analyst · **Land on:** "The four hard numbers are 95% F1, +37% coverage, −42% features, −30% reporting."
 
 > "Older drafts of this write-up used Axio/CapitalFloat as the lending-context label for the same pipeline — JSON KYC, Indian addresses, bureau + lifestyle, Power BI. On the resume and in the interview I speak **Amazon Pay India, Research Analyst, May–November 2020**. The four hard numbers are 95% F1, +37% coverage, −42% features, −30% reporting."
 

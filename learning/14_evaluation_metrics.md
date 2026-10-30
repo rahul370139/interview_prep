@@ -1362,6 +1362,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 
 ### Q1: Your fraud detection model has 99.5% accuracy. Your manager is thrilled. Should you be?
 
+**Memory hook:** *99.5% that catches nothing* · no, accuracy paradox → all "not fraud" still scores 99.5% → precision, recall, F1 for fraud → PR-AUC and confusion matrix → weigh business cost · **Land on:** "Missing one $10K fraud case may cost more than 100 false alerts at $50 each."
+
 **Answer:** No — this is the **accuracy paradox**. If only 0.5% of transactions are fraudulent, a model that predicts "not fraud" for everything achieves 99.5% accuracy while catching zero fraud.
 
 **What to do instead:**
@@ -1374,6 +1376,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 
 ### Q2: When would you choose RMSE over MAE, and vice versa?
 
+**Memory hook:** *Squares punish big misses* · RMSE penalizes quadratically → use when big misses hurt → MAE is linear, outlier-tolerant → RMSE ≥ MAE always · **Land on:** "If RMSE is much bigger than MAE, you have a few big outlier errors."
+
 **Answer:**
 - **RMSE** penalizes large errors quadratically → choose when **large deviations are especially costly** (e.g., predicting delivery time — being off by 2 hours once is worse than being off by 30 minutes four times)
 - **MAE** penalizes all errors linearly → choose when **outliers are expected and you don't want them to dominate** (e.g., housing prices with a few mansions)
@@ -1382,6 +1386,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 ---
 
 ### Q3: You're evaluating a summarization model. ROUGE-L is 0.45 but the summaries read poorly. What's going on?
+
+**Memory hook:** *Word overlap is not quality* · ROUGE counts surface overlap → copying phrases scores high → misses fluency, coherence, facts → add BERTScore, faithfulness, humans, LLM-as-judge · **Land on:** "ROUGE measures overlap with a reference, not quality."
 
 **Answer:** ROUGE measures **surface-level overlap** (n-grams, LCS) with a reference, not quality:
 - ROUGE can be high if the model copies phrases from the source, even if the summary is **incoherent, redundant, or misses the main point**
@@ -1397,6 +1403,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 
 ### Q4: Explain the difference between ROC-AUC and PR-AUC. When is ROC-AUC misleading?
 
+**Memory hook:** *Huge TN hides false alarms* · ROC plots TPR vs FPR → huge TN keeps FPR tiny → thousands of false positives hidden → PR-AUC precision ignores TN · **Land on:** "For imbalanced data like fraud, rare disease, or anomalies, always use PR-AUC."
+
 **Answer:**
 - **ROC-AUC** plots TPR vs. FPR. When the negative class is enormous (99.9% negative), even a small FPR (say 0.1%) means thousands of false positives. But the ROC curve still looks great because FPR = FP/(FP+TN), and TN is huge.
 - **PR-AUC** plots Precision vs. Recall. Precision = TP/(TP+FP) is **not inflated** by a large TN, so it directly reflects the false positive burden.
@@ -1406,6 +1414,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 ---
 
 ### Q5: How does nDCG differ from MAP, and when would you use each?
+
+**Memory hook:** *Yes or no, versus graded* · MAP uses binary relevance → average of Precision@k → nDCG uses graded relevance → log position discount · **Land on:** "Binary labels, use MAP. Relevance grades, use nDCG."
 
 **Answer:**
 - **MAP** uses **binary relevance** (relevant or not). It's the average of Precision@k at each relevant position.
@@ -1421,6 +1431,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 
 ### Q6: How would you evaluate a RAG system end-to-end?
 
+**Memory hook:** *Test each stage, then the whole* · ingestion coverage and OCR → retrieval Hit-Rate@k ≥ 0.90 → generation faithfulness ≥ 0.85 → end-to-end correctness, satisfaction · **Land on:** "If Hit-Rate is below 0.70, nothing can save the system. Always debug retrieval first."
+
 **Answer:** Evaluate **each stage independently** plus the end-to-end pipeline:
 
 1. **Ingestion:** Coverage %, dedup ratio, chunk overlap recall, OCR CER/WER
@@ -1434,6 +1446,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 
 ### Q7: What is perplexity and why can't you compare it across models with different tokenizers?
 
+**Memory hook:** *Miles per gallon versus liters* · exponential of average cross-entropy → how surprised the model is → lower is better → tokenizers change token count · **Land on:** "CE is averaged per token, so the denominator changes and the scores are incomparable."
+
 **Answer:**
 - **Perplexity** = $e^{CE}$ = exponential of average cross-entropy loss. It represents how "surprised" the model is by the text. Lower = better.
 - A model with perplexity 15 is, on average, choosing between ~15 equally likely tokens.
@@ -1443,6 +1457,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 ---
 
 ### Q8: Your A/B test shows a 2% lift with p = 0.03. Should you ship it?
+
+**Memory hook:** *Significant is not shippable* · yes, p < 0.05 → is 2% meaningful for business → multiple testing, segments → guardrail metrics, test duration · **Land on:** "Ship only if the lift is meaningful, guardrails are clean, and it holds across segments."
 
 **Answer:** Statistically significant (p < 0.05), but consider:
 
@@ -1459,6 +1475,8 @@ print(f"Significant at α=0.05? {'Yes' if p_value < 0.05 else 'No'}")
 
 ### Q9: How do you evaluate hallucination in LLMs? What's the state of the art?
 
+**Memory hook:** *Claims, judge, specialist* · NLI checks each atomic claim → LLM-as-Judge with a rubric → specialized models like HHEM → RAGAS combines signals · **Land on:** "No single automated metric catches all hallucinations. Human evaluation is still the gold standard."
+
 **Answer:**
 Hallucination evaluation has three main approaches:
 
@@ -1473,6 +1491,8 @@ Hallucination evaluation has three main approaches:
 ---
 
 ### Q10: When would you use BERTScore over BLEU or ROUGE?
+
+**Memory hook:** *Car equals automobile* · BERTScore uses contextual embeddings → BLEU/ROUGE need exact overlap → BERTScore for open-ended, paraphrases → BLEU/ROUGE for fast baselines · **Land on:** "Many valid phrasings, use BERTScore. Constrained outputs like translation, BLEU or ROUGE is fine."
 
 **Answer:**
 - **BERTScore** captures **semantic similarity** via contextual embeddings — "automobile" and "car" score high even though they share no n-grams

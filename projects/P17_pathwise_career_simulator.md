@@ -175,30 +175,57 @@ Why one LLM call instead of three: ~3× cheaper, more coherent output (the model
 ## 9. Interview Q&A
 
 **Q1: Walk me through the Career Simulator.**
+
+**Memory hook:** *Six agents, one mock interview* · Planner: resume vs JD, 5-7 gaps → Retrieval grounds, Interviewer adapts → Scorer 0-100, supported flag → under 60, micro-lesson → Report: 30/60/90 plan · **Land on:** "Every step streams live over SSE, and each agent reuses code I already had."
+
 > You upload your resume and paste a target job posting. A Planner agent parses the resume, pulls the matching O*NET reference, and diffs the two into 5–7 competencies with gap levels, focusing the interview on the real gaps hardest-first. Then it loops: a Retrieval agent grounds each competency in a citation-backed knowledge base, an Interviewer agent asks one question whose difficulty adapts to your previous score, a Scorer grades your answer 0–100 and flags whether the score is actually supported by the retrieved rubric, and if you score below 60 a Remediation agent auto-builds a micro-lesson and quiz from the same grounded context. Every step streams to an "Agent Thinking" timeline over SSE. At the end a Report agent produces a 30/60/90 readiness report. The whole orchestrator is thin — each agent delegates to modules I already had.
 
 **Q2: What makes this more than a chatbot pretending to interview?**
+
+**Memory hook:** *Grounded, inspectable, measured* · grounded, cites a knowledge base → inspectable, live agent timeline → measured, offline eval harness · **Land on:** "Most agent demos have none of those; they hide reasoning and hallucinate confidently."
+
 > Three things: it's *grounded* (every question and score cites a knowledge base, and the Scorer explicitly marks answers unsupported when there's no rubric), it's *inspectable* (the agent timeline streams live with citation chips), and it's *measured* (an offline eval harness reports groundedness, refusal correctness, and p95 latency, rendered on the dashboard). Most agent demos have none of those — they hide reasoning and hallucinate confidently.
 
 **Q3: How does the Foundry IQ / Supabase retrieval work and why two systems?**
+
+**Memory hook:** *Main road, backup road* · one retrieve() for everything → Foundry IQ first, with citations → error, fall back to Supabase → same corpus, 384-dim Cohere · **Land on:** "Foundry was a track requirement; Supabase is the failover I control, so the demo never dies."
+
 > All retrieval goes through one `retrieve()` function. If Microsoft Foundry IQ (Azure AI Search) is configured it's the citation-first provider; if the env is missing or it errors, it transparently falls back to a Supabase pgvector RPC over the same corpus. Foundry was a requirement of the competition track and gives managed semantic search; Supabase is the failover I fully control so the demo never dies on stage. The corpus is the same, embeddings are 384-dim Cohere on both sides, and I can debug which provider served a query live via `/api/rag/status` and `/api/rag/probe`.
 
 **Q4: How do you keep the agent honest / prevent hallucination?**
+
+**Memory hook:** *Refuse early, grade honestly* · refuse bad inputs before the LLM → need 200+ chars of context → empty rubric, supported=false → eval tests the refusals · **Land on:** "Honesty is a measured property, not a hope."
+
 > A SafetyGuard refuses out-of-scope inputs before any LLM call — too-short JD, or a scanned resume with no readable skills — and enforces a minimum grounding threshold (≥200 chars of retrieved context). The Scorer is instructed to set `supported=false` and grade conservatively when the rubric is empty rather than inventing a grade. And the eval harness's refusal-correctness metric actually tests that out-of-scope inputs get refused. Honesty is a measured property, not a hope.
 
 **Q5: How do you evaluate an agent like this?**
+
+**Memory hook:** *Three test cases, four numbers* · golden set: strong, partial, out-of-scope → run through the real agents → groundedness, refusals, relevance, p95 → JSON report on the dashboard · **Land on:** "That harness lets me change a prompt or model and know if I regressed."
+
 > An offline golden set of scenarios — a strong candidate, a partial-fit, and an out-of-scope input — run through the real agents. I compute groundedness (fraction of scored answers the retrieved rubric supports), refusal correctness (did we refuse the out-of-scope case), answer relevance (did the Planner find JD-grounded gaps), and p95 latency. It writes a JSON report that the dashboard renders. That harness is what lets me change a prompt or model and know if I regressed.
 
 **Q6: Why one LLM call for the career plan instead of three sequential ones?**
+
+**Memory hook:** *One call, one story* · about three times cheaper → sees gaps and plan together → one JSON, not three failure points → O*NET lookup has three fallbacks · **Land on:** "One call is cheaper, more coherent, and leaves one JSON to validate."
+
 > Cost and coherence. One Groq round trip is about three times cheaper than three, and the model writes a better plan when it can see the gap analysis and the roadmap it's producing in the same context window. It also means one JSON to validate instead of three failure points. The O*NET lookup has three fallbacks so even off-catalog roles anchor to a credible salary/skills row.
 
 **Q7: The 'REUSE, don't rewrite' principle — why does it matter?**
+
+**Memory hook:** *One file, not five* · thin glue over existing modules → one place parses, one retrieves → swap a model, change one file → copying logic causes drift · **Land on:** "Duplicating that logic would have created drift between the Learn page and the interview."
+
 > The Career Simulator is a headline feature, but I built it as thin orchestration over existing modules — the resume parser, the distiller's LLM/JSON helpers, the RAG retrieve function. So there's exactly one place that knows how to parse a resume or retrieve grounded context. If I swap the embedding model or the skill-gap logic, I change one file, not five. Duplicating that logic into the simulator would have created drift between the Learn page and the interview.
 
 **Q8: How is this deployed and what was tricky?**
+
+**Memory hook:** *HTTPS front, HTTP back* · FastAPI on VPS, Next.js on Vercel → browser blocks mixed content → Next.js rewrites proxy /api/* → next: Let's Encrypt reverse proxy · **Land on:** "The browser only ever talks HTTPS to Vercel."
+
 > FastAPI in Docker on a Hostinger VPS, Next.js 14 on Vercel. The tricky part is that Vercel serves HTTPS but the VPS API is plain HTTP, so browsers block the mixed content. I solved it with Next.js rewrites that proxy `/api/*` and `/health` same-origin through Vercel to the backend, so the browser only ever talks HTTPS to Vercel. Documented upgrade is putting a reverse proxy with Let's Encrypt in front of the API.
 
 **Q9: What would you productionize next?**
+
+**Memory hook:** *Memory out, tests in* · sessions to Postgres or Redis → add auth → bigger golden set in CI → HNSW as the corpus grows · **Land on:** "The eval harness makes all of that safe, because I can measure regressions."
+
 > Move simulator session state out of memory into Postgres/Redis so it survives restarts and scales horizontally; add auth; expand the eval golden set and wire it into CI so every prompt change is regression-tested; and add HNSW on pgvector as the corpus grows. The eval harness makes all of those safe because I can measure regressions.
 
 ---

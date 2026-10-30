@@ -64,7 +64,7 @@ Almost every company's rubric is a renaming of the same six or seven signals. Le
 | Signal | The question behind the question | Your strongest proof |
 |---|---|---|
 | **Ownership / drive** | Did you carry it to production, or hand it off at the notebook? | Jet2 forecasting live 18+ months; ATCS DQ framework adopted by 4+ engagements |
-| **Ambiguity** | Can you act without a spec? | AI Cargo (self-defined problem, 6 weeks); ATCS client engagements |
+| **Ambiguity** | Can you act without a spec? | AI Cargo (self-defined problem; team of three for the competition, then my own v2); ATCS client engagements |
 | **Technical judgment** | Do you choose, or do you follow trends? | 70B→7B distillation; local 4-bit model for PHI; rules+ML veto |
 | **Impact / results** | Did the business change? | MAPE 18→7; 4h→18min; 15× turnaround; +28% top-5 |
 | **Collaboration / influence** | Can you move people who don't report to you? | Power BI exec pack; clinicians at Bilbo; DQ framework adoption |
@@ -192,7 +192,7 @@ Codenames exist so that under pressure you retrieve a **whole story** with one t
 
 | | |
 |---|---|
-| **Scale / Change / Durability** | 18+ months live · MAPE 18% → 7% · under 2% error variation |
+| **Scale / Change / Durability** | 18+ months live · MAPE 18% → 7% vs the old forecast · monthly error stayed within about 2 points of 7% |
 | **The decision** | Ran XGBoost vs LSTM vs GRU with Optuna and **walk-forward** validation — not a random split, because a random split on time series leaks the future. Then Dataiku with scheduled retraining and Pydantic validation so it didn't rot. |
 | **Best for** | Ownership · production · "a model you took from PoC to production" |
 | **The line** | *"Getting to 7% was a week. Keeping it at 7% for eighteen months was the actual job."* |
@@ -211,11 +211,11 @@ Codenames exist so that under pressure you retrieve a **whole story** with one t
 | | |
 |---|---|
 | **Scale / Change / Durability** | 8 tools · reflect→revise loop · fixed with a hard filter in code |
-| **The decision** | The reflect step kept re-triggering already-succeeded tools and flagging *optional* tools as gaps. The dashboard looked active, so it was invisible. I instrumented every node's input and output, traced it to the LLM "helpfully" inventing work, and fixed it by constraining the revise step **in code** — it can only emit mandatory or failed tools — plus redesigning to act-first-always-review. |
+| **The decision** | The revise step was supposed to retry a tool that failed or returned a bad result. Instead it suggested optional tools (reroute, triage, scheduling) every time, and skipped the one with the problem. The dashboard looked thorough. I logged each node's input and output, then constrained revise **in code**: a suggestion only survives if the tool is mandatory, failed, or quality-flagged. |
 | **Best for** | **Failure** · debugging · "a time you were wrong" · agent roles |
 | **The line** | *"An agent that looks busy is not an agent that's correct. If code can guarantee a constraint, I don't leave it to a prompt."* |
 
-### `258→41` — The gate that stopped burning compute (Doc2Data)
+### `258→41` — The gate that stopped burning compute (Doc2Data, at Bilbo)
 
 | | |
 |---|---|
@@ -246,10 +246,20 @@ Codenames exist so that under pressure you retrieve a **whole story** with one t
 
 | | |
 |---|---|
-| **Scale / Change / Durability** | ~6 weeks solo · 1st prize + $4,000 · judged on combining FDA/GDP rules with explainable ML |
-| **The decision** | Built the whole six-layer platform alone under a deadline; the differentiator was governance — deterministic veto, human gate on anything consequential, full audit trail — not demo polish. |
-| **Best for** | Ambiguity · shipping fast · passion/side-project questions |
+| **Scale / Change / Durability** | Team of three · 1st prize + $4,000 · judged on combining FDA/GDP rules with explainable ML |
+| **The decision** | We built the six-layer platform as a team under a deadline. **My part:** the risk engine with the deterministic veto, the LangGraph agent graph, and the LLM layer with the zero-LLM fallback. The differentiator was governance — deterministic veto, human gate on anything consequential, full audit trail — not demo polish. |
+| **Best for** | Ambiguity · shipping fast · **teamwork with clear ownership** · passion-project questions |
 | **The line** | *"It won because it was the one you could hand to a regulator, not the one with the prettiest demo."* |
+| **Say "we", then "I"** | One sentence of team credit ("we were three"), then only your own actions. If asked "did you build it alone?": *"No, we were a team of three. I owned the risk engine and the agent graph, and after the competition I carried it forward on my own."* Never say "solo"; the public git history shows three authors. |
+
+### `v2` — Carrying the winning project forward on my own (AI Cargo, May – Oct 2026)
+
+| | |
+|---|---|
+| **Scale / Change / Durability** | 7,408 → 495,892 windows · onset-only PR-AUC 0.60 vs rules 0.19 · 200-scenario agent benchmark, zero destroy actions |
+| **The decision** | After the win I listed what a tough reviewer would attack: small synthetic data, a label that copied the sensor, a guessed 0.4 / 0.6 blend. I fixed each one myself: real airports, lanes, ERA5 weather and customs times at scale; a product-core label that forces real forecasting; learned fusion, calibration and conformal uncertainty; a policy-driven commander agent with a deterministic fail-safe; then a Docker deploy on a VPS with CI. |
+| **Best for** | **Initiative / went beyond** · learning fast · "what did you do after graduating" · "how do you know it works" |
+| **The line** | *"Winning told me the idea was good. It didn't tell me the model could forecast, so I built the test that would."* |
 
 ## **4.2 Two supporting stories to keep warm**
 
@@ -318,7 +328,9 @@ Interviewers ask maybe fifteen distinct questions wearing forty different costum
 | Ambiguous problem, no spec | `$4,000` or ATCS client work |
 | Went beyond your role | `4h→18min` (the DQ framework) |
 | Influenced without authority | `4h→18min` adoption, or the Power BI exec pack |
-| Tight deadline | `$4,000` (6 weeks solo) |
+| Tight deadline | `$4,000` (team deadline; my part: risk engine + agent graph) |
+| Worked in a team / who did what | `$4,000` (say "we" once, then "I") |
+| Initiative / did more than asked | `v2` (carried the project on after the win) |
 | Proudest work | `+28%` (current) or `$4,000` |
 | Handled a difficult stakeholder | your `CONFLICT` story |
 | Taught / mentored someone | DQ framework handover; documenting the model for handover at Amazon Pay |
@@ -337,7 +349,9 @@ These are compressed to the **spoken** length. Say them out loud; do not memoriz
 
 ### **Q1: "Tell me about yourself."**
 
-> "I'm an applied ML engineer with about five years taking analytics into production — Python, SQL, pipelines, and measuring whether the model actually moved a business metric. I finished my MS in Data Science at Maryland in May. Most recently I was an AI engineer at Bilbo building a production healthcare RAG system — hybrid retrieval, reranking, citations, on a locally-hosted quantized model because the data couldn't leave the environment; that lifted top-five relevance about 28% with answers under five seconds. Before that, two years at Jet2 as a data scientist, where I took forecast error from 18% MAPE to 7% and kept it stable for eighteen months, and worked on intent classification across a million-plus call transcripts including distilling a 70B model down to 7B at 94% recall. Earlier I built credit-risk scorecards in lending and Spark pipelines on ten-million-plus records. What I care about is AI you can actually trust in production — grounded, measured, and bounded."
+**Memory hook:** *Now, then, earlier, principle* · Bilbo: RAG +28% under 5 s, plus claim forms in ~40 s → Jet2: MAPE 18% to 7%, 70B to 7B → lending scorecards + Spark → AI you can trust · **Land on:** "What I care about is AI you can actually trust in production."
+
+> "I'm an applied ML engineer with about five years taking analytics into production — Python, SQL, pipelines, and measuring whether the model actually moved a business metric. I finished my MS in Data Science at Maryland in May. Most recently I was an AI engineer at Bilbo building a production healthcare RAG system — hybrid retrieval, reranking, citations, on a locally-hosted quantized model because the data couldn't leave the environment; that lifted top-five relevance about 28% with answers under five seconds. I also built a document-extraction workflow there that cut each claim form from three to five minutes to about forty seconds. Before that, two years at Jet2 as a data scientist, where I took forecast error from 18% MAPE to 7% and kept it stable for eighteen months, and worked on intent classification across a million-plus call transcripts including distilling a 70B model down to 7B at 94% recall. Earlier I built credit-risk scorecards in lending and Spark pipelines on ten-million-plus records. What I care about is AI you can actually trust in production — grounded, measured, and bounded."
 
 **Why it works:** current role first, one number per stint, ends on a principle that invites the next question into your strongest territory. **Keep it to 90 seconds.**
 
@@ -347,7 +361,9 @@ These are compressed to the **spoken** length. Say them out loud; do not memoriz
 
 Use `258→41` or `70→7`. Lead with the challenge, not the project description.
 
-> "The hardest one was a document-extraction pipeline where one scan was taking 258 seconds. The naive read was 'the OCR model is slow.' It wasn't — the template alignment had silently failed, so every field was OCR'ing noise, confidently. I instrumented per-node timings, found that the page never registered correctly, and added two things: an alignment-quality gate that short-circuits the expensive pass in under a second, and blank detection so we never OCR empty fields. That scan went to 41 seconds and the pipeline overall from three-to-five minutes to about forty seconds. The lesson I carry is that a silent quality failure usually shows up first as a performance symptom."
+**Memory hook:** *Slow was only the symptom* · one scan took 258 seconds → alignment had silently failed → per-node timings found it → alignment gate + blank detection · **Land on:** "A silent quality failure usually shows up first as a performance symptom."
+
+> "The hardest one was a document-extraction pipeline I built at Bilbo, where one scan was taking 258 seconds. The naive read was 'the OCR model is slow.' It wasn't — the template alignment had silently failed, so every field was OCR'ing noise, confidently. I instrumented per-node timings, found that the page never registered correctly, and added two things: an alignment-quality gate that short-circuits the expensive pass in under a second, and blank detection so we never OCR empty fields. That scan went to 41 seconds and the pipeline overall from three-to-five minutes to about forty seconds. The lesson I carry is that a silent quality failure usually shows up first as a performance symptom."
 
 ---
 
@@ -355,7 +371,9 @@ Use `258→41` or `70→7`. Lead with the challenge, not the project description
 
 `PHANTOM TOOLS`. Lead with the failure. Do not soften it.
 
-> "I shipped an agent that looked like it was working and wasn't. In my cold-chain risk platform, the reflect-and-revise loop kept re-triggering tools that had already succeeded, and flagging optional tools as gaps — the LLM was helpfully inventing work. On the dashboard it just looked busy, so I missed it for a while. That's the part I own: I had no instrumentation on individual node inputs and outputs, so 'looks active' was passing for 'is correct.' I added tracing per node, found the LLM was the source, and fixed it in code rather than in the prompt — the revise step can now only emit mandatory or failed tools. I also redesigned it to act once, observe real results, then always stop at a human review. What I took from it: if code can guarantee a constraint, don't leave it to a prompt — and instrument the thing that would tell you it's wrong, not just the thing that tells you it's running."
+**Memory hook:** *Looked busy, wasn't right* · revise suggested optional tools → never the broken one → my fault: no node logs → logging + a rule in code · **Land on:** "If code can check a rule, don't leave the rule to the model."
+
+> "I shipped an agent that looked like it was working and wasn't. On AI Cargo, in the agent graph I owned, the revise step was supposed to look at a tool's real output and retry the one that failed, or the one whose result was bad, like a cold-storage match that came back poor. What it did instead was suggest the optional tools every time, rerouting, triage, scheduling, and it never pointed at the tool that had the problem. On the dashboard that looked thorough, so I missed it. That's the part I own: I had no log of each node's input and output, so 'looks busy' was passing for 'is correct.' I added that logging, found the pattern, and fixed it in code rather than in the prompt. A suggestion is now dropped unless the tool is required for that risk tier, or it failed, or its output was flagged as bad. We also run once and then stop at a person, so a bad suggestion can't loop. What I took from it: if code can check a rule, don't leave the rule to the model."
 
 **Why this scores well:** real failure, you own the root cause (missing instrumentation), you name the fix, and you generalize to a rule. Four rubric rows in one answer.
 
@@ -365,6 +383,8 @@ Use `258→41` or `70→7`. Lead with the challenge, not the project description
 
 Use **your** filled-in story from §4.3. The shape:
 
+**Memory hook:** *Same goal, different method* · who and what they wanted → their fair reason → I asked what outcome they protect → the evidence → outcome, where I gave in · **Land on:** "Since then I raise this earlier."
+
 > "*[One sentence: who, and what they wanted.]* Their reasoning was legitimate — *[state it fairly]*. What I did first was ask what outcome they were actually protecting, because we were arguing about the method and agreeing about the goal. Then I *[the evidence / the small test / the data you pulled]*. We landed on *[outcome, including where you conceded]*. Since then I *[what you now do earlier]*."
 
 **Never:** "they didn't understand the technical side."
@@ -373,11 +393,15 @@ Use **your** filled-in story from §4.3. The shape:
 
 ### **Q5: "Describe a time you had to work with incomplete information."**
 
+**Memory hook:** *Lock what's wrong under every target* · no agreed metric yet → bake-off: XGBoost, LSTM, GRU → walk-forward validation → MAPE 18% to 7% · **Land on:** "When the target is unclear, lock down what would be wrong under every target."
+
 > "At Jet2 I had to choose a forecasting approach before we had agreement on what 'good' meant. Rather than stall, I ran a bake-off — XGBoost, LSTM, GRU — under walk-forward validation, because whatever metric we settled on, leaking the future would invalidate all of it. That gave me a defensible comparison regardless of the final metric choice. We landed on MAPE and went from 18% to 7%. The general move is: when the target is ambiguous, lock down the thing that would be wrong under *every* target — in that case, the validation scheme."
 
 ---
 
 ### **Q6: "Tell me about a time you influenced a decision without authority."**
+
+**Memory hook:** *Make adoption cheaper than not adopting* · DQ framework for one client → no mandate → config-first + a working example → used in 4+ engagements · **Land on:** "For internal tools, the adoption argument is the interface, not the pitch."
 
 > "At ATCS I'd built a config-driven data-quality framework for one client — validation, profiling, referential integrity. I had no mandate to standardize anything. What worked wasn't advocacy; it was making adoption cheaper than not adopting. I wrote it config-first so another engagement could point it at their schema without touching code, and documented it with a working example. It ended up used across four-plus engagements. I learned that for internal tools, the adoption argument is the interface, not the pitch."
 
@@ -385,13 +409,17 @@ Use **your** filled-in story from §4.3. The shape:
 
 ### **Q7: "Tell me about a tight deadline."**
 
-> "I built the cold-chain risk platform solo in about six weeks for the Smith Agentic AI Challenge. The scope pressure was real, so I made an explicit cut: governance over surface area. Everything consequential pauses for a human, every decision writes an audit record with its top SHAP drivers, and the whole thing degrades to a deterministic pipeline if no LLM is available. I skipped things like persisting approval state properly — that's demo-grade and I say so. It won first prize and four thousand dollars, and the feedback was specifically about combining the regulatory rules with explainable ML, not about the demo."
+**Memory hook:** *Governance over surface area* · team of three, short deadline → my part: risk engine + agent graph → the cut: human gate, SHAP audit, zero-LLM path → skipped durable approvals, said so · **Land on:** "It won first prize, for the rules plus explainable ML, not for the demo."
+
+> "For the Smith Agentic AI Challenge we were a team of three with a few weeks to build a cold-chain risk platform. I owned the risk engine and the agent graph. The scope pressure was real, so I pushed for an explicit cut: governance over surface area. Everything consequential pauses for a human, every decision writes an audit record with its top SHAP drivers, and the whole thing degrades to a deterministic pipeline if no LLM is available. I skipped things like persisting approval state properly — that's demo-grade and I say so. It won first prize and four thousand dollars, and the feedback was specifically about combining the regulatory rules with explainable ML, not about the demo."
 
 ---
 
 ### **Q8: "Why are you leaving / why did your last role end?"**
 
 Your Bilbo role ran **Sept 2025 – May 2026**, alongside finishing your MS. This is clean; say it plainly.
+
+**Memory hook:** *It ended with my degree* · ran alongside my master's → ended at graduation in May → now: own a production system full-time · **Land on:** "I want to own a production AI system end to end."
 
 > "It ran alongside my master's and concluded when I graduated in May. I'm now looking for a full-time role where I can own a production AI system end to end rather than split time with coursework."
 
@@ -400,6 +428,8 @@ No apology, no elaboration. Move on.
 ---
 
 ### **Q9: "What are you looking for in your next role?"**
+
+**Memory hook:** *Own it, measure it, sit close* · ownership in production → a team that measures → near the domain experts → tie it to their job post · **Land on:** "My best decisions came from a constraint someone in the business told me."
 
 > "Three things. Ownership of something that reaches real users — I've had the most impact when I owned a system in production, not a notebook. A team that measures — I want evals and experiments to be normal, not a thing I have to argue for. And proximity to the domain experts, because the best decisions I've made came from a constraint someone in the business told me, like PHI not being allowed to leave the environment."
 
@@ -410,6 +440,8 @@ Then **tie it to their role**. This question is secretly "did you read the JD."
 ### **Q10: "What's your greatest strength?"**
 
 Pick one, prove it, don't list three.
+
+**Memory hook:** *Knowing when not to trust a model* · cold chain: veto + unknown escalates → Bilbo: unverified citation is dropped → same instinct in both · **Land on:** "Bound the model with something deterministic, and make failure loud."
 
 > "Knowing when *not* to trust a model. In the cold-chain platform, the ML score can never override a hard safety rule — there's a deterministic veto, and a missing score escalates rather than defaulting to safe. At Bilbo, an answer whose citation can't be verified gets dropped rather than shown. It's the same instinct in both: bound the model with something deterministic, and make failure loud."
 
@@ -423,11 +455,15 @@ Pick one, prove it, don't list three.
 
 If you have a real one, use it. Otherwise use the self-generated version — reviewing your own work critically counts, as long as you say so honestly.
 
+**Memory hook:** *"How do you know it ran?"* · a reviewer's simple question → I had no answer → stopped defending, built the tracing → now I ask it before I ship · **Land on:** "'How would I know this is wrong' is a question I ask before I ship, not after."
+
 > "The clearest example is feedback I effectively gave myself after the agent bug I mentioned — but the reason it stung is that a reviewer asked a simple question I couldn't answer: 'how do you know the tool actually ran?' I didn't have an answer, and that was the whole problem. I stopped defending the design and went and built the tracing. Now 'how would I know this is wrong' is a question I ask before I ship, not after someone asks it."
 
 ---
 
 ### **Q13: "Tell me about a time you had to learn something quickly."**
+
+**Memory hook:** *The constraint made me learn* · no external API allowed → what 4-bit costs in quality → prefill vs decode, KV cache limits users → could defend a local 7B · **Land on:** "So I could defend a local 7B instead of defaulting to GPT-4."
 
 > "For the healthcare RAG work I had to get fluent in quantized local inference fast, because the compliance constraint meant no external API was an option. I went deep enough to reason about what four-bit quantization costs you in quality and where the latency actually goes — prefill versus decode, and why the KV cache is what limits how many people you can serve at once. That's why I could defend running a 7B locally instead of treating 'use GPT-4' as the default."
 
@@ -435,7 +471,11 @@ If you have a real one, use it. Otherwise use the self-generated version — rev
 
 ### **Q14: "Describe a time you improved a process."**
 
+**Memory hook:** *Pick the story by the room* · business-facing: `15×`, 3 days to under 5 hours → engineering-facing: `4h→18min` · **Land on:** the number, then stop.
+
 `15×` or `4h→18min`. Both are clean. Use `15×` if the role is business-facing, `4h→18min` if engineering-facing.
+
+**Optional extra:** Jet2's scheduled forecasting jobs with exception handling, execution logs and retry policies, about 25% less manual recovery effort. Use it only for platform or MLOps roles, and only once you can say what failed most often and how the 25% was counted.
 
 ---
 
@@ -443,11 +483,15 @@ If you have a real one, use it. Otherwise use the self-generated version — rev
 
 Same shape as Q4, with one addition: **show you'd have executed either way.**
 
+**Memory hook:** *Disagree before, support after* · made my case with data → they made the call → I'd ship their version well · **Land on:** "Disagreeing before the decision and supporting it after is the whole skill."
+
 > "…I made the case with the data, they made the call, and I'd have shipped their version well if it had gone the other way. Disagreeing before the decision and supporting it after is the whole skill."
 
 ---
 
 ### **Q16: "How do you handle competing priorities?"**
+
+**Memory hook:** *Make the tradeoff visible* · live forecast + new transcript work → production health is non-negotiable → gates + scheduled retraining freed my time → tell stakeholders early · **Land on:** "I'd rather tell them early with an option than deliver both badly."
 
 > "I make the tradeoff explicit rather than silently choosing. At Jet2 I was maintaining a live forecasting system while building the transcript classification work — so I made the production system's health non-negotiable, put the validation gates and scheduled retraining in place so it didn't need me daily, and that bought back the time. When something genuinely can't fit, I'd rather tell the stakeholder early with an option than deliver both things badly."
 
@@ -455,11 +499,15 @@ Same shape as Q4, with one addition: **show you'd have executed either way.**
 
 ### **Q17: "Tell me about something you're proud of that isn't on your resume."**
 
+**Memory hook:** *Writing for people who poke holes* · IEEE co-author → deep learning for routing in ad-hoc networks → wrote for skeptical reviewers · **Land on:** "Same discipline as defending a model in a design review."
+
 > "Publishing. I co-authored an IEEE paper on deep learning for reliable routing in wireless ad-hoc networks. It's outside what I do day to day, and what I'm proud of is less the result than that it forced me to write for people who would try to poke holes in the method — which is the same discipline as defending a model in a design review."
 
 ---
 
 ### **Q18: "Where do you see yourself in five years?"**
+
+**Memory hook:** *Deep, close to the product* · trusted to take ambiguous AI to production → deeper on evaluation and system design → not chasing a title, happy to mentor · **Land on:** "I want to be the person who proves it works."
 
 > "Technically deep and close to the product. I want to be the person a team trusts to take an ambiguous AI problem to production and prove it works — which means going deeper on evaluation and system design rather than collecting frameworks. I'm not chasing a management title; if mentoring comes with it, good, I've enjoyed the handover parts of my work."
 
@@ -479,9 +527,13 @@ Same shape as Q4, with one addition: **show you'd have executed either way.**
 
 ## **7.1 The employment gap (May 2026 → now)**
 
-As of late 2026 you have roughly four months since graduating. **Under six months is not a gap** in any recruiter's mental model — it's a job search. Do not over-explain; over-explaining converts a non-issue into an issue.
+As of late 2026 you have roughly five months since graduating. **Under six months is not a gap** in any recruiter's mental model — it's a job search. Do not over-explain; over-explaining converts a non-issue into an issue.
 
-> "I finished my master's in May and I've been interviewing selectively since — and building. I shipped the cold-chain agentic platform that won the Smith challenge in that window, and I've been going deeper on LLM serving and evaluation."
+**Memory hook:** *Searching and building* · master's done in May → interviewing selectively → rebuilt our prize-winning platform on my own and deployed it → deeper on serving and evaluation · **Land on:** "So it's been a search, and a lot of building."
+
+> "I finished my master's in May, and since then I've been interviewing selectively and building. I took the cold-chain platform our team won the Smith challenge with, and I rebuilt it on my own: real weather data at scale, a calibrated model, and a policy-driven agent, and I deployed it. I've also been going deeper on LLM serving and evaluation."
+
+*Older wording, do not use:* "I shipped the cold-chain agentic platform that won the Smith challenge in that window." It isn't accurate. The competition was March to April, before you graduated, and it was a team build.
 
 **Structure:** one sentence of fact, one sentence of what you built. Stop.
 
@@ -497,13 +549,17 @@ The rubric here is testing **self-awareness plus corrective action**, not humili
 
 **The formula:** real weakness → the concrete cost it caused → the specific mechanism you installed → the evidence it's improving.
 
-> "My instinct is to over-build the intelligent version of something before proving the simple version is insufficient. On the agent platform I had the LLM doing work that deterministic code should have owned — which is exactly how I got the phantom tool-execution bug. What I do now is write down what the code can guarantee before I write a prompt, and anything on that list stays in code. The deterministic fallback path in that system exists because of this, and it's now the part I'm proudest of."
+**Memory hook:** *Smart version too early* · over-build before proving simple fails → cost: the revise-loop bug → fix: list what code can guarantee first → deterministic fallback came from this · **Land on:** "That fallback path is now the part I'm proudest of."
+
+> "My instinct is to over-build the intelligent version of something before proving the simple version is insufficient. On the agent platform I had the model deciding which tool to retry, which is how I got the revise-loop bug: it kept suggesting optional tools instead of the one that had failed. What I do now is write down what the code can guarantee before I write a prompt, and anything on that list stays in code. The deterministic fallback path in that system exists because of this, and it's now the part I'm proudest of."
 
 That answer is a genuine weakness, costed, fixed, and it doubles as a technical-judgment signal.
 
 ## **7.3 Salary expectations**
 
 **Order of preference:** deflect once → give a researched range → anchor on total comp.
+
+**Memory hook:** *Scope first, then a band* · understand the scope → a researched range → flexible on base and equity → ask their band · **Land on:** "What range is budgeted for this role?"
 
 > "I'd rather understand the scope first, but I want to be useful — for applied ML and AI engineering roles at this level I've been seeing ranges around *[researched band for the market and title]*, and I'm flexible on the mix of base and equity for the right team. What range is budgeted for this role?"
 
@@ -513,6 +569,8 @@ Rules: never state a number you'd resent; never quote your intern or student rat
 
 Agree, reframe to the transferable shape, then ask.
 
+**Memory hook:** *Agree, same shape, ask back* · "that's fair" → nearest shape I've done → the expert knows the constraint, I design around it → Bilbo PHI, lending defensibility · **Land on:** "What's the constraint in your domain that surprises new engineers?"
+
 > "That's fair — I haven't worked in *[their domain]*. What I have done is *[nearest shape: risk decisions under uncertainty / production forecasting / regulated data]*, and in every one of those the hard part was the same: the domain expert knows the constraint and I have to design around it. At Bilbo it was PHI, in lending it was regulatory defensibility of the scorecard. What's the constraint in your domain that surprises new engineers?"
 
 The question at the end converts a defensive moment into a conversation.
@@ -521,11 +579,15 @@ The question at the end converts a defensive moment into a conversation.
 
 Do not summarize your resume. Give three specific claims tied to *their* problem.
 
-> "Three reasons. One, I've actually put models into production and kept them there — my forecasting system ran eighteen months with under two percent error variation, which is a different skill from building it. Two, I default to measuring; I build eval harnesses and validation gates because 'it seems better' isn't a result. Three, I've worked with the constraint-holders — clinicians, credit risk, operations — so I design around the constraint instead of discovering it late. If what you need is someone who can take an AI system from idea to something you'd actually trust, that's the work I've been doing."
+**Memory hook:** *Kept it running, measured it, sat with users* · forecast ran 18 months near 7% → eval harnesses and validation gates → clinicians, credit risk, operations · **Land on:** "Taking an AI system from idea to something you'd actually trust is the work I've been doing."
+
+> "Three reasons. One, I've actually put models into production and kept them there. My forecasting system ran eighteen months, and month to month the error stayed within about two points of 7%. That's a different skill from building it. Two, I default to measuring. I build eval harnesses and validation gates because 'it seems better' isn't a result. Three, I've worked with the people who have to use the output, clinicians, credit risk, operations, so I design around their constraint instead of discovering it late. If what you need is someone who can take an AI system from idea to something you'd actually trust, that's the work I've been doing."
 
 ## **7.6 "What would you do in your first 90 days?"**
 
 Always answer in three phases. It signals operating maturity more than any story.
+
+**Memory hook:** *Learn, ship small, then propose* · month 1: read pipelines, find what's fragile → month 2: one small visible win → month 3: bigger change with evidence · **Land on:** "What would you consider a failure at ninety days?"
 
 > "First month, learn and don't break anything: read the existing pipelines, sit with whoever owns the metric, and find out what's currently manual or fragile. Second month, ship one small visible thing end to end — ideally something that closes a loop people already complain about, so I build credibility with delivery, not opinions. Third month, propose the bigger change with evidence from the first two. I'd want to know early what you'd consider a failure at ninety days, so I'm optimizing for the right thing."
 
@@ -761,7 +823,7 @@ Behavioral prep fails when it's reading. It only works **out loud**.
 │   258→41       3–5min→~40s · 258s→41s · gate <1s                       │
 │   15×          1,000+ vars · 3 days→<5 hrs · 0.94 AUC                  │
 │   4h→18min     10M+ records · 4h→18min · 4+ engagements                │
-│   $4,000       ~6 weeks solo · 1st prize · governance over polish      │
+│   $4,000       team of three · 1st prize · governance over polish      │
 │   CONFLICT     ← your own, written out. Never invented.                │
 │                                                                         │
 │  ─────────────────────  THROUGH-LINES  ──────────────────────────────   │

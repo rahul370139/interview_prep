@@ -452,6 +452,8 @@ Justification:
 
 ## **Q1: "How would you ensure fairness in a credit scoring model?"**
 
+**Memory hook:** *Fair at every stage* · data: balance groups, drop proxies → training: equalized odds → evaluation: disparate impact 0.8 to 1.25 → post-deployment: monitor, bias audits · **Land on:** "Accuracy and fairness pull against each other, so I show stakeholders the trade-off with data."
+
 > Multiple stages:
 >
 > **Data stage:** Audit training data for representation. Check if protected groups (race, gender, age) are balanced. Remove proxy variables that correlate with protected attributes (zip code can proxy for race).
@@ -468,6 +470,8 @@ Justification:
 
 ## **Q2: "Explain how you would red-team an LLM-based customer support chatbot."**
 
+**Memory hook:** *Break it three ways* · automated attack templates → LLM-as-attacker variations → manual creative probing → domain-specific bias tests → document everything · **Land on:** "Every successful attack becomes an automated test in CI/CD, run on every model update."
+
 > I'd organize red-teaming in three phases:
 >
 > **Phase 1 — Automated testing:** Run a library of known attack templates (jailbreaks, prompt injections, PII extraction attempts) against the chatbot. Use an LLM-as-attacker to generate variations. Measure: jailbreak success rate, data leak rate.
@@ -482,6 +486,8 @@ Justification:
 
 ## **Q3: "What is Constitutional AI and how does it relate to RLHF?"**
 
+**Memory hook:** *Human votes versus written rules* · RLHF: humans rank, reward model → PPO, effective but expensive → CAI: written constitution → generate, self-critique, revise → RLAIF, fewer human annotators · **Land on:** "CAI is more scalable and transparent, but AI may miss subtle harms that humans catch."
+
 > Both are alignment techniques, but they work differently:
 >
 > **RLHF** trains a reward model from human preference data (humans rank outputs), then uses RL (PPO) to optimize the LLM against that reward model. It's effective but expensive — requires large-scale human annotation.
@@ -493,6 +499,8 @@ Justification:
 ---
 
 ## **Q4: "What guardrails would you implement for a production RAG system in healthcare?"**
+
+**Memory hook:** *Guard the door, check the exit* · input: PII masking, topic, injection → system prompt: never diagnose → output: NLI grounding, disclaimer, PII scan → monitoring, weekly human audit → HIPAA compliance · **Land on:** "Healthcare is high-risk, so it is defense-in-depth: input, prompt, output, monitoring, compliance."
 
 > Healthcare is high-risk, so defense-in-depth:
 >
@@ -509,6 +517,8 @@ Justification:
 ---
 
 ## **Q5: "How does the EU AI Act affect ML engineers?"**
+
+**Memory hook:** *Three risk buckets* · classified by risk level → high-risk: docs, bias tests, oversight → limited risk: disclose it is AI → minimal risk: no specific rules → build audit trails early · **Land on:** "It is much easier to build compliance in than to retrofit it."
 
 > The EU AI Act classifies AI systems by risk level. As an ML engineer, the practical impact depends on what I'm building:
 >

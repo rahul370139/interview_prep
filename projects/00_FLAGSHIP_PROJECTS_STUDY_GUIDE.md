@@ -13,12 +13,14 @@ Interviewers pick ONE project and drill for 30–45 minutes. Know which one to s
 | Priority | Project | Lead with it for… | The one-sentence hook |
 |---|---------|-------------------|-----------------------|
 | **#1** | **Bilbo RAG (P07)** | **Any AI/GenAI Engineer role** — it's your *current job* and the top of your resume | *Production grounded RAG: hybrid retrieval + reranking + paragraph citations + LangGraph agents, all local for PHI safety.* |
-| **#2** | **AI Cargo (P15)** | Agentic AI, Applied AI Engineer, AI Platform, "hard problems" roles | *Governed agent orchestration + trustworthy hybrid ML + human-in-the-loop.* |
-| #3 | **Doc2Data (P16)** | ML/AI Engineer (multimodal/CV/OCR), Forward-Deployed, systems/perf | *Cost-aware multimodal extraction — spend compute only where it changes the answer.* |
+| **#2** | **AI Cargo (P15)** | Agentic AI, Applied AI Engineer, AI Platform, "hard problems" roles | *Governed agent orchestration + trustworthy hybrid ML + human-in-the-loop. Team of three won the competition; I carried it forward (v2) and deployed it.* |
+| #3 | **Doc2Data (P16) · Bilbo work** | ML/AI Engineer (multimodal/CV/OCR), Forward-Deployed, systems/perf | *Cost-aware multimodal extraction — spend compute only where it changes the answer. Now two Bilbo bullets on the resume.* |
 | #4 | **PathWise (P17)** | Anything that values RAG + **evaluation** (the 2026 differentiator) | *Transparent multi-agent system with grounded retrieval and a measured reliability story.* |
 
 **Rules:**
 - **P07 is mandatory.** It's your current role. An interviewer who reads your resume top-down starts there. You cannot be caught weaker on your own job than on a side project.
+- **P16 is also Bilbo work.** On the Oct 2026 resume, two of the four Bilbo bullets are Doc2Data. Say "at Bilbo I built…", and know that 92% is average field confidence, not accuracy (`P16` §0, Q10).
+- **P15 was a team of three.** Say "we won", then "my part was the risk engine, the agent graph and the LLM layer", then "after the competition I carried it forward on my own" (`P15` §0a). Never open with "I built it alone".
 - If the JD says "experimentation / causal / stats," steer to P14/P01/P04 instead. These four are your *AI-engineering* flagships.
 - If the JD says "credit risk / fintech / lending," steer to **P01 Fibe** and read `../learning/51_credit_risk_and_scorecard_modeling.md`.
 
@@ -135,12 +137,13 @@ Assumes ~60–75 min/day. Adjust to your interview date.
 
 ## 7. Traps that hit all three (pre-load the answers)
 
-- **"Is the data real?"** (AI Cargo synthetic, Doc2Data fixtures) → *the system design is the contribution; swapping in a real feed is a config change.*
+- **"Is the data real?"** (AI Cargo synthetic, Doc2Data fixtures) → *the system design is the contribution; swapping in a real feed is a config change.* For AI Cargo, add the v2 answer: *"After the competition I rebuilt it on real airports, ERA5 weather and customs times, about 496 thousand windows. Sensors are still simulated, so I report onset-only and unseen-lane numbers."*
+- **"Did you build this alone?"** (AI Cargo) → *"No, a team of three, and we won together. My part was the risk engine, the agent graph and the LLM layer. After the competition I kept going on my own and deployed it."*
 - **"This won't scale — in-memory state."** → *demo-grade; durable artifacts already persist; here's the Redis/Postgres move.*
 - **"Isn't the LLM the weak link?"** → *that's why every agentic node has a deterministic path / hard filters / a human gate / a measured eval; the LLM improves quality, it's never the safety mechanism.*
 - **"Why not fully autonomous?"** → *consequential + regulated/PHI/high-cost; autonomy is earned by measured correctness; I default to human-gated or validated.*
 - **"You used a framework — what did you actually build?"** → *the orchestration logic, the guardrails, the fusion/routing/eval — the framework is plumbing; point at the specific code decisions.*
-- **"What broke and how did you debug it?"** → AI Cargo phantom re-execution; Doc2Data silent misalignment. Always have a concrete failure + instrumentation + fix.
+- **"What broke and how did you debug it?"** → AI Cargo's reflect→revise bug (the revise step suggested optional tools and skipped the broken one); Doc2Data silent misalignment. Always have a concrete failure + instrumentation + fix.
 
 ---
 

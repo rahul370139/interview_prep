@@ -1044,6 +1044,8 @@ For each Stage B validation sample:
 
 ### Q1: "Walk me through this project end-to-end."
 
+**Memory hook:** *X-ray plus EHR, JSON out* · MIMIC-CXR, 377K images → LLaVA-NeXT with LoRA, 0.58% → curriculum, multi-pass, A/B test · **Land on:** "With EHR, CheXpert F1 went up +0.15 and ICD F1 went up +0.33."
+
 **Answer:**
 "This was an academic project at the University of Maryland focused on automated radiology report generation from chest X-rays. The goal was to build a vision-language model that takes a chest X-ray -- and optionally patient EHR data -- and generates a structured JSON report with clinical impressions and disease labels.
 
@@ -1055,6 +1057,8 @@ The key technical contributions were: (1) a curriculum learning strategy that st
 
 ### Q2: "How does LLaVA-NeXT work architecturally?"
 
+**Memory hook:** *Eye, bridge, brain* · frozen CLIP, 576 patch tokens → 2-layer MLP, 1024 to 4096 → Mistral-7B reads all tokens → NeXT adds AnyRes · **Land on:** "The visual tokens are treated just like extra text tokens in self-attention."
+
 **Answer:**
 "LLaVA-NeXT has three main components. First, a frozen CLIP ViT-L/14 vision encoder that converts the chest X-ray into 576 patch tokens, each a 1024-dimensional vector. Second, a 2-layer MLP projection layer that maps these vision embeddings from 1024 to 4096 dimensions to match Mistral's hidden size. Third, the Mistral-7B language model that processes the projected visual tokens interleaved with text tokens.
 
@@ -1065,6 +1069,8 @@ Compared to LLaVA 1.5, the NeXT version adds AnyRes -- dynamic image resolution 
 ---
 
 ### Q3: "Why LoRA instead of full fine-tuning?"
+
+**Memory hook:** *Freeze big, train small* · 41.9M params, one A100 → frozen base, no forgetting → ~160 MB adapters, zero latency → small ceiling trade-off · **Land on:** "LoRA at rank 16 gets very close to full fine-tuning."
 
 **Answer:**
 "Three reasons. First, **compute efficiency** -- full fine-tuning a 7.28B parameter model requires 120+ GB of GPU memory across multiple GPUs. With LoRA, I only trained 41.9M parameters (0.58%), fitting comfortably on a single A100 with 40 GB VRAM.
@@ -1079,6 +1085,8 @@ The trade-off is slightly lower theoretical ceiling than full fine-tuning, but i
 
 ### Q4: "Explain your curriculum learning design."
 
+**Memory hook:** *Walk first, then run* · Stage A, image only → Stage B adds EHR, ICD → mix 959 A plus 65% B → rare classes get 5x weight · **Land on:** "Without this, the model would always say negative for rare classes, which is clinically dangerous."
+
 **Answer:**
 "I designed a 2-stage curriculum inspired by Bengio et al.'s work. Stage A -- the 'easy' task -- uses only chest X-ray images to generate impressions and CheXpert labels. This builds the model's visual grounding: learning to identify opacities, effusions, and devices from pixels alone.
 
@@ -1092,6 +1100,8 @@ I also added stratified sampling to address class imbalance -- rare pathologies 
 
 ### Q5: "What did the A/B evaluation reveal?"
 
+**Memory hook:** *Same model, EHR on or off* · +0.15 CheXpert, +0.33 ICD → BNP for edema, CRP for pneumonia → less for pneumothorax → small sample, 0.75 vs 0.11 · **Land on:** "The gap says the model needs more training data to improve recall."
+
 **Answer:**
 "The A/B evaluation tested the same fine-tuned model with and without EHR context at inference time. The results showed that EHR conditioning provides a measurable improvement: +0.15 in CheXpert micro-F1 and +0.33 in ICD micro-F1.
 
@@ -1102,6 +1112,8 @@ However, I should note the evaluation was on a small sample. The quick manifest 
 ---
 
 ### Q6: "How did you handle HIPAA and data privacy?"
+
+**Memory hook:** *No names, no cloud* · PhysioNet DUA, CITI training → Safe Harbor, no PHI → all processing local → raw data not redistributed · **Land on:** "To reproduce it, people need their own PhysioNet credentials."
 
 **Answer:**
 "MIMIC-CXR is a de-identified dataset released under a Data Use Agreement through PhysioNet. I completed the required CITI human subjects research training to obtain credentialed access.
@@ -1114,6 +1126,8 @@ All data processing happened locally -- no raw data was uploaded to cloud servic
 
 ### Q7: "Why structured JSON output instead of free text?"
 
+**Memory hook:** *Codes, not paragraphs* · billing needs ICD codes → parseable, checkable labels → LLMs drift into free text → multi-pass, biasing, self-repair · **Land on:** "Multi-pass was key: separate passes for impression, CheXpert, and ICD."
+
 **Answer:**
 "Free-text reports are useful for radiologists but problematic for downstream clinical systems. Billing systems need ICD codes, not paragraphs. Clinical decision support needs discrete labels. Quality assurance needs counts.
 
@@ -1124,6 +1138,8 @@ The challenge is that LLMs aren't naturally good at producing valid JSON -- they
 ---
 
 ### Q8: "How do you evaluate radiology reports? What metrics did you use?"
+
+**Memory hook:** *Sounds right vs. is right* · BLEU-4, ROUGE-L for text → micro and macro F1 → JSON validity near 100% → radiologist review is gold · **Land on:** "Radiologist review is the gold standard, and any clinical deployment would need it."
 
 **Answer:**
 "I used a combination of text quality metrics and clinical accuracy metrics. For text quality, BLEU-4 measures n-gram overlap with reference impressions, and ROUGE-L measures longest common subsequence similarity. These tell us if the generated impression is linguistically similar to what a radiologist wrote.
@@ -1138,6 +1154,8 @@ The gold standard would be radiologist assessment -- having domain experts rate 
 
 ### Q9: "Explain the multi-pass generation pipeline."
 
+**Memory hook:** *Three passes, not one shot* · impression at temperature 0.15 → labels at 0.75, +4.0 bias → majority vote, 34% positive → bad JSON, up to 2 retries · **Land on:** "Splitting into passes stops the model losing track of the JSON."
+
 **Answer:**
 "Instead of asking the model to generate the entire JSON in one shot -- which is error-prone because the model can lose track of JSON structure mid-generation -- I split inference into three passes.
 
@@ -1151,6 +1169,8 @@ If any pass produces invalid JSON, I retry with a self-repair prompt: 'Your prev
 
 ### Q10: "What is the multi-modal projector and why train it at full precision?"
 
+**Memory hook:** *The bridge gets full training* · 2-layer MLP, 1024 to 4096 → rank-16 LoRA may lack capacity → small, so low overhead → `modules_to_save` in config · **Land on:** "Freeze the vision encoder, LoRA the LLM, and fully train the projector."
+
 **Answer:**
 "The multi-modal projector is a 2-layer MLP that maps CLIP vision embeddings (1024-dim) to the Mistral-7B embedding space (4096-dim). It's the critical bridge between vision and language.
 
@@ -1161,6 +1181,8 @@ In the config, `modules_to_save: ['multi_modal_projector']` tells PEFT to exclud
 ---
 
 ### Q11: "How does the auxiliary classification head work alongside generative loss?"
+
+**Memory hook:** *Write and classify together* · next-token loss first → average assistant hidden states → heads 4096 to 12 and 8 → loss weights 4.0 and 3.0 · **Land on:** "The heads give direct gradient signal for labels, and both tasks share one representation."
 
 **Answer:**
 "The model has two training objectives running simultaneously. The primary objective is the standard autoregressive language modeling loss -- predicting the next token in the JSON output. The secondary objectives are two auxiliary classification heads.
@@ -1175,6 +1197,8 @@ This multi-task setup helps because: (1) the auxiliary heads provide direct grad
 
 ### Q12: "What is Grouped Query Attention in Mistral?"
 
+**Memory hook:** *Four heads share one KV* · normal attention, big KV cache → 32 query heads, 8 KV heads → 4x smaller KV cache → faster multi-pass inference · **Land on:** "GQA keeps quality but makes inference faster and lighter on memory."
+
 **Answer:**
 "Standard multi-head attention has separate key and value projections for each attention head. With 32 heads, you need 32 K projections and 32 V projections, which makes the KV cache large at inference time.
 
@@ -1185,6 +1209,8 @@ The intuition is that different query heads are often looking for similar key-va
 ---
 
 ### Q13: "How did you handle class imbalance in medical labels?"
+
+**Memory hook:** *Fracture is only 2%* · data: 5x sampling weight → loss: focal plus pos_weight=5.0 → inference: +4.0 bias on '1' → keyword rules fix misses · **Land on:** "So I handled imbalance at three levels: data, loss, and inference."
 
 **Answer:**
 "Class imbalance is severe in medical imaging -- 'No Finding' is 30% while 'Fracture' is 2%. I addressed this at three levels.
@@ -1199,6 +1225,8 @@ At the inference level, token biasing adds +4.0 logits to the '1' token during l
 
 ### Q14: "What is sliding window attention and why does Mistral use it?"
 
+**Memory hook:** *Small window, deep reach* · full attention is O(n^2) → only previous W=4096 tokens → layers stack, 131K reach → long inputs, fast demo · **Land on:** "With 32 layers and W=4096, the effective context is 131K tokens."
+
 **Answer:**
 "Standard self-attention has O(n^2) memory complexity -- each token attends to all other tokens. For a 4096-token sequence, that's 16 million attention weights per head per layer.
 
@@ -1209,6 +1237,8 @@ Mistral uses this because: (1) it allows longer sequences without memory explosi
 ---
 
 ### Q15: "What are the limitations of your approach?"
+
+**Memory hook:** *Six honest gaps* · 4,360 samples of 227K → A/B on 4-8 samples → no radiologist review → misses findings, one hospital → drafting assistant, not diagnosis · **Land on:** "It is a report drafting assistant, and a radiologist must review and sign off."
 
 **Answer:**
 "Several important limitations. First, **scale of fine-tuning data** -- we used 4,360 training samples from a dataset of 227K studies. More data would likely improve recall on rare pathologies.
@@ -1227,6 +1257,8 @@ Sixth, **not a diagnostic tool** -- this is a report drafting assistant, not a r
 
 ### Q16: "How would you improve this system for production deployment?"
 
+**Memory hook:** *Radiologist stays in the loop* · more of 227K studies → flag uncertain findings → abstain on bad JSON → multi-site, human-in-the-loop → cut latency of 3-15 passes · **Land on:** "For real-time use, we'd need faster inference, like quantization or distillation."
+
 **Answer:**
 "Several key improvements. First, scale up training to use more of the 227K available studies, with better class balancing.
 
@@ -1244,6 +1276,8 @@ Sixth, address latency -- our multi-pass pipeline with voting runs 3-15 generati
 
 ### Q17: "Compare BLIP-2, Flamingo, and LLaVA architectures."
 
+**Memory hook:** *Cross-attend, query, or project* · Flamingo: cross-attention inside LLM → BLIP-2: Q-Former bottleneck → LLaVA: simple MLP projection → chose LLaVA-NeXT for LoRA · **Land on:** "I chose LLaVA-NeXT because its simplicity makes LoRA fine-tuning straightforward."
+
 **Answer:**
 "These are the three main architectural patterns for vision-language models.
 
@@ -1259,6 +1293,8 @@ I chose LLaVA-NeXT because its simplicity makes LoRA fine-tuning straightforward
 
 ### Q18: "Explain the difference between findings and impressions in radiology."
 
+**Memory hook:** *What I see vs. what it means* · findings: detailed observations → impressions: clinical summary → doctors often read only impression → shorter, better for generation · **Land on:** "We generated impressions because they are the clinically actionable part."
+
 **Answer:**
 "Findings are the detailed observations -- what the radiologist sees in the image. They describe every anatomical structure: 'The cardiac silhouette is mildly enlarged. There is a small left pleural effusion. The lungs are otherwise clear.'
 
@@ -1270,12 +1306,16 @@ We focused on generating impressions because they're the clinically actionable p
 
 ### Q19: "Why did you choose Mistral-7B as the LLM backbone?"
 
+**Memory hook:** *Half the size, still ahead* · fits one A100 with LoRA → sliding window plus GQA → beats LLaMA-2 13B → best HuggingFace integration → reasons about lab values · **Land on:** "It is half the size of LLaMA-2 13B but benchmarks ahead on most tasks."
+
 **Answer:**
 "Several reasons. First, **efficiency** -- at 7B parameters, it fits on a single A100 with LoRA, unlike 13B or 70B models. Second, **architecture innovations** -- sliding window attention and GQA make it faster at inference, important for our multi-pass pipeline. Third, **strong reasoning** -- Mistral-7B benchmarks ahead of LLaMA-2 13B on most tasks despite being half the size. Fourth, **ecosystem** -- LLaVA-NeXT's Mistral variant had the best HuggingFace integration at the time. Fifth, **clinical reasoning** -- the model needed to reason about lab values and their clinical implications, which requires strong instruction-following and reasoning capabilities that Mistral excels at."
 
 ---
 
 ### Q20: "How does token biasing work as constrained decoding?"
+
+**Memory hook:** *A push, not a wall* · add to logits before softmax → +4.0 to '1', -0.5 to '0' → e^4 ≈ 55x boost → soft, nothing hard-blocked · **Land on:** "It pushes toward valid labels without changing the generation algorithm."
 
 **Answer:**
 "During generation, at each step the model produces logits (unnormalized probabilities) for all 32,000 vocabulary tokens. Softmax converts these to probabilities for sampling.
@@ -1288,6 +1328,8 @@ It's 'soft' constrained decoding because the model can still generate other toke
 
 ### Q21: "What would happen if you used full fine-tuning instead of LoRA?"
 
+**Memory hook:** *Better ceiling, bigger cost* · all 7.28B params adapt → risk of forgetting language skills → multiple A100s, days not hours → LoRA gets 95-98% · **Land on:** "For radiology, the base model transfers well, so LoRA's capacity is enough."
+
 **Answer:**
 "Full fine-tuning would have three main effects. First, **better theoretical performance** -- all 7.28B parameters could adapt to the radiology domain, potentially improving recall on rare pathologies. Second, **risk of catastrophic forgetting** -- the model might lose general language capabilities, producing less fluent text or losing instruction-following ability. Third, **impractical compute** -- we'd need multiple A100s or an H100 with 80 GB VRAM, and training would take days instead of hours.
 
@@ -1296,6 +1338,8 @@ In practice, LoRA at rank 16 typically achieves 95-98% of full fine-tuning perfo
 ---
 
 ### Q22: "How did you handle the uncertain (-1) labels in CheXpert?"
+
+**Memory hook:** *Unsure means ignore* · labels are 1, 0, or -1 → mask -1 in aux loss → model can still output -1 → drop -1 from F1 · **Land on:** "Forcing a binary decision on unsure cases would add label noise."
 
 **Answer:**
 "CheXpert labels have three values: 1 (positive), 0 (negative), and -1 (uncertain). Uncertain means the NLP labeler couldn't confidently determine the finding from the report text -- for example, 'possible pneumonia' or 'cannot exclude effusion.'
@@ -1310,6 +1354,8 @@ This is important because forcing a binary decision on uncertain cases would int
 
 ### Q23: "Describe your data processing pipeline."
 
+**Memory hook:** *Six stages, X-ray to JSONL* · 10,003 images, DICOM to JPG → impressions and CheXpert labels → link EHR from MIMIC-III/IV → Stage A and B samples → drop 3,994 duplicates · **Land on:** "The final dataset was 4,360 training and 770 validation samples in JSONL."
+
 **Answer:**
 "The pipeline had six stages. First, I extracted 10,003 chest X-ray images from MIMIC-CXR, converting from DICOM to JPG format. Second, I extracted impression sections from paired radiology reports.
 
@@ -1323,6 +1369,8 @@ The final dataset was 4,360 training and 770 validation samples in JSONL format,
 
 ### Q24: "What is focal loss and why did you use it?"
 
+**Memory hook:** *Easy examples get quieter* · easy negatives dominate cross-entropy → factor down-weights easy examples → gamma=1.0, pos_weight=5.0 → rare classes get gradient · **Land on:** "Rare pathologies get enough gradient signal even in only 2-5% of samples."
+
 **Answer:**
 "Focal loss was introduced by Lin et al. (2017) for object detection to address extreme class imbalance. The standard cross-entropy loss treats all examples equally, so with 98% negatives, the loss is dominated by easy negatives that the model already classifies correctly.
 
@@ -1333,6 +1381,8 @@ I used gamma=1.0 with pos_weight=5.0 in the auxiliary heads. This combination en
 ---
 
 ### Q25: "How would you add uncertainty estimation?"
+
+**Memory hook:** *Ask many times, watch disagreement* · Monte Carlo dropout, N passes → temperature scaling to calibrate → ensemble of LoRA adapters → votes split 2-1 vs 3-0 · **Land on:** "We could show the vote split as a confidence score for each label."
 
 **Answer:**
 "Three approaches I'd consider. First, **Monte Carlo Dropout** -- enable dropout at inference time and run N forward passes. The variance of predictions across passes estimates epistemic uncertainty. If the model predicts Pneumonia=1 in 3/5 passes and Pneumonia=0 in 2/5 passes, that's high uncertainty.
@@ -1351,12 +1401,16 @@ Our voting mechanism already provides a form of uncertainty: if 3 votes are spli
 
 **Red Flag:** "Would you deploy this in a hospital?"
 
+**Memory hook:** *Prototype, not a doctor* · not without more validation → FDA approval, multi-site trials → radiologist in the loop → monitor drift, decision support only · **Land on:** "It should write first drafts for radiologists to review, not replace clinical judgment."
+
 **How to Handle:**
 "Not without significant additional validation. This is a research prototype that demonstrates the feasibility of automated report generation. Clinical deployment would require: (1) FDA regulatory approval (likely Class II medical device), (2) large-scale multi-site clinical trials, (3) radiologist-in-the-loop validation, (4) continuous monitoring for performance drift, and (5) clear documentation that this is a decision-support tool, not a diagnostic system. The model should generate first drafts that radiologists review and edit, not replace clinical judgment."
 
 ### 6.2 Dataset Bias
 
 **Red Flag:** "Is the model biased?"
+
+**Memory hook:** *One hospital, one view* · yes, one Boston hospital → 30% vs 2% imbalance → labels from NLP labeler → sampling and focal loss now → multi-site data, subgroup analysis · **Land on:** "For deployment, we would need multi-site data and regular bias audits."
 
 **How to Handle:**
 "Yes, in several ways. MIMIC-CXR comes from a single hospital (Beth Israel Deaconess) in Boston, so it reflects that institution's patient population, imaging equipment, and reporting style. The class distribution is heavily imbalanced -- 30% 'No Finding' vs 2% 'Fracture'. The CheXpert labels themselves are imperfect -- they're extracted by an NLP labeler, not manually annotated by radiologists.
@@ -1366,6 +1420,8 @@ To mitigate: we used stratified sampling and focal loss for class imbalance. For
 ### 6.3 Clinical vs Automated Evaluation Gap
 
 **Red Flag:** "Your BLEU score is X -- does that mean the reports are clinically accurate?"
+
+**Memory hook:** *Left or right matters* · no, BLEU measures wording → high BLEU, wrong side → CheXpert and ICD F1 closer → labels still from NLP · **Land on:** "Blind radiologist review is the gold standard for any clinical deployment."
 
 **How to Handle:**
 "No. BLEU and ROUGE measure linguistic similarity, not clinical accuracy. A report could have high BLEU but contain a clinically dangerous error -- for example, describing 'left pleural effusion' when it's actually right-sided. Conversely, a report could have low BLEU but be clinically correct using different phrasing.
@@ -1378,6 +1434,8 @@ The gold standard is a structured radiologist evaluation: blind review of genera
 
 **Red Flag:** "Your results are on only 4-8 samples."
 
+**Memory hook:** *Agree first, then explain* · 0.75 on 4, 0.11 on 8 → CPU, 30+ seconds per sample → GPU, full 770 samples → pipeline works end-to-end · **Land on:** "The pipeline works, but the actual numbers need more data to be reliable."
+
 **How to Handle:**
 "You're right to flag this. The quick manifest results (0.75 CheXpert F1) are on 4 samples and don't generalize -- the extended validation (8 samples) shows 0.11 F1, a huge gap. For publishable results, I'd need hundreds of samples with confidence intervals.
 
@@ -1386,6 +1444,8 @@ The small evaluation was a practical constraint of running CPU inference (each s
 ### 6.5 Overfitting to Heuristics
 
 **Red Flag:** "Aren't the keyword rules just hardcoded heuristics?"
+
+**Memory hook:** *Safety net, not the engine* · yes, by design → catch text vs label mismatch → impression comes from model → more data, no heuristics needed · **Land on:** "The rules are a practical bridge for a research prototype."
 
 **How to Handle:**
 "They are, and that's by design as a safety net, not a primary mechanism. The keyword rules catch obvious mismatches between the impression text (which mentions 'pneumothorax') and the label prediction (which says 0). In a clinical setting, these rules would be validated against expert guidelines.
@@ -1415,6 +1475,8 @@ Use these to demonstrate deep understanding:
 - **Production thinking:** Multi-pass inference, JSON validation, keyword safety nets, merged weights for deployment
 
 ### 7.3 One-Minute Elevator Pitch
+
+**Memory hook:** *Big model, one GPU* · LLaVA-NeXT, 7 billion parameters → LoRA, 0.6% trainable → easy image-only tasks first → EHR improves accuracy 25% · **Land on:** "The whole system runs on a single GPU, with a Streamlit demo."
 
 "I fine-tuned LLaVA-NeXT -- a 7 billion parameter vision-language model -- to generate structured radiology reports from chest X-rays. The model takes an X-ray image and optionally patient history, and outputs a JSON report with clinical impressions and disease labels. I used LoRA to efficiently adapt the model with only 0.6% trainable parameters, designed a curriculum learning strategy that starts with easier image-only tasks before adding clinical context, and built an A/B evaluation showing that EHR conditioning improves diagnostic accuracy by 25%. The whole system runs on a single GPU and includes an interactive Streamlit demo for real-time testing."
 

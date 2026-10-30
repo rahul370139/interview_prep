@@ -2056,6 +2056,8 @@ safe_chain = RunnableLambda(safe_invoke)
 
 ## **Q1: "What is LangChain and when would you use it?"**
 
+**Memory hook:** *LEGO blocks for LLM apps* · Framework of composable blocks → joined with LCEL → use for RAG, memory, agents → streaming, retries, tracing free · **Land on:** "I use it when I need more than a simple LLM call: RAG, memory, or tool agents."
+
 > **Strong answer:**
 >
 > LangChain is an open-source framework for building applications powered by LLMs. It provides modular, composable abstractions — prompt templates, output parsers, memory, tools, retrievers — that you compose into pipelines using LCEL, the LangChain Expression Language.
@@ -2067,6 +2069,8 @@ safe_chain = RunnableLambda(safe_invoke)
 ---
 
 ## **Q2: "Explain LangChain vs LangGraph. When would you choose each?"**
+
+**Memory hook:** *Railroad track versus road network* · LCEL: linear, no loops → LangGraph: cycles, branches, state → start with LCEL, upgrade when needed → loops, routing, state, human approval · **Land on:** "LCEL handles the flow within a step. LangGraph orchestrates between steps."
 
 > **Strong answer:**
 >
@@ -2081,6 +2085,8 @@ safe_chain = RunnableLambda(safe_invoke)
 ---
 
 ## **Q3: "How would you build a RAG system with LangChain?"**
+
+**Memory hook:** *Load, split, embed, store, retrieve, generate* · Loaders for PDF, web, folders → 1000-char chunks, 200 overlap → FAISS dev, Pinecone or Weaviate prod → top-k=4, add MultiQuery or Ensemble → LCEL chain: prompt, llm, parser · **Land on:** "For production I add LangSmith tracing, caching, fallback models, and source citations."
 
 > **Strong answer:**
 >
@@ -2098,6 +2104,8 @@ safe_chain = RunnableLambda(safe_invoke)
 
 ## **Q4: "What is LCEL and why does it matter?"**
 
+**Memory hook:** *Pipes, not plumbing code* · Pipe operator: prompt, llm, parser → every chain is a Runnable → invoke, batch, stream, async free → Parallel, Lambda, Passthrough, Branch · **Land on:** "You write the pipeline once and get six execution modes for free."
+
 > **Strong answer:**
 >
 > LCEL — LangChain Expression Language — is the declarative syntax for composing LLM pipelines using the pipe operator (`|`). Instead of writing imperative code with manual function calls, you declare: `chain = prompt | llm | parser`.
@@ -2111,6 +2119,8 @@ safe_chain = RunnableLambda(safe_invoke)
 ---
 
 ## **Q5: "How do you handle state in LangGraph?"**
+
+**Memory hook:** *Shared notebook, saved every step* · TypedDict shared by all nodes → reducers: append, not overwrite → checkpointer: MemorySaver, PostgresSaver → thread_id resumes sessions → interrupt_before pauses for humans · **Land on:** "Every state change is saved, so with a thread_id the agent resumes exactly where it stopped."
 
 > **Strong answer:**
 >
@@ -2126,6 +2136,8 @@ safe_chain = RunnableLambda(safe_invoke)
 
 ## **Q6: "How would you handle errors and retries in a LangGraph agent?"**
 
+**Memory hook:** *Retries live in the graph* · retry_count and error in state → edge loops back under MAX_RETRIES → exhausted: graceful fallback node → tool errors become ToolMessages → with_fallbacks and with_retry · **Land on:** "In LangGraph, error handling is structural: the retry logic lives in the conditional edges."
+
 > **Strong answer:**
 >
 > In LangGraph, error handling is structural — you encode retry logic directly into the graph topology using conditional edges.
@@ -2140,6 +2152,8 @@ safe_chain = RunnableLambda(safe_invoke)
 
 ## **Q7: "What is the ReAct pattern and how do you implement it?"**
 
+**Memory hook:** *Think, act, look, repeat* · Reason, call tool, observe → agent node plus tools node → tool_calls? tools, else END → create_react_agent is prebuilt · **Land on:** "Know the graph underneath, so you can add guardrails, human approval, or parallel tools."
+
 > **Strong answer:**
 >
 > ReAct stands for **Reasoning + Acting** — the agent interleaves thinking steps with tool use. At each turn, it: (1) reasons about what to do next, (2) selects and calls a tool, (3) observes the result, and (4) decides whether to continue or provide a final answer.
@@ -2151,6 +2165,8 @@ safe_chain = RunnableLambda(safe_invoke)
 ---
 
 ## **Q8: "How do you choose between different memory types in LangChain?"**
+
+**Memory hook:** *Length and pattern pick memory* · Short, under 20 turns: Buffer → long: SummaryBuffer, summarize old → topic jumps: VectorStoreMemory → LangGraph: built-in checkpointing · **Land on:** "In LangGraph I prefer the checkpointer, and I trim or summarize the messages list myself."
 
 > **Strong answer:**
 >

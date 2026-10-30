@@ -3,7 +3,11 @@
 **Purpose:** You have 52 learning docs + 20 project docs. This is the map: what to read for which role, in what order, how to practice (not just read), and what to do in the 48 hours before an interview.
 
 > ## 🔴 START HERE — read these two first, before any learning doc
-> 1. **[`00_RESUME_MASTER_MAP.md`](00_RESUME_MASTER_MAP.md)** — your new resume (`Rahul Sharma_edited 18th`) bullet-by-bullet, with the metric, the likely follow-up, and the answer. **§1 lists numbers that CHANGED from your old resume** — if you rehearse the old ones you'll contradict yourself in an interview. Fix those first.
+> 1. **[`00_RESUME_MASTER_MAP.md`](00_RESUME_MASTER_MAP.md)** — your current resume (`~/Downloads/resume.pdf`, Oct 2026) bullet-by-bullet, with the metric, the likely follow-up, and the answer. **§0 lists what changed in the Oct 2026 version** (Doc2Data now under Bilbo; AI Cargo team framing; Jet2 and Fibe keep their earlier bullets, with a few optional extras) and **§1 lists numbers that changed from the old A10 resume** — if you rehearse the old ones you'll contradict yourself in an interview. Fix those first.
+>
+> **Two framing rules that apply to every round:** (1) **AI Cargo** was a team of three for the competition; you owned the risk engine, the agent graph and the LLM layer, then carried it forward and deployed it on your own (`P15` §0a). Never say "solo". (2) **Doc2Data** is your Bilbo work, not a side project (`P16`).
+>
+> **Memory hooks:** most interview answers in `projects/` and the AI-engineering docs in `learning/` now start with a one-line **Memory hook** (cue · beats · Land on). Read the hook, try the answer out loud, then check the full answer.
 > 2. **[`learning/52_frontier_ai_and_2026_landscape.md`](learning/52_frontier_ai_and_2026_landscape.md)** — what the field added recently and what 2026 loops actually test.
 >
 > **The single most important fact about 2026 AI interviews:** the weighting is roughly **40% RAG/evals/agents, 30% production systems, 20% LLM internals, 10% behavioral** — and **evaluation is the top filter.** Candidates who can build a RAG pipeline but can't say how they'd measure it get rejected. Every technical answer you give should end with *"and here's how I'd know it's working."*
@@ -43,8 +47,8 @@ interview_prep/
 | Priority | Project | Why |
 |---|---|---|
 | **#1** | [`P07_bilbo_medical_rag`](projects/P07_bilbo_medical_rag.md) | **Your current role and the first thing on your resume.** RAG + hybrid retrieval + reranking + LangGraph agents + guardrails = exactly what 2026 AI interviews test. Non-negotiable. |
-| **#2** | [`P15_ai_cargo_agentic_risk_platform`](projects/P15_ai_cargo_agentic_risk_platform.md) | The only project on your resume; prize-winning; agentic + explainable ML + HITL |
-| #3 | [`P16_doc2data_healthcare_extraction`](projects/P16_doc2data_healthcare_extraction.md) | Best *systems / cost-aware inference* story |
+| **#2** | [`P16_doc2data_healthcare_extraction`](projects/P16_doc2data_healthcare_extraction.md) | **Now on your resume under Bilbo** (two bullets: LangGraph lanes + OpenCV alignment + VLM fallback; 3–5 min → ~40 s, 99%+ forms, 92%+ avg confidence). Best *systems / cost-aware inference* story |
+| **#3** | [`P15_ai_cargo_agentic_risk_platform`](projects/P15_ai_cargo_agentic_risk_platform.md) | The only project in your resume's Projects section; team prize, then your own v2 + deploy; agentic + explainable ML + HITL. Read §0a (team and ownership) first |
 | #4 | [`P17_pathwise_career_simulator`](projects/P17_pathwise_career_simulator.md) | Best *evaluation* story — and evals are the 2026 differentiator |
 | #5 | [`P02`](projects/P02_jet2_call_transcript_classification.md)/[`P04`](projects/P04_jet2_risk_forecasting.md) Jet2, [`P01`](projects/P01_fibe_behaviour_scorecard.md) Fibe | Your depth in *employed* work — distillation, forecasting, credit risk |
 
@@ -72,14 +76,14 @@ Read in order; ★ = must, ○ = if time. `48` is always first — it tells you 
 9. ★ `04_transformers_and_attention` → `07_fine_tuning_and_peft` → `08_knowledge_distillation` (your Jet2 70B→7B story)
 10. ○ `13_quantization`, `31_ai_safety_guardrails`, `23_cloud_mlops_deployment`, `11_a2a_and_mcp_protocols`, `30_prompt_engineering_patterns`
 11. ○ **`25_python_for_interviews` §0, §7.0–§7.3, §10–§12** if the loop has a live coding round (pattern recognition, not language trivia)
-12. **Projects to rehearse, in order:** **P07 (Bilbo — your job)**, P15 (AI Cargo), P16 (Doc2Data), P17 (PathWise), P02 (distillation)
+12. **Projects to rehearse, in order:** **P07 + P16 (Bilbo — your job, both systems)**, P15 (AI Cargo: team, then your v2), P17 (PathWise), P02 (distillation)
 
 ### Forward Deployed Engineer
 1. ★ `48` §6 (decomposition script) — practice the case study format 3× out loud
 2. ★ Everything in the AI Engineer path (FDE = AI engineer + customer judgment)
 3. ★ `22_data_engineering_and_sql` (Palantir-style loops lean on data)
 4. ○ `28_terraform_iac`, `23_cloud_mlops` (on-prem/VPC constraints come up)
-5. **Projects:** pick ONE flagship (P16 Doc2Data, P15 AI Cargo, or P17 PathWise) for the deep-dive round; P05b for the "messy client data" story
+5. **Projects:** pick ONE flagship (P16 Doc2Data at Bilbo, P15 AI Cargo, or P17 PathWise) for the deep-dive round; P05b for the "messy client data" story
 
 ### Data Scientist (product / experimentation)
 1. ★ `48` §7, §9
@@ -118,11 +122,12 @@ You cannot read 52 docs before your next interview, and you shouldn't try. **Fir
 
 | # | Task | Time | Why it's first |
 |---|---|---|---|
-| 1 | `00_RESUME_MASTER_MAP` §1 (changed numbers) + §5 (your 60s intro) | 45 min | Contradicting your own resume is the fastest way to fail |
+| 1 | `00_RESUME_MASTER_MAP` §0 + §1 (what changed) + §5 (your 60s intro) | 45 min | Contradicting your own resume is the fastest way to fail |
 | 2 | `P07` Bilbo: §0 bullet map, §8 LangGraph, §10 trick questions | 2 h | Your current role — guaranteed to be drilled |
+| 2b | `P16` Doc2Data (Bilbo): §0 bullet map + Q1, Q3, Q10 | 45 min | Two of your four Bilbo bullets; "is 92% your accuracy?" will come |
 | 3 | `52_frontier_ai` §1, §17 Q1 (canonical RAG answer), §16 decoder | 1.5 h | Tells you what's asked and gives you the most-asked answer |
 | 4 | `49_llmops` — evaluation sections only | 1.5 h | The #1 filter in 2026 loops |
-| 5 | `P15` AI Cargo: bullet map + 3 deep-dives | 1.5 h | The only project on your resume |
+| 5 | `P15` AI Cargo: §0a (team + your part), bullet map, Q11–Q15 (v2), 3 deep-dives | 1.5 h | The only project on your resume, and "did you build it alone?" is certain |
 | 6 | Skim `48` section *titles* only | 20 min | A map of what gets asked; don't read the answers yet |
 | 7 | One number per remaining resume stint (Jet2 94%/96%/MAPE, Fibe 0.94, ATCS 92%/18min, Amazon 95%) | 30 min | So no bullet is a blank |
 

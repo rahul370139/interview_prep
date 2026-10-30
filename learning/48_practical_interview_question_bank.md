@@ -36,8 +36,8 @@ Have a **counted inventory** ready — don't improvise. Yours:
 
 | Project | GenAI core | Infra |
 |---|---|---|
-| Doc2Data (`P05`/portfolio) | LangGraph state machine, Florence-2 OCR, targeted VLM rescue | FastAPI, Next.js, Docker |
-| AI Cargo (portfolio) | LangGraph orchestrator, Groq LLM plan/reflect/revise, 8 agent tools | Supabase, FastAPI, React, Vercel |
+| Doc2Data (`P16`, Bilbo work) | LangGraph state machine, OpenCV alignment, Florence-2 OCR, targeted VLM rescue | FastAPI, Next.js, Docker |
+| AI Cargo (`P15`, team of three, then my v2) | LangGraph orchestrator, Groq LLM plan/reflect/revise, 8 agent tools; v2 policy-driven commander | Supabase, FastAPI, React, Vercel; v2 Docker on a VPS + CI |
 | SkillSpring/TrainPI (`P08`) | Groq + Cohere embeddings, RAG distillation, career agent | Supabase pgvector, FastAPI, Vercel |
 | Medical RAG (`P07`) | FAISS + BM25 hybrid, cross-encoder rerank, refusal guardrails | Streamlit |
 | Legal summarisation (`P11`) | o3-mini structured legal prompts, NER | ThreadPoolExecutor batch pipeline |
@@ -245,7 +245,7 @@ Every question has a **"Say this"** answer you can deliver almost verbatim, a **
 
 > **Say this:** "The key discipline is measuring retrieval **separately** from generation, because they fail differently and get fixed differently. For retrieval: build a labeled set of queries with known-relevant chunks, then compute Recall@k — did the right chunk make the top k — MRR for how high the first relevant result ranks, and nDCG for overall ranking quality. For generation: faithfulness — is the answer supported by the retrieved context — and answer relevance. The chicken-and-egg problem is building labels with no labels: I bootstrap by manually labeling 50 to 100 real queries, augment with synthetic question-answer pairs generated from the corpus, and human-spot-check the synthetic ones. Then the eval set grows continuously from production traffic."
 
-**Memory hook:** *Two surfaces: retrieval (Recall@k, MRR, nDCG) vs generation (faithfulness, relevance). Bootstrap: 50–100 manual + synthetic.*
+**Memory hook:** *Two surfaces: retrieval (Recall@k, MRR, nDCG) vs generation (faithfulness, relevance). Bootstrap: 50 to 100 manual + synthetic.*
 
 ### Q11. What happens when your knowledge base updates?
 
@@ -277,7 +277,7 @@ Every question has a **"Say this"** answer you can deliver almost verbatim, a **
 
 > **Say this:** "Six failure modes I design against. **Unbounded loops** — the agent never decides it's done, so I cap max iterations and budget. **Tool-call failures** — APIs fail; the agent needs retry, graceful degradation, and an escalation path to a human. **Error amplification** — a wrong observation at step 2 poisons every step after; per-step tracing and checkpointing let you find where it went wrong. **Cost blowup** — an agent task costs 5 to 30× a single LLM call, so I track cost per task, not per call. **Prompt injection through tool outputs** — a scraped webpage or retrieved doc can contain instructions the agent obeys; treat tool output as untrusted data. And **non-reproducibility** — same input, different run; mitigated with temperature 0 where possible, checkpoint replay, and logged seeds. In AI Cargo the loop is plan → act → observe → re-plan, with human approval gates on consequential actions and every step traced."
 
-**Memory hook:** *Loops, tool failures, error amplification, cost, injection, reproducibility — cap, retry, trace, budget, sanitize, checkpoint.*
+**Memory hook:** *Loops, tool failures, error amplification, cost, injection, reproducibility. Fixes: cap, retry, trace, budget, sanitize, checkpoint.*
 
 ### Q16. Explain the ReAct pattern.
 
@@ -295,7 +295,7 @@ Every question has a **"Say this"** answer you can deliver almost verbatim, a **
 
 > **Say this:** "Three main patterns. **Supervisor**: one orchestrator agent routes subtasks to specialist agents and integrates results — best when subtasks need different tools or prompts. **Parallel specialists**: independent agents work on separable pieces simultaneously — best for breadth, like researching multiple aspects of a question at once. **Sequential pipeline**: agent A's output feeds agent B — really a workflow with agent-shaped stages. The honest caveat interviewers want to hear: multi-agent is frequently *worse* than one well-prompted agent — coordination overhead, error propagation between agents, and token costs around 15× a single call. Anthropic's own research showed big quality gains on genuinely parallel research tasks, but at that cost multiple. My default: start single-agent, split only when one agent demonstrably can't hold all the context or tools."
 
-**Memory hook:** *Supervisor, parallel, pipeline — and 'one good agent usually beats a committee.'*
+**Memory hook:** *Supervisor, parallel, pipeline, and 'one good agent usually beats a committee.'*
 
 ## 3.4 Evaluation & observability
 
@@ -359,7 +359,7 @@ The four themes that dominate AI-engineering loops. Each has a full speakable an
 > **6. Operational hygiene:** cap agent iterations, cap output tokens, batch non-interactive work through the provider's batch API at half price.
 > The guardrail on all of it: the eval suite runs before and after every lever, so quality loss is measured, not guessed. If self-hosting, quantization — INT8 or 4-bit — buys another multiple."
 
-**Memory hook:** *Route, cache-prefix, trim-context, cache-semantic, distill-small, cap-and-batch — evals guard every step.*
+**Memory hook:** *Route, cache-prefix, trim-context, cache-semantic, distill-small, cap-and-batch. Evals guard every step.*
 
 ## 4.2 Reliability
 
@@ -409,7 +409,7 @@ The four themes that dominate AI-engineering loops. Each has a full speakable an
 
 > **Say this:** "Quality gates between transform and load — dirty data should fail loudly before it reaches consumers, not silently corrupt dashboards. Five check families: **schema** — columns, types, nullability match the contract; **completeness** — null rates per column under threshold; **uniqueness** — no duplicate primary keys; **volume** — row count within an expected band, because a 60% drop means an upstream break even if every row is individually valid; **freshness** — latest timestamp within SLA. I built exactly this as a reusable PySpark `DataQualityValidator` at ATCS — configurable rules, a structured quality report per run, and pipeline halt plus alert on failure. The same mindset applies to experiment data: my experimentation platform project runs SRM and logging-coverage diagnostics before any metric is read, because a measurement bug produces confident wrong conclusions — the worst kind."
 
-**Memory hook:** *Five gates: schema, completeness, uniqueness, volume, freshness — fail loud, before load.*
+**Memory hook:** *Five gates: schema, completeness, uniqueness, volume, freshness. Fail loud, before load.*
 
 ---
 
@@ -509,6 +509,8 @@ Given: *"A hospital chain / logistics firm / bank wants to 'use AI to improve op
 
 > **Say this:** "Because the last mile is where AI projects actually succeed or die, and I've seen both sides. At ATCS I did consulting-style delivery — client data, client constraints, client skepticism — and the projects that worked were the ones where I sat close to the actual users. Doc2Data taught me the same thing from the product side: the technical extraction pipeline was maybe half the work; the other half was understanding what a claims processor actually does with the output. I want the role where the feedback loop with reality is shortest — you find out in days, not quarters, whether what you built solves the problem."
 
+**Memory hook:** *Last mile decides → ATCS: sit close to users → Doc2Data: half is the user's workflow → shortest feedback loop with reality.*
+
 **Why this works:** it's specific, it shows you understand the role isn't pure engineering, and it names real experience.
 
 ### Q31. "A customer's team distrusts the model's outputs. What do you do?"
@@ -538,6 +540,8 @@ Given: *"A hospital chain / logistics firm / bank wants to 'use AI to improve op
 ### Q35. "Tell me about translating a vague business ask into a shipped system."
 
 > **Say this (pick one, told in this shape):** "At Fibe, the ask was essentially 'our risk scoring isn't working well' — no spec, a thousand-plus bureau variables, and a manual process nobody fully trusted. I turned that into: a defined target (delinquency within a window), a measurable baseline (the incumbent scorecard's approval-to-default tradeoff), a constraint list from compliance (interpretability, regulator-explainable features), and then a shipped system — automated pipeline, interpretable model, monitoring with PSI drift alerts. The lesson I carry: the translation step *is* the job — writing down the target, the baseline, and the constraints is what converts a complaint into an engineering problem."
+
+**Memory hook:** *Vague ask → target + baseline + constraints → shipped system (pipeline, interpretable model, PSI drift). The translation step IS the job.*
 
 **Alternates:** Doc2Data ("make document processing less painful" → lane-based extraction platform with quality gates) or the GPU benchmark ("which GPU should we use?" → reproducible benchmark harness + recommendation engine, validated at 80% winner-match).
 
@@ -601,7 +605,7 @@ For GenAI-flavored DS roles add: `38_genai_for_data_scientists.md`.
 
 > **Say this:** "This was literally my Fibe scorecard problem — 1,000+ bureau variables. Staged filtering, cheap to expensive. **Stage 1, filters:** drop near-zero-variance features, drop features with excessive missingness, and among highly-correlated pairs keep one — correlation clusters mean redundancy. Univariate signal screens like IV/mutual information cut the field fast. **Stage 2, embedded:** train a regularized or tree model on the survivors and use importance — L1 zeros out weak features; gradient-boosting importance plus SHAP catches non-linear signal. **Stage 3, wrapper on the shortlist:** recursive feature elimination with cross-validation on the final few dozen, since it's too expensive earlier. Two disciplines throughout: selection happens *inside* CV folds — selecting on the full dataset leaks — and for credit specifically, every surviving feature had to be explainable to a regulator, so interpretability was a hard filter, not a nice-to-have."
 
-**Memory hook:** *Filter (variance/missing/correlation) → embedded (L1, tree+SHAP) → wrapper (RFE last) — inside folds, always.*
+**Memory hook:** *Filter (variance/missing/correlation) → embedded (L1, tree+SHAP) → wrapper (RFE last), inside folds, always.*
 
 ---
 

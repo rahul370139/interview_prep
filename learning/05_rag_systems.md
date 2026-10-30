@@ -1428,6 +1428,8 @@ Query: "What is the treatment for tension pneumothorax?"
 
 ## **Q1: "How would you build a RAG system for 1,000 internal documents?"**
 
+**Memory hook:** *Five phases, docs to answers* · Ingest, parse, clean → 512-token chunks, flat FAISS → BM25 plus dense, RRF → re-rank top-20, keep top-5 → evaluate and iterate · **Land on:** "In TrainPI I built exactly this pipeline, and it handled real user PDFs in production."
+
 **Framework answer:**
 
 > "I'd approach this in five phases:
@@ -1448,6 +1450,8 @@ Query: "What is the treatment for tension pneumothorax?"
 
 ## **Q2: "How do you handle hallucination in RAG?"**
 
+**Memory hook:** *Three leaks, three plugs* · Wrong docs, fix retrieval → context ignored, fix prompt → over-generation, verify after → constrained decoding, too strict · **Land on:** "In my Medical RAG, 4-layer out-of-domain detection hit 100% accuracy on non-medical queries."
+
 > "Hallucination in RAG comes from three sources, each with a mitigation:
 > 
 > **1. Retrieval failure** (wrong docs retrieved) → Improve retrieval: hybrid search, re-ranking, better chunking. In my Medical RAG, I used FAISS + BM25 hybrid with cross-encoder re-ranking to maximize retrieval precision.
@@ -1462,6 +1466,8 @@ Query: "What is the treatment for tension pneumothorax?"
 
 ## **Q3: "Explain dense vs sparse retrieval trade-offs."**
 
+**Memory hook:** *Meaning versus exact words* · Dense catches meaning, misses IDs → sparse catches exact terms, misses synonyms → fuse both with RRF → adaptive alpha, 0.35 short, 0.55 long · **Land on:** "Hybrid gives the best of both: semantic understanding plus exact term matching."
+
 > "**Dense retrieval** (embedding-based) captures semantic similarity. 'Heart attack' matches 'myocardial infarction.' But it struggles with exact terms — drug names, IDs, formulas — because these get lost in the embedding space.
 > 
 > **Sparse retrieval** (BM25) does exact keyword matching. It perfectly finds 'metformin 500mg' but can't match 'diabetes medication' to the same document.
@@ -1471,6 +1477,8 @@ Query: "What is the treatment for tension pneumothorax?"
 ---
 
 ## **Q4: "What is hybrid search and why do you need it?"**
+
+**Memory hook:** *Two nets, one catch* · Dense plus sparse → each misses different things → fuse with RRF → ranks, so no normalizing · **Land on:** "In my Medical RAG, hybrid with RRF beat either retriever alone on our evaluation set."
 
 > "Hybrid search combines dense (semantic) and sparse (lexical) retrieval. You need it because neither alone is sufficient:
 > 
@@ -1484,6 +1492,8 @@ Query: "What is the treatment for tension pneumothorax?"
 ---
 
 ## **Q5: "How do you evaluate a RAG system?"**
+
+**Memory hook:** *Did it find, did it say* · Retrieval: Recall@k, MRR, nDCG → generation: faithfulness, relevancy, ROUGE-L → end-to-end: thumbs, refusals, latency · **Land on:** "Faithfulness matters most. A RAG system that hallucinates is worse than no system at all."
 
 > "I evaluate on two axes: **retrieval quality** and **generation quality**.
 > 
@@ -1499,6 +1509,8 @@ Query: "What is the treatment for tension pneumothorax?"
 
 ## **Q6: "Walk me through how you'd optimize a RAG system that has poor answer quality."**
 
+**Memory hook:** *Find the broken half first* · Read chunks: retrieval or generation? → retrieval: hybrid, chunk size, re-ranker → generation: prompt, stronger model, MMR → test set, recall@5, faithfulness · **Land on:** "A cross-encoder re-ranker is usually the single biggest quality improvement. Then measure and iterate."
+
 > "I'd debug systematically:
 > 
 > **Step 1: Is it a retrieval problem or a generation problem?** Look at the retrieved chunks for failing queries. If the right information isn't in the chunks, it's retrieval. If it is but the answer is wrong, it's generation.
@@ -1513,6 +1525,8 @@ Query: "What is the treatment for tension pneumothorax?"
 
 ## **Q7: "What is the 'lost in the middle' problem in RAG?"**
 
+**Memory hook:** *Strong ends, weak middle* · Attention high at start, end → best chunks first, fewer chunks → or reverse order, best last → map-reduce avoids position bias · **Land on:** "In TrainPI, I used map-reduce summarization for exactly this reason on long PDFs."
+
 > "Research shows that LLMs attend most to information at the **beginning** and **end** of the context window, with reduced attention to the middle. This means if your most relevant chunk is placed in position 3 of 6, the model might underweight it.
 > 
 > **Mitigations:**
@@ -1526,6 +1540,8 @@ Query: "What is the treatment for tension pneumothorax?"
 ---
 
 ## **Q8: "How would you scale a RAG system from 1K to 10M documents?"**
+
+**Memory hook:** *Every layer must grow* · Flat to HNSW, ~30GB RAM → managed vector DB → incremental batch ingestion → metadata pre-filter, caching → monitor quality on rolling sample · **Land on:** "A 40% cache hit rate can halve your infrastructure costs."
 
 > "Several things change:
 > 
@@ -1544,6 +1560,8 @@ Query: "What is the treatment for tension pneumothorax?"
 ---
 
 ## **Q9: "Compare FAISS, Pinecone, and pgvector. When would you use each?"**
+
+**Memory hook:** *Library, service, extension* · FAISS: library, full control → Medical RAG: privacy, ~10K windows → Pinecone: managed, zero infrastructure → pgvector: Postgres, under 5M vectors · **Land on:** "FAISS for full control, Pinecone to ship fast, pgvector when data is already in Postgres."
 
 > "**FAISS:** Library, not a service. Best for local/self-hosted deployments where you need full control. Supports IVF, HNSW, PQ, GPU. I used it in my Medical RAG because we needed local inference (medical data privacy) and the scale was manageable (~10K windows).
 > 

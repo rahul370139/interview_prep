@@ -1,16 +1,213 @@
 # Lam Research · Hiring manager call with Jatin Sasan (45 min)
 
-Michelle's screen and the questionnaire are done. Next is a 45-minute conversation with Jatin Sasan, Director of Generative AI, in 6 days. He is a GenAI leader with a semiconductor equipment-software background, and he is building a new team. Expect more technical depth than a typical manager call: how you'd design, evaluate, and ship LLM systems, plus behavioral questions scored against Lam's values. The plan and study map come first, then the full question bank.
+Michelle's screen and the questionnaire are done. Next is a 45-minute conversation with Jatin Sasan, Director of Generative AI, today at 2pm. He is a GenAI leader with a semiconductor equipment-software background, and he is building a new team. Expect more technical depth than a typical manager call: how you'd design, evaluate, and ship LLM systems, plus behavioral questions scored against Lam's values. Today, read only the call-day section below. Everything after it is backup.
 
 **Problem first, then the tech** · **Say when you would not use an LLM** · **One number per story** · Slow down, signpost, pause
 
-| 45 min | 6 days | Director, GenAI | ~2.5 h/day | Very strong |
+| 45 min | Today, 2pm | Director, GenAI | 10 hooks | Very strong |
 |---|---|---|---|---|
-| With Jatin Sasan | To prepare | Who you're meeting | Study + speaking | Your match |
+| With Jatin Sasan | Read only the hooks | Who you're meeting | To say out loud this morning | Your match |
 
 > **What Jatin is really deciding**
 >
 > (1) Is the depth real? Can you go two levels down on RAG, evaluation, serving, and agents without hand-waving? (2) Do you think like an engineer, not a demo builder: tradeoffs, failure modes, and how you measure? (3) Can you be one of the first people on a new team: own something end to end and explain it to process engineers? (4) Do you want Lam specifically? Your English does not need to be perfect. Clarity and structure are what get scored.
+
+---
+
+## Call day: read only this section
+
+You don't need more content. You know these projects because you built them. What you need is a way to start an answer, keep it in order, and stop. That is what a memory hook is: a short cue you remember, the beats in order, and the one line you end on. Say the beats in your own words. Never memorize sentences. Memorize the order and the last line.
+
+### Every answer, same shape (this is what stops the rambling)
+
+1. **Headline.** One sentence that answers the question. "Short answer: I'd ground it, let it say no, and measure it."
+2. **Two or three beats, and count them out loud.** "First... Second... Third..." Counting tells your brain where the end is.
+3. **Land on the number or the lesson.** That is the "Land on" line in every hook.
+4. **Stop.** "That's the short version. Happy to go deeper on any part." Then stop talking. A pause after an answer is normal. He will ask the next thing.
+
+60 to 90 seconds for most answers, up to 2 minutes for a project. Once you have said the number, you are done.
+
+### Rescue lines (say them, they sound calm)
+
+- **Mind goes blank:** "Let me take a second to structure that." Then say the cue to yourself and give the headline.
+- **Lost in the middle:** "So the main point is..." and say the Land-on line.
+- **You notice you're rambling:** "Let me pause there. In short..." and say the Land-on line.
+- **Haven't done it:** "I haven't done that directly. Here's how I'd approach it," then the closest real project.
+- **Not sure what he means:** "Just to check, do you mean X or Y?"
+
+### Today's plan (it's past 1am, the call is at 2pm)
+
+- [ ] **Right now, 30 minutes at most** · Read only the 10 "Say this morning" hooks below. Say the intro hook out loud twice. Then sleep. Sleep is worth more than another hour of reading. A tired brain is the one that rambles.
+- [ ] **About 9:30** · Wake up, eat, shower. No new material today. Don't open the learning folder.
+- [ ] **10:00 to 10:45** · The 10 morning hooks, out loud, one pass. For each: read the cue, look away, speak, say the Land-on line, stop. Phone timer: 90 seconds, 2 minutes for projects. Open a full script only if a beat is missing.
+- [ ] **10:45 to 11:10** · A 20-minute voice mock with the prompt below. Five questions. The one goal is to practice stopping: the Land-on line, then "That's the short version", then silence.
+- [ ] **11:10 to 11:40** · Write the 10 cues by hand on one sheet of paper, plus your numbers and your 2 questions for him. Writing it once is memory practice by itself. Keywords only, no sentences. This is the only paper on your desk at 2pm.
+- [ ] **11:40 to 1:00** · Lunch, a short walk, rest. Stop studying at 12:30.
+- [ ] **1:15** · Warm-up: the intro once, the conflict hook once, your 2 questions. Then 2 minutes of slow breathing: in for 4, out for 6.
+- [ ] **1:45** · Close every other app and tab. Water, headphones, resume, your one sheet. Join at 1:57.
+
+### Say this morning: your 5 stories
+
+**Tell me about yourself (60 s)** · Cue: *Now, before, why here*
+1. Now: about 5 years, Maryland master's in May, AI engineer at Bilbo
+2. Bilbo: answers from medical documents with citations, private model, 28% better top five than vector-only, under 5 seconds
+3. Before: Jet2 for two years (forecasting, language models on call-center data), fintech credit and fraud before that
+4. On the side: AI agents, first prize for the shipping-risk platform
+5. Why here: LLM apps, retrieval, and agents you can trust, in a domain where it really matters
+
+Land on: "That's exactly the kind of GenAI work I want to do here."
+
+**Walk me through AI Cargo (2 min)** · Cue: *Score, rules, agent, human, audit*
+1. What: risk platform for pharma cold-chain shipments, first prize in the Smith Agentic AI Challenge
+2. Every telemetry window gets a risk score; medium or higher opens a case
+3. Rules plus an ML score, under a LangGraph agent that calls tools; the rules have a hard veto
+4. Anything uncertain goes to a person to sign off, with a full audit trail; team of three, about 6 weeks, my part was the risk engine and the agent; v2 after that on my own
+
+Land on: "It won because you could hand it to a regulator, not because of the demo."
+Use for: agents, safety, ownership. If asked about data: about 7,400 synthetic windows.
+
+**Walk me through Bilbo (2 min)** · Cue: *Two hard things, two searches, one honest model*
+1. Hard: every answer had to be cited, and the data couldn't leave the environment
+2. Two searches: vector for meaning, keyword for exact terms, combined, then rerank the top 20
+3. Local 4-bit model, LangGraph guardrails, it refuses instead of guessing
+4. Proof: 28% better top-five relevance on a labeled set, under 5 seconds
+
+Land on: "I measured it on a labeled set, so the 28% is a real number, not a feeling."
+Use for: RAG project, privacy, a time you pivoted (F2).
+
+**A failure / a time you were wrong** · Cue: *Supposed to, actually did, saw it, fixed it in code*
+1. Supposed to: after the tools ran, retry the one that failed or came back bad, like a poor cold-storage match
+2. Actually did: suggested the optional tools every time, rerouting, triage, scheduling, and skipped the real problem
+3. Saw it: I logged each node's input and output and the pattern was obvious
+4. Fix in code: only a required, failed, or flagged tool can be suggested; tools run once, then a person decides
+
+Land on: "If code can check the rule, don't leave it to the model. A busy agent is not a correct agent."
+Use for: mistake, debugging, honesty, agent evaluation (G5).
+
+**Conflict / disagreement** · Cue: *Trust first, then the model*
+1. Ops needed alerts they would believe, and they were not data scientists
+2. A teammate wanted topic modelling and Isolation Forest first, and I said why that was a fair idea
+3. I started with rules on several features together: volume against the time-of-day average, a z-score, keyword counts; it fired when more than one moved
+4. Ops used it. Then topic weights, then Isolation Forest, which is where my teammate was right
+5. About 96% specificity, and ops kept the alerts on
+
+Land on: "With a non-technical user, you earn the right to add complexity. And we were both partly right."
+Use for: disagreement, stakeholder trust, when not to use a complex model (G2).
+
+### Say this morning: the 5 technical answers most likely to come up
+
+**A1 · LLM serving with low latency** · Cue: *Follow one request from the user to the GPU and back*
+1. Two numbers: time to first token and time per token, at p95
+2. The path: gateway, cache, retrieval, model router, vLLM, stream back
+3. Inside vLLM: continuous batching, PagedAttention for KV memory, prefix cache, quantization
+4. Outside: shorter prompts, scale on queue depth, warm replicas, fall back to a small model
+5. Trace every stage. Bilbo: under 5 s, and generation was most of it
+
+Land on: "Measure the two numbers, cut work before the GPU, and keep the GPU busy without making users wait."
+Honest line if pushed: Bilbo ran on Ollama on one machine, not vLLM at fleet scale.
+
+**A2 · Hallucination and 3 techniques** · Cue: *Ground it, let it say no, measure it*
+1. What it is: a confident answer the sources don't support. In specs, a wrong limit is worse than no answer
+2. Ground: hybrid RAG, a few good chunks with version and date. It helps, it doesn't fix it
+3. Let it say no: answer only from context, cite each claim, "not enough information"; code checks citations and numbers
+4. Measure: golden set with questions that should be refused, faithfulness, bad-answer rate as the launch gate
+
+Land on: "RAG lowers it, the prompt and the checks catch it, and the eval set proves it before launch."
+
+**A3 · Embedding tradeoffs for a technical corpus** · Cue: *Exact words or meaning, then cost*
+1. Technical text breaks general models: jargon, part numbers, tables
+2. Keyword search (BM25): exact codes and IDs, misses paraphrase
+3. General dense (MiniLM, BGE): meaning out of the box, but "recipe" sits near cooking
+4. Fine-tuned dense: best on jargon, costs data and a full re-embed. ColBERT: precise, much bigger index
+5. API or self-hosted: for Lam's IP, private
+
+Land on: "Start hybrid, test on real engineer questions, fine-tune only if the numbers say so. At Bilbo, hybrid gave about 28%."
+
+**G1 · Where can GenAI create the most value at Lam?** · Cue: *His three words: knowledge, recipes, equipment*
+1. Knowledge: a cited assistant over decades of specs and service notes; measure time to answer
+2. Recipes: find similar past experiments, an optimizer suggests, the engineer decides; Lam's Nature paper halved the cost
+3. Equipment: classical ML finds the anomaly, the LLM explains it and finds similar past cases
+
+Land on: "The LLM is the layer on top of good data and classical models, and a person makes the call."
+
+**G2 · When would you NOT use an LLM?** · Cue: *Rule works, must be exact, real-time, can't test it*
+1. Four cases: a rule or statistic already works; it must be exactly right; it's a real-time control loop; we can't evaluate it yet
+2. Jet2: rules first, so ops trusted the alerts
+3. AI Cargo: the compliance rules had a veto over the LLM
+
+Land on: "Use the LLM for the part that needs language and reasoning, and plain code for the rest."
+
+### If asked: hooks for every other answer (glance, don't practice)
+
+**Your other stories**
+
+| Story | Cue | Beats in order | Land on |
+|---|---|---|---|
+| Why Lam, why semiconductors? | Fit, weight, already real, governed | 1. Fit: the work matches what I've built, RAG, agents, and the checks that make them reliable 2. Weight: almost the whole chip industry depends on Lam's tools 3. Already real: the field-service assistant used by about two thirds of field engineers 4. Governed: Lam treats agentic AI with human oversight and logging, and that's how I build | So it feels like the same values at a much bigger scale. |
+| Ownership: 18% to 7% | Bake-off, honest split, kept it there | 1. I owned the Jet2 demand forecast end to end 2. Bake-off: XGBoost, LSTM, GRU; walk-forward validation, because a random split leaks the future 3. Error (MAPE) went from about 18% to about 7%, against the forecast Jet2 already had 4. Scheduled retraining and checks: within about 2 points of 7% for 18+ months | Getting to 7% took about a week. Keeping it there was the real job. |
+| Ambiguity: the $4,000 win | No spec, team of three, governance won | 1. No spec: we picked the problem ourselves, cold-chain pharma risk 2. Team of three, about 6 weeks, with a deadline; I owned the risk engine, the agent graph and the LLM layer 3. What won: rules that veto the model, a human gate, a full audit trail | What won wasn't the polish. It was that you could trust it. (Six layers if asked: ingestion, risk scoring, context, agent, 8 tools, API and dashboard.) |
+| Hard technical decision: 70B to 7B | Best model too big, so teach a small one | 1. Intent classification on 1M+ call transcripts at Jet2 2. The 70B model was the most accurate, but we couldn't serve it at contact-center volume 3. I distilled it: trained a 7B model on the big model's outputs 4. 94% recall on the transcripts our experts labeled; that's the 7B model's own recall | The best model and the shippable model were different, so I made the shippable one learn from the best one. |
+| Teamwork / explaining to non-experts | Their question, not my method | 1. Jet2 ops and planning: what changed, against normal for that hour, and what to do next 2. Forecast: the number only mattered if planning could use it 3. Fintech: credit and fraud reports built around the decision, not the algorithm 4. GenAI: show where the answer came from, so the person can decide whether to trust it | I start with their question, not my method, and only go into the technique if they ask. |
+| Learning something fast | Smallest version, watch real runs | 1. Six weeks to get fluent in the agent stack: LangGraph, tool calling, fallback between providers 2. Build the smallest working version first 3. Watch real runs; that's how I caught the revise-loop bug | By the end I knew where these agents break, not just how to make them run. |
+
+**Other technical and behavioral answers**
+
+| Question | Cue | Beats in order | Land on |
+|---|---|---|---|
+| B1 · RAG pipeline for manufacturing specs | Ask first, then five boxes: in, find, answer, check, run | 1. Clarify: who uses it, which documents, who can see what, how fast 2. In: parse with tables kept, chunk by section, metadata like version and access 3. Find: permissions filter first, hybrid search, rerank; number questions go to SQL 4. Answer: cite, refuse when weak, check numbers in code 5. Check and run: golden set, injection tests, tracing, cache | Pilot on one product line, measure time to answer, then grow. It's Bilbo with permissions and versions. |
+| B2 · LLM evaluation for technical docs | Found it? Right? Said no when it should? Fast and cheap? | 1. Retrieval: did the right passage come back (recall at k) 2. Generation: faithful, correct, numbers and units exact 3. Behavior: unanswerable questions in the set on purpose 4. System: latency and cost per answer 5. What people skip: confidence intervals on small sets, and scoring by slice | It runs on every prompt, model, or index change, so nothing ships worse than what's live. |
+| B3 · Multi-agent CAD automation | Honest first, then plan, do, check, a person | 1. I haven't automated CAD; the pattern is the same as my agents 2. Planner, a rules agent with RAG, a geometry agent on the CAD API, a validator in code 3. Validator errors go back with a retry limit; every step is a revision you can roll back 4. Budgets on steps and tokens; a person approves before commit 5. AI Cargo lesson: code decides what is allowed to run | Agents where judgment is needed, code for every check, and a person before anything is committed. |
+| G3 · Assistant for process recipe development | Watch, link, find, suggest, guard, count | 1. Sit with process engineers and see where the time goes 2. Link recipes, results, and notes by experiment ID 3. Find similar past experiments and summarize them with citations 4. An optimizer suggests, the LLM explains, the engineer approves 5. Safe operating limits enforced in code; measure iterations to reach the target | Engineers first, the algorithm last, like Lam's Nature paper. And I'd learn the domain from the process engineers first. |
+| G4 · Sensitive data and IP | The first constraint, not an add-on | 1. Bilbo ran fully local, model included 2. Three kinds at Lam: Lam's IP, customer data, export-controlled data 3. Private models; permissions filter before retrieval; each customer isolated; no training without agreement 4. Logs are access-controlled, redacted, and audited | If the model can see it, a clever prompt can get it out. So restricted data never reaches the context. |
+| G5 · Evaluate and debug an agent | Trace it, grade the result and the path, name the failure | 1. One trace ID: input, tool, arguments, output, tokens, time 2. Grade the outcome and the path: right tools, right order, steps, cost 3. Name the failure types; code catches the clear ones, a calibrated judge reads the rest 4. That's how I found the revise-loop bug in the node logs | The dashboard looked thorough. Only the trace showed it was the wrong work. |
+| G6 · Build or buy, hosted or open-source | Per use case, our own evals decide | 1. Four questions: how sensitive, how much volume, how much control, who runs it 2. Start with a strong managed model on a private endpoint, behind a gateway 3. High volume, strict privacy, or a narrow task: move to a smaller self-hosted model if it matches on the evals 4. Jet2: 70B to 7B | The big model sets the quality bar, and the small one is what we can afford to run. |
+| G7 · Fine-tuning vs RAG vs prompting | Prompt first, facts in RAG, behavior in fine-tuning | 1. Prompting: cheap and fast to try 2. RAG: knowledge that changes, with citations; update by re-indexing 3. Fine-tuning: format, style, a narrow task, or a small model doing a big model's job 4. Often both; and only with a stable task and an eval set | Knowledge goes in retrieval. Fine-tuning changes how the model behaves. |
+| G8 · Questions over equipment and yield data | Numbers need SQL, not embeddings | 1. Clean views with clear names and descriptions 2. Pick only the relevant tables and a few example queries 3. The model writes SQL; code checks: read-only, allowed tables, row limit, timeout 4. Show the result and the SQL; permissions come from the database user | The engineer can always see the SQL and check it. |
+| G9 · GraphRAG or vector RAG | Vector finds a passage, a graph connects facts | 1. Vector search struggles with questions that join many facts 2. A graph stores tools, parts, failures and the links; the cost is building it and keeping it fresh 3. Start hybrid, add a graph for the question types that fail in the logs | Add the graph when the logs ask for it. Lam may already have part of it. |
+| G10 · Prompt injection | Documents are data, not orders | 1. Retrieved text is labeled as content, under a clear system prompt 2. Limit what the model can do: least privilege, no side-effect tools in Q&A, a person approves actions 3. Flag instruction-like text at ingestion, check outputs against a schema, keep a red-team set | You can't make it immune, so make sure a successful injection can't do much. |
+| G11 · First 90 days | Learn, one win, own a feature | 1. Month 1: sit with the users, learn the platform and data, ship one small fix 2. Month 2: one measurable improvement with a before and after number 3. Month 3: own a feature end to end, and bring a proposal for what's next | By day 90, something real shipped with a number, and a plan based on what I saw. |
+| G12 · Keeping up without chasing hype | Try it on my evals, keep only what wins | 1. A few good sources, but mostly I learn by building small things 2. New model or framework: compare it to what I have on my own eval set 3. Cursor every day, and I review its output like a junior engineer's PR | A good eval set is what lets you switch fast when something is actually better. |
+| G13 · Why hire you for a new team | Both halves, production habits, zero to one | 1. I've built both halves end to end: retrieval systems and agents 2. Production first: evals, tracing, guardrails; the Jet2 model ran 18 months 3. Zero to one: AI Cargo, team of three, 6 weeks, no spec, then my own v2 and deploy | On a new team someone has to set up the foundations and ship the first use case. That's the work I like most. |
+| C1 · Real-time monitoring in a fab | Inputs, outputs, accuracy, service | 1. Inputs: sensor ranges, missing data, drift against a baseline 2. Outputs: how the predictions and confidence are spread 3. Accuracy: join the late labels, like metrology, back in 4. Service: latency and errors 5. Per tool and chamber; alerts with cooldowns; fall back to rules; new models run in shadow first | At Jet2 I tuned alerts to about 96% specificity, because false alarms kill trust faster than a missed event. |
+| C2 · Drift with sensor data | Know the cause, catch it, retrain carefully | 1. In a fab, drift often has a cause: maintenance, a part swap, a recipe change. Log those events 2. Catch it: tests per feature per tool, CUSUM on the errors, late labels 3. Retrain: recent window, walk-forward validation, a gate, a person signs off 4. The trap: never retrain on a fault period | My Jet2 model stayed within about 2 points of 7% for 18 months with the same discipline. |
+| C3 · Scale inference for design-cycle peaks | Predict, pre-warm, protect, degrade | 1. Design-cycle peaks are predictable: scale up before, autoscale on queue depth 2. Warm replicas, because loading a model takes minutes 3. Interactive gets priority, batch goes to a queue, per-team quotas 4. Under load: smaller model, cached answers, shorter outputs 5. The replica count comes from a load test at real prompt lengths | The load test sets the number, priority protects the users, and degrading beats timing out. |
+| D1 · Vector search | Normalize, multiply, partial sort | 1. Normalize, so a dot product is cosine 2. One matrix multiply for all scores 3. argpartition for the top k, then sort only those k 4. Too big for memory: blocks. Huge: HNSW or IVF-PQ with FAISS | Exact search up to about a million vectors, approximate search after that. |
+| D2 · Anomalies in real-time logs | Bucket, baseline, z-score, cooldown | 1. Count per key per minute, like tool and error code 2. Rolling mean and std per key, O(1) per update 3. Flag when the z-score is above about 3 4. Keep spikes out of the baseline, and alert with a cooldown | Same signal layer I built at Jet2, before Isolation Forest went on top. |
+| D3 · DP for resource allocation | Take it or skip it | 1. It's 0/1 knapsack: jobs need GPUs and have a value 2. dp[i][c] is the best value with the first i jobs and capacity c 3. Each job: skip it or take it, keep the max 4. O(n times capacity); a 1D array going backwards saves space | DP is right for one resource. Real schedulers with many resources use heuristics or an integer program. |
+| D4 · Refactor slow Python | Measure, fix the data structure, keep tests green | 1. Profile first with cProfile 2. Lists to sets or dicts, += to join, pop(0) to deque, cache repeated work, vectorize pandas 3. Keep the tests green and say the complexity before and after | Fix the real hotspot, not the one I guess. |
+| D5 · Agents updating a shared store | One process: a lock. Many: a version check | 1. asyncio: the race happens at the await, so a lock per key around read-modify-write 2. Many processes: each record has a version, write only if it didn't change, else retry 3. Idempotency keys, so a retried call doesn't apply twice | The code decides what is safe to repeat, not the model. |
+| E1 · Safe shutdown state machine | Hardware first, any fault goes safe, a person resets | 1. Hardware interlocks underneath; software sits on top 2. States with guarded transitions; a pressure drop from any active state goes to SafeShutdown 3. Fixed order, like RF off, gas off, valves safe; each step confirmed by a sensor with a timeout 4. Lost comms or watchdog also goes safe; only an operator can reset 5. Log every transition; test with fault injection in a simulator | The safety rule can't be overridden by the smarter part. Same idea as my AI Cargo veto. |
+| E2 · High-frequency sensor data | Control and data never share a road | 1. Control path separate from the data path 2. Timestamp at the source, bounded ring buffer 3. Batch summaries per window, raw data around events 4. Drop analytics data if needed, never safety signals 5. Watch lag, dropped samples, clock skew | Analytics can never slow down the tool. |
+| E3 · Python decorators | A function that wraps a function | 1. Takes a function, returns a wrapped one 2. For things every function needs: timing, retries, caching, auth, logging 3. Example: retry with backoff on LLM calls, with functools.wraps 4. Only retry what is safe to repeat | Retrying a tool that already changed something is how you get duplicate actions. |
+| F1 · Explain ML to a non-technical person | Random cuts: normal takes many, strange takes few | 1. Jet2: explain Isolation Forest to ops, no trees 2. Split the data at random again and again; a strange hour gets separated quickly 3. Then what they need: which signals were unusual, and what to check first 4. About 96% specificity, so they trusted it | They didn't need the algorithm. They needed to trust the alert and know what to do. |
+| F2 · First approach failed, you pivoted | The default failed on real questions | 1. Bilbo: dense search alone missed exact medical terms and protocol names 2. I added keyword search, fused the two, and reranked 3. About 28% better top five on the labeled set | Test the default on real queries early, before building on top of it. |
+| F3 · Tech debt vs fast releases | Cut polish, never cut safety; pay debt once | 1. AI Cargo: cut UI polish; kept the audit log, the rules, tests, tracing; wrote down what I skipped 2. ATCS: rules in YAML config, so a new client is a config, not a pipeline 3. Onboarding went from 2 to 3 weeks to 2 to 3 days | Cut what's cheap to add later. Keep what's expensive to add later. |
+| F4 · Mentoring or improving a process | Honest, then two real examples | 1. No formal mentoring role yet 2. ATCS: a config framework other people could extend, used on 4+ engagements 3. Fibe: MLflow and validation gates, model cycle from about 3 days to under 5 hours | Write down how things work, make the common path easy, and sit with people the first time. |
+
+### 20-minute mock prompt (ChatGPT or Claude voice mode)
+
+> "Act as Jatin Sasan, Director of Generative AI at Lam Research, interviewing me for Software Engineer Sys 2 (Gen AI). Ask me five questions, one at a time: tell me about yourself, walk me through my agent project, a time I was wrong, how I'd reduce hallucination before launch, and when I would not use an LLM. After each answer, ask one 'why' follow-up. Don't give feedback until the end. Then tell me which answer was the longest, which one had no clear ending, and one thing to fix."
+
+### Your 2 questions and the close
+
+- **Q1:** "You wrote about process recipes, engineering judgment, and equipment intelligence. Which one is the team going after first?"
+- **Q2:** "What do you want in place in the first six months: the eval setup, observability, the platform, or a first use case in production?"
+- **Close:** "This made me more excited. The work is a strong match and I'd really like to move forward. Is there anything about my background I can clarify?"
+
+### Parakeet AI and other live answer tools: don't use them in this call
+
+Parakeet AI, and similar tools like Final Round AI's copilot, LockedIn AI, and Cluely, listen to the interviewer and show you suggested answers on screen while you talk. My honest advice is no, for four reasons.
+
+1. **It breaks the rules, and Lam scores honesty.** Many large employers now say in writing that real-time AI help in a live interview means disqualification, and Parakeet's own terms say not to use it where AI help is prohibited or has to be disclosed. Honesty and integrity is one of Lam's nine values. If it comes out later, an offer can be pulled, and the "invisible on screen share" claim doesn't make it allowed.
+2. **It makes your exact problem worse.** You ramble when you are nervous. Reading new text while listening and speaking splits your attention, adds pauses, and sounds read. A director notices the eyes and the delay.
+3. **He will go two levels deep.** "What did the node logs show?" or "why not tensor parallelism?" needs your memory, not a generated paragraph. You lived these stories. That is your advantage, and a tool would hide it.
+4. **You don't need it.** Your projects are real and the hooks are yours. A handwritten sheet of your own keywords on the desk is normal. Glance at it, don't read from it.
+
+Where AI does help today: the 20-minute voice mock above, this morning. Using AI to prepare is allowed almost everywhere. Using it during the call is what isn't.
+
+> **If you're nervous, remember this**
+>
+> Jatin is building a new team and he wants this call to go well. He is looking for someone who built real things and thinks clearly, not for perfect English. You built Bilbo, your team won with AI Cargo and you carried it forward on your own, and you kept a model at 7% for 18 months. Slow down, say the headline, count your beats, land on the number, stop. In the canvas, every question card also starts with its hook.
 
 ---
 
@@ -59,25 +256,9 @@ Lam also holds patents on ML-generated process recipes, and a recent SPIE talk b
 
 ---
 
-## Your 6-day plan (about 2 hours of study and 30 minutes of speaking a day)
-
-Each day is a study block from the map below plus a speaking block. Say every answer out loud. Reading an answer is not the same as being able to say it.
-
-- [ ] Day 1 · Jatin + serving. Read 'Who you're talking to' and the Lam intel. Study map #1 (learning/50). Say A1 (LLM serving) out loud twice, record once. Warm-up: intro and why Lam.
-- [ ] Day 2 · Hallucination + evaluation. Study map #2 and #5. Say A2 and B2 out loud. Practice the follow-ups 'RAG still hallucinates, debug it' and 'why trust LLM-as-judge'.
-- [ ] Day 3 · Embeddings + RAG for specs. Study map #3 and #4. Say A3. Then draw B1 (RAG over manufacturing specs) on paper and talk through it in 6 minutes, as if screen-sharing.
-- [ ] Day 4 · Agents + Jatin's vision questions. Study map #6, #7, #8. Say B3 (CAD multi-agent) and G1 to G5. Re-practice the AI Cargo walkthrough and PHANTOM TOOLS, since agent questions lead there.
-- [ ] Day 5 · Equipment + coding + behavioral. Study map #9, #10, #11. Type D1 to D3 from memory in a plain editor. Say C1, C2, E1, and the Jet2 conflict story. Evening: full 45-minute mock using the prompt below. Record it and note the 3 weakest answers.
-- [ ] Day 6 · Fix and rest. Re-record the 3 weakest answers. Pick 2 or 3 questions to ask Jatin. Skim the whole doc, no new material. Write a one-page sheet of your numbers. Sleep early.
-- [ ] Call day · 10-minute warm-up: intro plus one technical answer out loud, 5 minutes of shadowing. Water, quiet room, headphones, resume and number sheet open. Join 3 minutes early.
-
-> **Mock interview prompt (paste into any AI chat, use voice mode if you can)**
->
-> "Act as Jatin Sasan, Director of Generative AI at Lam Research, interviewing me for Software Engineer Sys 2 (Gen AI). You came from semiconductor equipment software and you are building a new team. Ask one question at a time. Mix project deep dives, LLM system design, evaluation, agents, and Lam's values. Push back with 'why' at least twice per answer. At the end, score me 1 to 4 on depth, clarity, judgment, and Lam fit, and tell me my 3 weakest answers."
-
 ## Study map: what to read in interview_prep, in order
 
-Section numbers refer to files in `interview_prep/learning` and `interview_prep/projects`. If time is short, do #1 to #6 and #11. Those cover 90% of what he is likely to ask.
+Lookup only. Open a row when a mock answer falls apart. Do not start reading from #1.
 
 | # | Topic | Read | Why for Jatin | Time |
 |---|---|---|---|---|
@@ -98,12 +279,12 @@ Section numbers refer to files in `interview_prep/learning` and `interview_prep/
 | Story | Numbers to say |
 |---|---|
 | Bilbo (RAG) | +28% top-five relevance vs dense only · under 5 s · 4-bit Mistral-7B (~4.4 GB) on Ollama · MiniLM 384-d · top 50 → rerank top 20 |
-| AI Cargo (agents) | First prize, Smith Agentic AI Challenge ($4,000) · solo · 6 weeks · deterministic veto + human gate |
-| Jet2 forecasting | MAPE 18% → 7% · under 2% error variation for 18+ months · walk-forward validation |
-| Jet2 event detection | Moving averages + z-scores (\|z\| > 3) + rules → grid-tuned → Isolation Forest · ~96% specificity |
-| Jet2 intent (70→7) | 70B distilled to 7B · 94% recall · 1M+ call transcripts |
+| AI Cargo (agents) | First prize, Smith Agentic AI Challenge ($4,000) · team of three · 6 weeks · deterministic veto + human gate · then my own v2 + deploy |
+| Jet2 forecasting | MAPE about 18% → about 7%, vs the old forecast · monthly error stayed within about 2 points of 7% for 18+ months |
+| Jet2 event detection | Rules on a few features together (volume, time-of-day average, z-score) so ops could see why it fired · then topic weights · then Isolation Forest · ~96% specificity |
+| Jet2 intent (70→7) | 70B teacher distilled to 7B · 94% recall on SME-checked labels (the student's own recall) · 1M+ transcripts |
 | ATCS ETL | 10M+ records · 4 h → 18 min · config-driven DQ on 4+ engagements · onboarding 2–3 weeks → 2–3 days |
-| Fibe | Model cycle 3 days → under 5 hours (15×) · MLflow tracking + validation gates |
+| Fibe | Model cycle about 3 days elapsed → under 5 hours · MLflow tracking + validation gates. Say the days and hours. Only say 15× if they ask, and say it is elapsed time. |
 
 ---
 
@@ -143,14 +324,14 @@ Lam uses Behavioral Event Interviewing: competency questions scored on STAR. The
 
 | Lam value | What they want to hear | Your story (codename + number) |
 |---|---|---|
-| Achievement | Aggressive goals, delivered results | $4,000 win (solo, 6 wks) · 18→7 MAPE · 15× cycle |
-| Agility | Speed, flexibility, quality | $4,000 (6-week solo build) · 4h→18min ETL |
-| Honesty & integrity | Does the right thing, owns the truth | PHANTOM TOOLS (owned the bug) · governance-first design |
+| Achievement | Aggressive goals, delivered results | $4,000 win (team of three, 6 wks) · 18→7 MAPE · 15× cycle |
+| Agility | Speed, flexibility, quality | $4,000 (6-week team build, then my v2) · 4h→18min ETL |
+| Honesty & integrity | Does the right thing, owns the truth | REVISE LOOP (owned the bug) · governance-first design |
 | Inclusion & diversity | Welcomes different perspectives | Jet2 ops and planning, plus risk and business stakeholders |
 | Innovation & continuous improvement | New ideas, embraces change | +28% hybrid retrieval · EVAL HARNESS · 70→7 distillation |
-| Mutual trust & respect | Treats others well in disagreement | Jet2 event detection: stats first, then Isolation Forest (96% specificity) |
+| Mutual trust & respect | Treats others well in disagreement | Jet2: rules on a few features first, so ops trusted it, then Isolation Forest (96% specificity) |
 | Open communication | Speaks candidly, listens, asks | Explaining alerts and forecasts to Jet2 ops and planning |
-| Ownership & accountability | Takes responsibility, delivers | 18→7 live 18 months · PHANTOM TOOLS · 4h→18min |
+| Ownership & accountability | Takes responsibility, delivers | 18→7 live 18 months · REVISE LOOP · 4h→18min |
 | Teamwork | Collaborates to a shared goal | Stakeholder explanation at Jet2, in fintech, and on GenAI work |
 
 ---
@@ -182,9 +363,9 @@ Short sentences on purpose. Practice saying these until the rhythm is natural, t
 
 ### 1 · Tell me about yourself (~60 seconds)
 
-"Sure. I'm a data scientist and AI engineer with about five years of experience, and I just finished my master's in data science at Maryland in May. Most recently I was an AI engineer at Bilbo, where I built a healthcare AI assistant. It answers questions from medical documents and cites exactly where each answer came from, running on a private, self-hosted model because the data couldn't leave the environment. It made the search about 28% more accurate, with answers under five seconds."
+"Sure. I'm a data scientist and AI engineer with about five years of experience, and I just finished my master's in data science at Maryland in May. Most recently I was an AI engineer at Bilbo, where I built a healthcare AI assistant. It answers questions from medical documents and cites exactly where each answer came from, running on a private, self-hosted model because the data couldn't leave the environment. On a labeled set of protocol questions, keyword search plus vector search beat vector-only search by about 28% on the top five results. The full answer still came back in under five seconds."
 
-"Before my master's, I was a data scientist at Jet2 in the UK for two years, working on forecasting and language models over call-center data, and earlier I did credit-risk and fraud work in fintech. On the side I build AI agents. I won first prize in an agentic-AI competition for a shipping-risk platform."
+"Before my master's, I was a data scientist at Jet2 in the UK for two years, working on forecasting and language models over call-center data, and earlier I did credit-risk and fraud work in fintech. On the side I build AI agents. My team won first prize in an agentic-AI competition for a shipping-risk platform, and I kept building it on my own after that."
 
 "What drew me to this role is that it's exactly the work I want to do: LLM applications, retrieval, and agents, with the reliability to trust them. And doing it for semiconductor engineering is genuinely interesting to me, because that's a domain with deep, high-stakes knowledge where this really matters."
 
@@ -192,7 +373,7 @@ Short sentences on purpose. Practice saying these until the rhythm is natural, t
 
 ### 2 · Why Lam, why semiconductors? (deeper than the recruiter version)
 
-"A few reasons. First, the work lines up almost exactly with what I've built, RAG, agents, and the observability that makes them reliable. Second, I like where Lam sits: you make the equipment that basically the entire chip industry depends on, so there's real weight to it. And I read that Lam is investing seriously in internal GenAI, across R&D, manufacturing, and field service, which is a huge, high-value problem."
+"A few reasons. First, the work lines up almost exactly with what I've built, RAG, agents, and the observability that makes them reliable. Second, I like where Lam sits: you make the equipment that basically the entire chip industry depends on, so there's real weight to it. And Lam is already using this in the field: a service assistant trained on decades of troubleshooting data, used by about two thirds of field engineers. The same problem exists in R&D and manufacturing."
 
 "The part that really fits me is that Lam treats agentic AI as something you have to govern carefully, with human oversight and logging. That's exactly how I build. So it feels less like a stretch and more like the same values at a much bigger scale."
 
@@ -202,47 +383,55 @@ Short sentences on purpose. Practice saying these until the rhythm is natural, t
 
 "At Bilbo I built a production assistant that answers questions from dense medical protocol documents. Two things made it hard: every answer had to be citable and trustworthy, and the data couldn't leave the environment for compliance. So the compliance constraint actually shaped the whole design."
 
-"On the retrieval side, I used two kinds of search together, a vector index for meaning and keyword search for exact terms, and combined them, then re-ranked the top results for accuracy. That lifted top-five relevance about 28% over a vector-only baseline. Generation runs on a quantized model hosted locally, and the whole flow is a LangGraph workflow with guardrails, so it refuses when it doesn't have a good answer instead of guessing. End to end it's under five seconds, and I measured retrieval quality on a labeled set so the 28% is a real number, not a feeling."
+"On the retrieval side, I used two kinds of search together, a vector index for meaning and keyword search for exact terms, and combined them, then re-ranked the top 20 with a cross-encoder. On a labeled set, that lifted top-five relevance about 28% over vector search alone. Generation runs on a quantized model hosted locally, and the whole flow is a LangGraph workflow with guardrails, so it refuses when it doesn't have a good answer instead of guessing. End to end it's under five seconds, and I measured retrieval quality on a labeled set so the 28% is a real number, not a feeling."
 
 ### 4 · Walk me through AI Cargo (your agent project, ~2 min)
 
-"AI Cargo is an agentic risk platform for pharmaceutical cold-chain shipments, and it won first prize in the Smith Agentic AI Challenge. It scores shipment risk in real time and flags problems before they become spoilage."
+"AI Cargo is an agentic risk platform for pharmaceutical cold-chain shipments, and it won first prize in the Smith Agentic AI Challenge. Each telemetry window gets a risk score as it lands, and anything medium or higher opens a case before the product can spoil."
 
-"The main idea is that the model shouldn't be the only decision-maker when safety and compliance are on the line. So I combined deterministic compliance rules with a machine-learning risk score, both under a LangGraph agent that reasons and calls tools. The rules get a hard veto, the agent can't override a real violation, and anything uncertain goes to a human for sign-off, with a full audit trail. I built the whole thing solo in about six weeks. It won because it was the one you could hand to a regulator, not the one with the prettiest demo."
+*If he asks whether the data was live: "The demo ran on about 7,400 synthetic windows. I don't quote a model accuracy on real shipments. What I stand behind is the design."*
+
+"The main idea is that the model shouldn't be the only decision-maker when safety and compliance are on the line. So I combined deterministic compliance rules with a machine-learning risk score, both under a LangGraph agent that reasons and calls tools. The rules get a hard veto, the agent can't override a real violation, and anything uncertain goes to a human for sign-off, with a full audit trail. We were a team of three and built it in about six weeks. My part was the risk engine, the agent graph and the LLM layer, and after the competition I carried it forward on my own and deployed it. It won because it was the one you could hand to a regulator, not the one with the prettiest demo."
 
 ### Behavioral STAR answers (one per competency)
 
-### Failure / "a time you were wrong" — PHANTOM TOOLS
+### Failure / "a time you were wrong" — the revise loop (AI Cargo)
 
-"On my agentic platform, the agent had a reflect-and-revise loop, and it started re-running tools that had already finished, and flagging optional tools as missing. The tricky part was the dashboard looked active and healthy, so the bug was basically invisible."
+"On AI Cargo, after the tools ran, a revise step was supposed to look at the real output. If a required tool had failed, or its result was bad, it should propose that same tool again. For example, cold storage came back with a poor facility, so it should say: retry cold storage.
 
-"What I did was instrument every step, log the input and output of each node, and I traced it to the model inventing extra work in the reflect step. I fixed it by constraining that step in code, so it could only ever emit tools that were mandatory or had actually failed, and I redesigned it to act first and review after. The phantom executions went to zero. What I took from it: an agent that looks busy is not the same as an agent that's correct, and if code can guarantee a constraint, I don't leave it to a prompt."
+What it actually did was suggest the optional tools, every time. Rerouting, triage, scheduling. And it did not point at the tool that had the problem. The dashboard made that look thorough, like the agent was being extra careful. It wasn't. It was suggesting the wrong work.
+
+I logged the input and output of each node and saw the pattern. Then I stopped trusting the prompt to behave. In code, a suggestion is dropped unless that tool is required for the risk tier, or it failed, or its output was flagged as bad. Optional names never get to run. We also run the tools once and then stop at a person, so a bad suggestion can't loop.
+
+What I took from it: if code can check the rule, don't leave the rule to the model. And a busy agent is not a correct agent."
 
 ### Ownership / production — 18→7
 
 "At Jet2 I owned a demand-forecasting system end to end. I ran a bake-off between XGBoost, LSTM, and GRU, tuned it, and used walk-forward validation instead of a random split, because a random split on time series leaks the future. That took the error, MAPE, from about 18% down to 7%."
 
-"But the part I'm proud of is that I put it into production with scheduled retraining and validation checks, and it held under 2% error variation for more than eighteen months. Getting to 7% took about a week. Keeping it at 7% for eighteen months was the real job."
+"But the part I'm proud of is that I put it into production with scheduled retraining and validation checks, and month to month the error stayed within about two points of 7%, for more than eighteen months. Getting to 7% took about a week. Keeping it there was the real job. The 7% is against the forecast Jet2 already had, not against a perfect number."
 
 ### Ambiguity / shipping fast — $4,000
 
-"The clearest example is the agentic platform I built for the Smith challenge. There was no spec, I defined the problem myself: cold-chain pharmaceutical risk, where compliance really matters. I built the whole six-layer system solo in about six weeks, under a deadline. And what won it wasn't demo polish, it was the governance: rules that can veto the model, a human gate on anything consequential, and a full audit trail."
+"The clearest example is the agentic platform my team built for the Smith challenge. There was no spec, we defined the problem ourselves: cold-chain pharmaceutical risk, where compliance really matters. There were three of us, about six weeks, under a deadline, and I owned the risk engine, the agent graph and the LLM layer. And what won it wasn't demo polish, it was the governance: rules that can veto the model, a human gate on anything consequential, and a full audit trail."
+
+*If he asks "what are the six layers?": ingestion, risk scoring, context, the LangGraph agent, the eight tools, and the API plus dashboard. Don't say "six-layer" unless you can list them.*
 
 ### Hard technical decision — 70→7
 
-"At Jet2 I was classifying intent over a million-plus call transcripts. The most accurate model was a 70-billion-parameter one, but it just wasn't deployable at contact-center volume. So instead of compromising on accuracy or shipping something too slow, I distilled it, I trained a 7-billion model to inherit the behavior of the 70-billion one, and kept 94% recall at a size we could actually serve. The way I think about it: the best model and the shippable model were different models, so I made the shippable one inherit from the best one."
+"At Jet2 I was classifying intent over a million-plus call transcripts. The most accurate model was a 70-billion-parameter one, but it just wasn't deployable at contact-center volume. So instead of compromising on accuracy or shipping something too slow, I distilled it. I trained a 7-billion model on the big model's behavior, at a size we could actually serve. On the transcripts our subject-matter experts had labeled, that 7-billion model hit 94% recall. That's its own recall, not 94% of the big model's score. The way I think about it: the best model and the shippable model were different models, so I made the shippable one learn from the best one."
 
-### Conflict — Jet2 event detection (stats first, then the model)
+### Conflict — Jet2 event detection (earn trust, then add the model)
 
-"This was at Jet2. We needed to find real operational events in the live chat data, so the ops team got an alert when something actually changed, not a pile of noise.
+"This was at Jet2. Ops needed an alert when something real changed in the live chat, not a pile of noise. They were not data scientists. If the first thing I handed them was a score they couldn't explain, they would ignore the next one. So the first job was to earn their trust, and only then go up a level.
 
-A teammate wanted to go straight to a machine learning model. I understood the point. We had a lot of data, and a model can pick up combinations you didn't write down. My pushback was that we didn't understand the data well enough yet. I wanted to look at it first, build the features, and see how far simple statistics could take us. Not every problem needs a complex model, and if you start there you often can't explain what fired, or why.
+A teammate wanted to start with the heavier methods: topic modelling and Isolation Forest. I understood why. Those can see combinations a person wouldn't write down. My pushback was about the user, not about the method. I wanted them to see, in the first week, that the data was useful.
 
-So we did it that way first. Moving averages for what normal looks like at that time of day, z-scores for a spike against recent history, and a small set of rules on top of those. That already caught a good share of the real events, and ops could follow it, which mattered because they were the ones acting on the alert.
+So I started with rules, and not on one feature. Volume by itself is a bad signal, because mornings are always busy. I used a few features together: chat volume against the moving average for that time of day, a z-score against recent history, and a couple of keyword counts. An alert fired when more than one of those moved. Ops could open it and see why. They started using it. That was the proof.
 
-Then we took those same signals and grid-tuned the thresholds. That cleaned up which signals were actually useful and which were just noise. Once we had that, we added Isolation Forest on top of those features. That was the part my teammate was right about. The rules catch a loud single signal. The forest catches the case where no one signal is loud, but the combination is. So the model wasn't thrown out. It came last, on features we already trusted.
+Once they trusted it, we went up a level. Topic weights, so the alert said what people were talking about, not just that volume moved. Then Isolation Forest on those features. That was the part my teammate was right about. The rules catch one loud signal. The forest catches the case where no single signal is loud, but the combination is. The model wasn't thrown out. It came after the trust was there.
 
-The full setup landed at about 96% specificity, so a low false-alarm rate, and the ops team actually used the alerts. What I took from it is that both of us were partly right. Understanding the data first made the model better, and the model caught things the rules alone would miss."
+The full setup landed at about 96% specificity, so the false alarms stayed low, and ops kept the alerts on. What I took from it: with a non-technical user, you earn the right to add complexity. You don't start there. And both of us were partly right."
 
 *Scored on how you treated the other person, not on who won. You state his view fairly, you go first with the simple approach, and you say where he was right. If they ask a name, keep it as "a teammate" unless you want to name them. For Jatin this story does double duty: it is also your best answer to "when would you not use an LLM or a complex model?"*
 
@@ -258,7 +447,7 @@ The habit is the same in all of them. I start with their question, not my method
 
 ### Learning something fast
 
-"For the agentic challenge I had about six weeks and had to get fluent fast in the agent stack, LangGraph, tool calling, multi-provider fallback. The way I learn fast is I build the smallest working version first, then break it on purpose to understand how it fails, which is actually how I found the phantom-tool bug. By the end I had a production-style system and a real understanding of where these agents break, not just how to make them run."
+"For the agentic challenge we had about six weeks and I had to get fluent fast in the agent stack, LangGraph, tool calling, multi-provider fallback. The way I learn fast is I build the smallest working version first, then watch a few real runs, which is how I caught the revise-loop bug: the model kept suggesting optional tools instead of the one that had failed. By the end I had a production-style system and a real understanding of where these agents break, not just how to make them run."
 
 ---
 
@@ -551,7 +740,7 @@ For failures: tool errors come back as structured messages. There are timeouts a
 
 I'd measure it on a benchmark of real tasks: completion rate, iterations needed, and how much the engineer had to edit afterwards.
 
-This is the lesson from my AI Cargo agent. A reflect step kept re-running tools that had already succeeded. The fix was to constrain it in code. In CAD that matters even more, because re-running an edit changes the part.
+This is the lesson from my AI Cargo agent. The revise step was supposed to look at a tool's real output and retry the one that failed. Instead the model kept suggesting optional tools, like rerouting and triage, and skipped the one with the bad result. I stopped that in code: a suggestion only runs if that tool is required, failed, or its output was actually bad. In CAD that matters even more, because an extra edit changes the part.
 
 **Follow-ups he may push on**
 
@@ -584,7 +773,7 @@ In all three, the LLM is the interface and reasoning layer on top of good data a
 
 When a rule, a statistic, or a classical model solves it reliably. When the answer has to be exactly right every time, like a control decision or a safety limit. When it's a real-time control loop where latency and determinism matter. And when there's no way to evaluate it yet.
 
-My Jet2 event detection is the example. We started with moving averages, z-scores, and rules, and the model came last, on features we already trusted. And in AI Cargo, the compliance rules had a veto over the LLM.
+My Jet2 event detection is the example. Ops had to trust the alert before they would use a model, so I started with rules on a few features together, volume, the time-of-day average, and a z-score. Topic modelling and Isolation Forest came after they were already using it. And in AI Cargo, the compliance rules had a veto over the LLM.
 
 - **So why GenAI at all?** For unstructured knowledge, language as the interface, and reasoning across sources. Things rules can't do well. Used for the right part of the problem, it's very strong.
 
@@ -631,7 +820,7 @@ Then I evaluate at two levels. The outcome: did it complete the task correctly? 
 
 For error detection I group failures into types: wrong tool, bad arguments, repeated calls, ignored tool errors, stopping early, and made-up results. Some are caught by deterministic checks on the trace, like the same tool called twice with the same arguments. The fuzzy ones get an LLM judge that reads the trace with a rubric, calibrated against human labels.
 
-That's exactly how I found PHANTOM TOOLS in AI Cargo. Every step was logged, and the trace showed the reflect step re-running tools that had already succeeded. The dashboard looked healthy. Only the trace showed it was wrong.
+That's how I found the revise-loop bug in AI Cargo. The trace showed the model suggesting optional tools, triage and rerouting, on every run, and not the tool whose output was actually bad. The dashboard looked thorough. Only the node logs showed it was the wrong work.
 
 - **How do you build a test set for an agent?** Real tasks with a known good end state, plus hard ones: tools that fail, ambiguous requests, missing data. Replay them on every change and compare trajectories, not just final answers.
 
@@ -643,7 +832,7 @@ I decide per use case, with our own eval set as the judge. Four questions. How s
 
 My default is to start with a strong managed model on a private endpoint, to learn fast and build the eval set, behind a gateway so we're not locked in. When a use case has high volume, strict privacy, or a narrow task, I move it to a smaller self-hosted or fine-tuned model, but only if it matches quality on the evals.
 
-At Jet2 that's what the 70B to 7B distillation was. The big model set the quality bar, and the small one was what we could run at contact-center volume, with 94% recall.
+At Jet2 that's what the 70B to 7B distillation was. The big model set the behavior. The small one is what we could run at contact-center volume, and it hit 94% recall on the labels our experts had checked.
 
 *Study: learning/50 §13.3 · learning/48 Q24 · learning/49 §6*
 
@@ -715,7 +904,7 @@ Three reasons. I've built both halves of what this team needs, retrieval systems
 
 I build for production. Evaluation, tracing, and guardrails come first, and my Jet2 model ran for eighteen months.
 
-And I'm used to starting from zero. I built AI Cargo alone in six weeks with no spec. On a new team someone has to set up the foundations and ship the first use case, and that's the work I like most.
+And I'm used to starting from zero. On AI Cargo, three of us built it in six weeks with no spec, and then I kept going on my own and deployed it. On a new team someone has to set up the foundations and ship the first use case, and that's the work I like most.
 
 *Study: learning/53 §7.5 · 00_RESUME_MASTER_MAP §6*
 
@@ -746,7 +935,7 @@ Detection: distribution tests per feature per tool, change-point methods like CU
 
 Response: retrain on a recent sliding window with walk-forward validation, normalize per tool, and use scheduled plus triggered retraining behind validation gates. Champion versus challenger before swapping, and a human sign-off. One trap: don't retrain on a fault period, or the model learns the fault as normal.
 
-At Jet2 my forecasting model ran 18 months with under 2% error variation, with walk-forward validation and scheduled retraining. Same discipline.
+At Jet2 my forecasting model ran 18 months with the monthly error staying within about two points of 7%, with walk-forward validation and scheduled retraining. Same discipline.
 
 - **Retrain on a schedule or on a trigger?** Both. A schedule for gradual drift, a trigger for sudden shifts, and the same validation gate either way.
 
@@ -911,7 +1100,7 @@ def common_ids(a, b):
 
 Two cases. Inside one process with asyncio, a lock per key around any read-modify-write that has an await in the middle. Without an await between the read and the write, asyncio is already safe, because only one coroutine runs at a time. The race shows up at the await.
 
-Across processes or machines, optimistic concurrency. Each record has a version. A write only succeeds if the version hasn't changed. If it has, re-read and re-apply. Plus idempotency keys, so a retried tool call doesn't apply twice. That's the same failure I fixed in AI Cargo, where tools were re-run after they'd already succeeded.
+Across processes or machines, optimistic concurrency. Each record has a version. A write only succeeds if the version hasn't changed. If it has, re-read and re-apply. Plus idempotency keys, so a retried tool call doesn't apply twice. Same lesson as AI Cargo: I don't let the model decide which action is safe to repeat. The code decides.
 
 ```python
 import asyncio
@@ -1048,7 +1237,7 @@ The lesson: test the default on real queries early, before building everything o
 
 ### F3 · Technical debt versus a fast release cadence
 
-I sort it into what can be cut and what can't. On AI Cargo I had six weeks, alone. I cut UI polish and some nice-to-have features. I didn't cut the things that are expensive to add later: the audit log, the deterministic rules, tests on the risk scoring, and tracing. And I wrote down what I skipped, so it was a list, not a surprise.
+I sort it into what can be cut and what can't. On AI Cargo we had six weeks and three people. We cut UI polish and some nice-to-have features. We didn't cut the things that are expensive to add later: the audit log, the deterministic rules, tests on the risk scoring, and tracing. And we wrote down what we skipped, so it was a list, not a surprise.
 
 The other side is paying debt down once instead of many times. At ATCS, each client engagement used to build its data processing from scratch. I built a configuration-driven data-quality framework, with the rules in YAML, so onboarding a new client meant writing a config, not a pipeline. Onboarding went from two or three weeks to two or three days, and it ran on four or more engagements.
 

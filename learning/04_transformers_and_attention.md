@@ -1226,6 +1226,8 @@ Almost all modern open LLMs follow this blueprint (established by LLaMA):
 
 ## **Q1: "Explain the transformer architecture."**
 
+**Memory hook:** *Attention replaces recurrence* · every token attends in parallel → attention plus FFN, residual, norm → encoder, decoder, encoder-decoder → modern LLMs are decoder-only · **Land on:** "Modern LLMs are almost all decoder-only, with RoPE, SwiGLU, GQA, and Flash Attention."
+
 **Strong answer framework (2 minutes):**
 
 > "The transformer, introduced by Vaswani et al. in 2017, replaces recurrence with self-attention. The core idea is that every token can attend to every other token in parallel, computing relevance scores via scaled dot-product attention.
@@ -1240,6 +1242,8 @@ Almost all modern open LLMs follow this blueprint (established by LLaMA):
 
 ## **Q2: "Why is attention O(n²)?"**
 
+**Memory hook:** *Every token meets every token* · score for every token pair → n×n matrix, O(n²·d) → memory is the real bottleneck → Flash Attention, sliding window, Mamba · **Land on:** "Flash Attention keeps O(n²) compute but brings memory down to O(n)."
+
 > "Self-attention computes a score between every pair of tokens. For a sequence of length n, we compute Q·Kᵀ which is an [n×d] times [d×n] matrix multiplication, producing an n×n attention matrix. Each entry requires O(d) multiplications, giving O(n²·d) total. The n² memory for the attention matrix is the real bottleneck — for a 128K context, that's 16 billion entries per head per layer.
 >
 > Solutions include Flash Attention (same O(n²) compute but O(n) memory via tiling), sliding window attention (O(n·w) where w is the window size), and architectural alternatives like state space models (Mamba) that are O(n·d)."
@@ -1247,6 +1251,8 @@ Almost all modern open LLMs follow this blueprint (established by LLaMA):
 ---
 
 ## **Q3: "What is KV-cache?"**
+
+**Memory hook:** *Don't recompute the past* · new token attends to all previous → store K and V from past steps → compute only the new token → memory is the trade-off → GQA shares K,V heads · **Land on:** "LLaMA-70B with 8K context needs about 20GB of KV-cache, which is why GQA matters."
 
 > "During autoregressive generation, each new token needs to attend to all previous tokens. Without caching, we'd recompute the K and V projections for all previous tokens at every step — O(n²) total work across n steps.
 >
@@ -1257,6 +1263,8 @@ Almost all modern open LLMs follow this blueprint (established by LLaMA):
 ---
 
 ## **Q4: "Encoder-only vs decoder-only vs encoder-decoder?"**
+
+**Memory hook:** *Read both ways vs write forward* · encoder-only BERT, bidirectional → decoder-only GPT, causal mask → encoder-decoder T5, cross-attention → trend is decoder-only · **Land on:** "Decoder-only is simpler, scales well, and with enough data can handle understanding tasks too."
 
 > "**Encoder-only** (BERT): bidirectional attention, trained with masked language modeling. Each token sees the full context in both directions. Best for classification, NER, and semantic similarity. Can't generate text natively.
 >
@@ -1270,6 +1278,8 @@ Almost all modern open LLMs follow this blueprint (established by LLaMA):
 
 ## **Q5: "What is Flash Attention?"**
 
+**Memory hook:** *Same math, less memory traffic* · exact, O(n) memory, 2-4x faster → attention is IO-bound → tiles in fast SRAM, not HBM → online softmax, no full matrix · **Land on:** "It's purely an implementation optimization, not an approximation."
+
 > "Flash Attention is a hardware-aware, exact attention algorithm that reduces memory from O(n²) to O(n) and is 2-4x faster than standard attention.
 >
 > The key insight is that standard attention is IO-bound — the bottleneck is reading/writing the n×n attention matrix to GPU HBM (high-bandwidth memory), not the actual computation. Flash Attention uses tiling to process attention in blocks that fit in the GPU's fast on-chip SRAM (~20MB, ~19 TB/s) instead of repeatedly accessing the slower HBM (~40GB, ~1.5 TB/s).
@@ -1282,6 +1292,8 @@ Almost all modern open LLMs follow this blueprint (established by LLaMA):
 
 ## **Q6: "Explain positional encoding."**
 
+**Memory hook:** *Dog bites man, man bites dog* · attention has no sense of order → sinusoidal, then learned embeddings → RoPE rotates Q and K → ALiBi adds a distance bias · **Land on:** "With RoPE, the dot product of rotated Q and K depends only on relative position."
+
 > "Transformers process tokens in parallel with no inherent sense of order — self-attention is permutation-equivariant. Without positional encoding, 'dog bites man' and 'man bites dog' would produce the same representation.
 >
 > The original Transformer used fixed sinusoidal functions of different frequencies, which encode absolute position and allow the model to learn relative positions. BERT and GPT-2 used learned position embeddings — a simple embedding lookup table indexed by position.
@@ -1293,6 +1305,8 @@ Almost all modern open LLMs follow this blueprint (established by LLaMA):
 ---
 
 ## **Q7: "What is RoPE?"**
+
+**Memory hook:** *Rotate by position* · rotate Q and K pairs by position → dot product depends on m minus n → natural distance decay → only Q and K, not V → NTK-aware scaling and YaRN · **Land on:** "The score depends only on m minus n, the relative distance."
 
 > "RoPE — Rotary Position Embedding — encodes position information by applying a rotation to query and key vectors before computing attention. Each pair of dimensions (d₀, d₁), (d₂, d₃), etc. is rotated by an angle proportional to the position, with different frequencies for different dimension pairs (similar to sinusoidal encoding).
 >

@@ -1515,6 +1515,8 @@ START: You want to adapt an LLM to your task
 
 ### **Q1: "How would you fine-tune a 70B model on limited GPU (e.g., single A100 80GB)?"**
 
+**Memory hook:** *Shrink the base, train the patch* · QLoRA: load in 4-bit NF4 → ~140GB down to ~35GB → LoRA adapters train in bf16 → total ≈ 50-60GB, fits 80GB → else ZeRO-3 with CPU offload · **Land on:** "With gradient checkpointing on, it fits on a single A100 80GB."
+
 **Answer:**
 
 "I'd use **QLoRA** — that's the go-to for large models on limited hardware.
@@ -1530,6 +1532,8 @@ START: You want to adapt an LLM to your task
 ---
 
 ### **Q2: "Explain LoRA — how does it work?"**
+
+**Memory hook:** *Two thin matrices, one big update* · Updates have low rank → W' = W₀ + (α/r)·A·B → 4096×4096, r=16: 131K vs 16.7M → B starts at zero, merge for inference · **Land on:** "In my CLIP medical imaging work, LoRA got 95%+ of full fine-tuning with 100× fewer parameters."
 
 **Answer:**
 
@@ -1551,6 +1555,8 @@ In my experience with CLIP LoRA fine-tuning for medical imaging, I got 95%+ of f
 
 ### **Q3: "LoRA vs full fine-tuning — trade-offs?"**
 
+**Memory hook:** *Small gap, big savings* · Quality: full FT ~1-5% better → efficiency: 3-5× less memory, faster → ~50MB vs ~14GB checkpoints → forgetting: frozen base resists · **Land on:** "Start with LoRA. Move to full FT only with >100K examples, a very different domain, and the GPU budget."
+
 **Answer:**
 
 "There are three main trade-offs:
@@ -1571,6 +1577,8 @@ In my experience with CLIP LoRA fine-tuning for medical imaging, I got 95%+ of f
 
 ### **Q4: "What is QLoRA and when would you use it?"**
 
+**Memory hook:** *LoRA on a 4-bit diet* · 4-bit NF4 base, bf16 adapters → NF4, double quantization, paged optimizers → 7B on 6GB, 70B on one A100 → 98-99% of LoRA quality · **Land on:** "If you have plenty of VRAM, use regular LoRA in bf16. It's slightly better and faster."
+
 **Answer:**
 
 "QLoRA combines LoRA with 4-bit quantization. The base model weights are loaded in NF4 (4-bit NormalFloat) — an information-theoretically optimal format for normally-distributed weights. LoRA adapters still train in bf16.
@@ -1584,6 +1592,8 @@ In my experience with CLIP LoRA fine-tuning for medical imaging, I got 95%+ of f
 ---
 
 ### **Q5: "When would you use RAG vs fine-tuning?"**
+
+**Memory hook:** *Fine-tune behavior, retrieve knowledge* · RAG: changing facts, citations, no labels → fine-tune: format, style, latency, cost → combine both → medical reports grounded in patient records · **Land on:** "Fine-tune for behavior, use RAG for knowledge. In practice, combine both."
 
 **Answer:**
 
@@ -1607,6 +1617,8 @@ In my experience with CLIP LoRA fine-tuning for medical imaging, I got 95%+ of f
 
 ### **Q6: "DPO vs PPO — when would you choose each?"**
 
+**Memory hook:** *DPO by default, PPO by exception* · DPO: no reward model, stable → PPO: online feedback → PPO: complex, multi-dimensional rewards → PPO: learn from own mistakes · **Land on:** "DPO for 90% of use cases. PPO when you have the engineering resources and need maximum alignment."
+
 **Answer:**
 
 "**DPO is my default** for preference alignment. It's simpler (single training loop, no reward model), more stable (less hyperparameter sensitivity), and matches PPO on most benchmarks.
@@ -1621,6 +1633,8 @@ In my experience with CLIP LoRA fine-tuning for medical imaging, I got 95%+ of f
 ---
 
 ### **Q7: "Walk me through your fine-tuning pipeline end-to-end."**
+
+**Memory hook:** *Data in, served model out* · Clean data, chat template, 90/10 → QLoRA first, full FT last → SFT, then DPO if needed → eval: metrics, human, regressions → merge, AWQ 4-bit, vLLM · **Land on:** "After deploy, I A/B test against the previous model and track latency, thumbs-up rate, and hallucination rate."
 
 **Answer:**
 
@@ -1644,6 +1658,8 @@ In my experience with CLIP LoRA fine-tuning for medical imaging, I got 95%+ of f
 
 ### **Q8: "How do you prevent catastrophic forgetting during fine-tuning?"**
 
+**Memory hook:** *Freeze the old, learn the new* · Freeze base with LoRA → lower LR, 1-3 epochs max → mix 80% task, 20% general → regularize, watch MMLU, HellaSwag · **Land on:** "PEFT is the single most effective defense, because the frozen base can't be overwritten."
+
 **Answer:**
 
 "Catastrophic forgetting is when the model loses its general capabilities while learning the new task. Here's how I mitigate it:
@@ -1665,6 +1681,8 @@ In my experience with CLIP LoRA fine-tuning for medical imaging, I got 95%+ of f
 ---
 
 ### **Q9: "You mentioned LoRA fine-tuning CLIP. Walk me through that."**
+
+**Memory hook:** *Teach the eyes, keep the words* · CLIP knows web images, not X-rays → LoRA r=8 on vision encoder only → text encoder frozen, train projection → contrastive loss on X-ray, label pairs → ~0.5% params, ~2 vs ~8 hours · **Land on:** "For multimodal models, adapt one modality. Freeze the side that already understands your data."
 
 **Answer:**
 

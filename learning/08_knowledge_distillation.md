@@ -1504,12 +1504,16 @@ class IntermediateDistillationLoss(nn.Module):
 
 ## **Q1: What is Knowledge Distillation and why is it important?**
 
+**Memory hook:** *Big teacher, small student* · large teacher trains small student → soft probabilities hold dark knowledge → cat 0.7, tiger 0.15 → 90-99% accuracy, less compute · **Land on:** "DistilBERT is 40% smaller and 60% faster than BERT while retaining 97% accuracy."
+
 **Strong answer:**
 > "Knowledge Distillation is a model compression technique where a large, accurate teacher model transfers its learned knowledge to a smaller student model. The key insight from Hinton et al. (2015) is that the teacher's soft probability distributions — its outputs over all classes, not just the correct one — contain 'dark knowledge' about inter-class relationships. For example, a teacher classifying images might assign 0.7 probability to 'cat' and 0.15 to 'tiger', revealing visual similarity that hard labels miss. This allows the student to achieve 90-99% of the teacher's accuracy at a fraction of the compute cost. It's critical for production deployment — DistilBERT is 40% smaller and 60% faster than BERT while retaining 97% accuracy."
 
 ---
 
 ## **Q2: Explain the KD loss function. Why is there a T² factor?**
+
+**Memory hook:** *Anchor, transfer, then rescale* · two terms: CE plus KL → CE anchors to ground truth → KL transfers dark knowledge, T>1 → dividing by T shrinks gradients 1/T² · **Land on:** "Without T², a higher temperature would shrink the distillation gradient signal."
 
 **Strong answer:**
 > "The KD loss has two terms: `L = α · CE(y_true, p_student) + (1-α) · T² · KL(p_teacher || p_student)`. The CE term anchors the student to ground truth labels using standard softmax (T=1). The KL term transfers dark knowledge using softened distributions (T>1). The T² factor is a gradient correction: when we divide logits by T before softmax, the gradients of the KL loss are scaled down by 1/T². Multiplying by T² ensures the soft loss contributes proportionally regardless of the temperature chosen. Without T², increasing temperature would inadvertently diminish the distillation gradient signal."
@@ -1518,12 +1522,16 @@ class IntermediateDistillationLoss(nn.Module):
 
 ## **Q3: What is "dark knowledge" and why does it help?**
 
+**Memory hook:** *A 7 looks like a 1* · info in non-maximum probabilities → a '7' gets small '1', '9', '2' → shows which classes are similar → hard: log₂(C) bits, soft: C values · **Land on:** "That's why distilled students beat the same model trained from scratch on hard labels."
+
 **Strong answer:**
 > "Dark knowledge refers to the information encoded in the non-maximum probabilities of the teacher's output distribution. When a teacher classifies a '7', it also assigns small probabilities to '1' (similar stroke), '9' (similar shape), and '2' (similar curve). These relative probabilities encode the metric structure of the input space — which classes are similar and which are different. Hard labels provide log₂(C) bits per sample (just the class index), but soft labels provide C continuous values per sample — orders of magnitude more information. This is why distilled students consistently outperform identically-architected models trained from scratch on hard labels. The name 'dark' comes from the analogy that this information is invisible in standard hard labels."
 
 ---
 
 ## **Q4: What's the difference between logit-based, intermediate layer, and sequence-level distillation?**
+
+**Memory hook:** *Final answer, insides, or full text* · logit: match final output distribution → intermediate: align hidden layers → sequence: train on teacher's text → combine types for best results · **Land on:** "TinyBERT combines three types and gets 96.8% of BERT's performance at 7.5× compression."
 
 **Strong answer:**
 > "These differ in *what knowledge* they transfer:
@@ -1536,6 +1544,8 @@ class IntermediateDistillationLoss(nn.Module):
 ---
 
 ## **Q5: How would you distill a large language model like GPT-4 into a smaller model?**
+
+**Memory hook:** *Generate, match, align, shrink* · sequence-level pairs with reasoning traces → token-level if logits exist → synthetic, curriculum-graded data → DPO/RLHF on the student → quantize to INT8/INT4 · **Land on:** "With an API teacher and no logit access, we're limited to sequence-level distillation."
 
 **Strong answer:**
 > "For LLM distillation, I'd use a multi-pronged approach:
@@ -1551,6 +1561,8 @@ class IntermediateDistillationLoss(nn.Module):
 
 ## **Q6: How does temperature affect distillation? What value would you choose?**
 
+**Memory hook:** *Turn up T, see similarities* · T controls softmax entropy → T=1 is near one-hot → higher T exposes class relationships → overconfident teacher needs higher T · **Land on:** "Start with T=5, try 2, 5, 10, 20 on validation, pick the best, and tune α jointly."
+
 **Strong answer:**
 > "Temperature T controls softmax entropy. At T=1 (standard), confident predictions are near one-hot — the student only learns the correct class. At higher T, the distribution flattens, exposing inter-class relationships hidden in small probabilities.
 > 
@@ -1561,6 +1573,8 @@ class IntermediateDistillationLoss(nn.Module):
 ---
 
 ## **Q7: When would you choose KD over pruning or quantization?**
+
+**Memory hook:** *Not either-or, stack them* · KD: new smaller model, 5-10× → pruning: remove weights, 2-5× → quantization: lower precision, nearly free → stack: KD, then quantize · **Land on:** "BERT-large to DistilBERT INT8 is 20× smaller and 15× faster, with ~95% accuracy retained."
 
 **Strong answer:**
 > "They serve different purposes and work best combined:
@@ -1573,6 +1587,8 @@ class IntermediateDistillationLoss(nn.Module):
 ---
 
 ## **Q8: Explain self-distillation. Why does it work even without compressing the model?**
+
+**Memory hook:** *Learn from your past self* · same architecture, match previous run → soft targets act like label smoothing → soft labels encode difficulty → student can fix teacher's confusions → Born-Again Networks repeat it · **Land on:** "KD's benefit isn't just compression; it's about the quality of the training signal."
 
 **Strong answer:**
 > "Self-distillation trains a model to match its own outputs from a previous training run — same architecture, no compression. Surprisingly, the student consistently outperforms the teacher. This works because:

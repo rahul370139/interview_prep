@@ -5,6 +5,8 @@
 
 > **⭐ THIS IS YOUR #1 MOST-DRILLED PROJECT.** It is your *current role*, it is the first thing on your resume, and it is exactly what AI Engineer / GenAI Engineer interviews are about (2026 interviews are ~40% RAG + evals + agents). Master this before anything else.
 
+> **Your second Bilbo system: Doc2Data.** On the Oct 2026 resume, Bilbo has four bullets. Two are this RAG platform (sub-5 s; +28% top-five). The other two are the **claim-form extraction workflow** (LangGraph lanes, OpenCV alignment, VLM fallback; 3–5 min → ~40 s per form; 99%+ of CMS-1500 forms into validated JSON at 92%+ average field confidence). Study it in [`P16_doc2data_healthcare_extraction.md`](P16_doc2data_healthcare_extraction.md). If asked "what did you do at Bilbo?", name both: "a protocol RAG platform and a claim-form extraction workflow."
+
 ---
 
 ## Table of Contents
@@ -35,6 +37,8 @@ Your resume makes five claims about this role. An interviewer will pick one and 
 | "Designed **agentic AI workflows** with LangGraph — stateful orchestration, **conditional routing, memory, and tool/function calling** — to automate multi-step healthcare protocol reasoning" | 9-stage protocol traversal | §8 | *"The protocol is a multi-step reasoning task, so it's a LangGraph state machine with conditional routing, per-session memory, and tools for retrieval and validation."* |
 
 **The 28% number — how to defend it.** This is the metric most likely to be challenged. Say it like this:
+
+**Memory hook:** *Right paragraph in top five* · retrieval quality, not model benchmark → labelled set of medic questions → dense-only baseline → add BM25, RRF, rerank · **Land on:** "Top-five hit rate rose about 28% relative, mostly from BM25 nailing exact terms."
 
 > "It's a retrieval-quality measurement, not a model benchmark. I built a labelled query set from the protocol manual — representative medic questions with the ground-truth paragraphs that should answer them. Then I measured how often the correct paragraph appeared in the top five results. Dense-only retrieval was the baseline; adding BM25 with Reciprocal Rank Fusion and then a cross-encoder rerank raised that top-five hit rate by about 28% relative. The gain came mostly from lexical matching — medical protocols are full of exact terms like 'needle decompression' and 'tension pneumothorax' where embeddings blur near-synonyms but BM25 nails the exact token."
 
@@ -884,6 +888,8 @@ result = asyncio.run(orchestrator.run_step(scenario, user_answer))
 
 **Q1: Walk me through how a user query becomes a medical checklist in your system.**
 
+**Memory hook:** *Stage, ask, find, write, verify* · FSM picks the stage → Q-Gen asks, under 1s → hybrid search, RRF fuse → rerank, expand to paragraphs → Mistral 7B writes JSON · **Land on:** "Every citation is mapped to the database and verified before it is shown."
+
 **A:** When a user enters a scenario like "soldier with chest gunshot wound":
 1. The **FSM** identifies the current stage (e.g., M for Massive Hemorrhage)
 2. **Q-Gen** generates a stage-specific question using the stage definition + few-shot context engineering — no retrieval needed, so it's <1s
@@ -902,6 +908,8 @@ result = asyncio.run(orchestrator.run_step(scenario, user_answer))
 
 **Q2: Why did you choose a two-prompt architecture (Q-Gen / A-Gen) instead of a single prompt?**
 
+**Memory hook:** *Ask fast, answer carefully* · latency, questions need no retrieval → quality isolation, debug separately → pre-fetch the next question · **Land on:** "Questions come in under 1s, and the next one feels instant."
+
 **A:** Three reasons:
 1. **Latency optimization:** Q-Gen doesn't need retrieval — it only needs the stage definition and scenario. This makes question generation <1s vs 3-5s if we had to retrieve first. Users get immediate feedback.
 2. **Quality isolation:** Question quality and answer quality have different failure modes. Separating them lets us debug independently. If questions are bad, fix Q-Gen prompt; if citations are wrong, fix A-Gen.
@@ -910,6 +918,8 @@ result = asyncio.run(orchestrator.run_step(scenario, user_answer))
 ---
 
 **Q3: Why hybrid retrieval instead of just dense (FAISS) or just sparse (BM25)?**
+
+**Memory hook:** *Words versus meaning* · dense misses exact medical terms → BM25 misses paraphrases → RRF fuses both → adaptive alpha, 0.35 or 0.55 · **Land on:** "Each covers the other's failure mode, and the z-score threshold keeps weak results out."
 
 **A:** Dense and sparse retrievers have complementary failure modes:
 - **Dense fails when:** The query uses exact medical terminology that the model hasn't seen in training (e.g., "needle decompression for tension pneumothorax")
@@ -921,11 +931,15 @@ In practice, hybrid retrieval with RRF consistently outperforms either alone. Ou
 
 **Q4: Why IndexFlatIP and not HNSW or IVF for FAISS?**
 
+**Memory hook:** *141 vectors, just scan* · 141 vectors, under 1ms → HNSW or IVF add error → at scale, HNSW or IVFPQ · **Land on:** "Flat search is under 1ms here, so an approximate index gives zero benefit."
+
 **A:** With only 141 vectors, flat brute-force search is <1ms. HNSW or IVF would add index-building complexity and approximation error for zero performance benefit. However, if we scaled to thousands of documents, I'd switch to `IndexHNSWFlat` for the best recall-speed trade-off, or `IndexIVFPQ` if memory is constrained.
 
 ---
 
 **Q5: How does your system prevent hallucinated citations?**
+
+**Memory hook:** *Hint, check, drop* · list real citations in prompt → regex map to the database → unmapped citation gets dropped · **Land on:** "The system prefers silence over a fabricated reference."
 
 **A:** Three safeguards:
 1. **Citation hints in prompt:** The A-Gen prompt includes an "AVAILABLE CITATIONS" section listing exact paragraph IDs from retrieved content, guiding the LLM to use real references
@@ -938,6 +952,8 @@ In practice, hybrid retrieval with RRF consistently outperforms either alone. Ou
 
 **Q6: Explain Reciprocal Rank Fusion. Why k=60?**
 
+**Memory hook:** *Ranks, not raw scores* · scores on different scales → use rank, 1/(k + rank) → k=60 from Cormack 2009 → damps the top rank · **Land on:** "A low k like 10 would make it too sensitive to rank-1 disagreements."
+
 **A:** RRF converts raw retrieval scores (which may be on incompatible scales) into rank-based scores:
 
 ```
@@ -949,6 +965,8 @@ RRF(d) = Σ [ 1 / (k + rank(d)) ]
 ---
 
 **Q7: What is your adaptive alpha strategy? How would you improve it?**
+
+**Memory hook:** *Rules today, learned tomorrow* · short query, 0.35 → has a question mark, 0.45 → default, 0.55 → next: learned alpha, dynamic k · **Land on:** "I would replace the rules with a small logistic regression that predicts alpha."
 
 **A:** Currently alpha is rule-based:
 - ≤3 words → α=0.35 (favor dense — short queries need semantic expansion)
@@ -964,6 +982,8 @@ RRF(d) = Σ [ 1 / (k + rank(d)) ]
 
 **Q8: Explain the z-score threshold. When does it help?**
 
+**Memory hook:** *Does the top result stand out?* · max minus mean, over std → high means specific query → low means vague query → normalize to 0.001 to 0.01 · **Land on:** "It stops confident retrieval of irrelevant content for queries like 'what's the weather?'"
+
 **A:** The z-score threshold is computed as `(max_score - mean_score) / std_score` across the top-100 BM25 scores. A high z-score means the top result is clearly discriminated from the rest — the query is specific and matched well. A low z-score means scores are uniformly distributed — the query is vague or off-topic.
 
 We normalize this to [0.001, 0.01] and use it as a minimum relevance threshold. This prevents the system from confidently retrieving irrelevant content for queries like "what's the weather?" where BM25 will still return something (everything gets some non-zero score).
@@ -973,6 +993,8 @@ We normalize this to [0.001, 0.01] and use it as a minimum relevance threshold. 
 ### Model & Quantization
 
 **Q9: Why Mistral 7B? Why not a larger model or GPT-4?**
+
+**Memory hook:** *Privacy, cost, speed* · medical data stays local → 4-bit fits in ~4.4 GB → no network, 2-3s generation → better instructions than Llama 2 · **Land on:** "Q4_K_M is the sweet spot; the perplexity increase is negligible for JSON checklists."
 
 **A:** Three constraints drove the choice:
 1. **Privacy:** Medical data can't leave the local machine — rules out API-based models
@@ -984,6 +1006,8 @@ Mistral 7B was chosen over Llama 2 7B because it has better instruction-followin
 ---
 
 **Q10: Explain Q4_K_M quantization. How is it different from NF4?**
+
+**Memory hook:** *Q4_K_M serves, NF4 trains* · Q4_K_M: blocks, sensitive layers higher → GGUF, built for inference → NF4: quantile buckets, QLoRA → NF4 needs bitsandbytes runtime · **Land on:** "Q4_K_M is built for inference quality; NF4 is built for fine-tuning."
 
 **A:**
 
@@ -1001,6 +1025,8 @@ Q4_K_M is specifically designed for **inference quality**: it keeps attention an
 ---
 
 **Q11: What's the memory budget for your full system?**
+
+**Memory hook:** *One big model, small helpers* · Mistral weights ~4.37 GB → KV-cache ~0.3 GB → two MiniLMs, ~0.15 GB each → indexes only a few MB · **Land on:** "Total is about 5.5 GB, so it fits on a single 8 GB GPU."
 
 **A:**
 
@@ -1024,6 +1050,8 @@ Fits comfortably on a single 8 GB GPU with room for batch processing.
 
 **Q12: How do you measure the quality of your RAG system?**
 
+**Memory hook:** *Three scores, one weighted grade* · question quality, ~39% → citation accuracy, ~33% → checklist quality, ~28% → weighted into one score · **Land on:** "Baseline is about 0.64, mostly pulled down by citation format errors."
+
 **A:** Three-dimensional evaluation:
 
 1. **Question Quality (~39% weight):** Semantic similarity to stage definition (MiniLM cosine), observable-condition check (regex), procedural-question penalty, length validation, multi-part question detection
@@ -1037,6 +1065,8 @@ The overall score is a weighted combination. At baseline we're at ~0.64, primari
 ---
 
 **Q13: What are the main quality bottlenecks, and how would you fix them?**
+
+**Memory hook:** *Five leaks, five patches* · citation format, constrained decoding → stage leaks, stage classifier → generic questions, more examples → vague items, human checklists → missed paragraphs, top-50 plus expansion · **Land on:** "Each bottleneck has a specific fix, starting with JSON schema enforcement for citations."
 
 **A:**
 
@@ -1054,6 +1084,8 @@ The overall score is a weighted combination. At baseline we're at ~0.64, primari
 
 **Q14: How does your FSM work? What happens if a stage has no relevant content?**
 
+**Memory hook:** *Nine stages, never stuck* · ordered list plus one index → advance() and has_more() → weak content: fallback excerpts → then minimal excerpt, template checklist · **Land on:** "The FSM always advances, so we never get stuck on a stage."
+
 **A:** The FSM is a simple dataclass with an ordered sequence: `[M, A, R, C, H, P, A2, W, S]` and a state index. `advance()` increments the index; `has_more()` checks if we've reached "END".
 
 If a stage has no relevant content (retrieval scores below threshold), the system activates a **fallback chain**:
@@ -1065,6 +1097,8 @@ If a stage has no relevant content (retrieval scores below threshold), the syste
 ---
 
 **Q15: Explain the async orchestrator's pre-fetching strategy.**
+
+**Memory hook:** *Work while the medic reads* · user reads current checklist → background: next question, cached → background: next stage retrieval → asyncio.create_task, non-blocking · **Land on:** "When the user submits, the next question is already there, so it feels instant."
 
 **A:** The async orchestrator exploits **user think-time** for parallelism:
 
@@ -1086,6 +1120,8 @@ Implementation:
 
 **Q16: How do you handle the "window expansion" from parent windows to child paragraphs?**
 
+**Memory hook:** *Find by window, cite by paragraph* · top-5 windows, paragraph IDs → round-robin for diversity → cross-encoder scores each paragraph → dedupe with a seen set · **Land on:** "Windows give the context; paragraphs give the precise citation."
+
 **A:** Windows are the retrieval unit (for context), but paragraphs are the citation unit (for precision). After retrieving top-5 windows, we expand them:
 
 1. Each window has a `paragraph_ids` list pointing to original paragraphs
@@ -1101,6 +1137,8 @@ Implementation:
 
 **Q17: Tell me about a technical challenge you faced and how you solved it.**
 
+**Memory hook:** *"Chest" belongs to two stages* · Respiration pulled Hemorrhage content → Jaccard filter, too aggressive → stage keyword lists instead → under 3 excerpts, fall back · **Land on:** "That fixed the contamination, and the system still always had content to show."
+
 **A:** The biggest challenge was **stage contamination** in retrieved content. When the system reached the Respiration (R) stage, it would retrieve content about Massive Hemorrhage (M) because both mention "chest" and "wound." Initially, I tried Jaccard similarity filtering between the query and stage definitions, but it was too fragile — it filtered out legitimate content too aggressively.
 
 I replaced it with a cleaner approach: **explicit stage-keyword dictionaries**. Each MARCH-PAWS stage has a curated list of keywords (M: bleeding, hemorrhage, tourniquet; R: respiratory, breathing, lung). As the FSM advances, content matching completed stages' keywords is excluded. The critical safety net: if filtering removes too much (below 3 excerpts), we fall back to the top cross-encoder-scored results regardless of stage. This resolved the contamination while maintaining content availability.
@@ -1108,6 +1146,8 @@ I replaced it with a cleaner approach: **explicit stage-keyword dictionaries**. 
 ---
 
 **Q18: How would you scale this system to 1000 medical manuals?**
+
+**Memory hook:** *Swap each layer for scale* · HNSW or IVF plus PQ → pgvector, Elasticsearch for BM25 → Ray or Spark embedding → vLLM, ColBERT, Redis cache → React plus FastAPI · **Land on:** "Every layer changes, from a 141-vector flat index to 100K+ vectors on HNSW or IVF."
 
 **A:** Several changes at each layer:
 
@@ -1126,6 +1166,8 @@ I replaced it with a cleaner approach: **explicit stage-keyword dictionaries**. 
 
 **Q19: How do you ensure the system doesn't give dangerous medical advice?**
 
+**Memory hook:** *Six locks on one door* · reject non-medical queries → every point cited to TC 4-02.1 → low score means refuse → FSM blocks skipping stages → prompt says refuse exactly · **Land on:** "If the excerpts don't support an answer, it says 'I cannot advise' instead of guessing."
+
 **A:** Multiple safety layers:
 
 1. **Non-medical query rejection:** Multi-layered regex + keyword detection rejects non-medical queries (weather, cooking, etc.)
@@ -1139,6 +1181,8 @@ I replaced it with a cleaner approach: **explicit stage-keyword dictionaries**. 
 
 **Q20: What would you do differently if you started this project today?**
 
+**Memory hook:** *Measure first, then build* · build the evaluator first → ColBERT over cross-encoder → constrained decoding for JSON → fine-tune MiniLM, add user feedback · **Land on:** "First I'd build the evaluator, then improve the pipeline with measurable feedback."
+
 **A:**
 1. **Start with evaluation:** Build the quality evaluator first, then iterate on the pipeline with measurable feedback
 2. **ColBERT instead of cross-encoder:** Late interaction models like ColBERT give cross-encoder-like quality at bi-encoder-like speed
@@ -1149,6 +1193,8 @@ I replaced it with a cleaner approach: **explicit stage-keyword dictionaries**. 
 ---
 
 **Q21: Compare your approach to using a fine-tuned medical LLM like Med-PaLM.**
+
+**Memory hook:** *Open book versus memory* · knowledge comes from the manual → exact paragraph citations → re-index, not retrain → local Mistral, low cost · **Land on:** "For one authoritative manual that needs citations, RAG is the right choice."
 
 **A:**
 
@@ -1167,6 +1213,8 @@ For this use case — a single authoritative manual with citation requirements �
 
 **Q22: How does your sliding window strategy handle the trade-off between context and precision?**
 
+**Memory hook:** *Context versus precision* · 250 tokens, 3-5 paragraphs → 100-token overlap at edges → section change starts new window → giant paragraphs split at ~120 · **Land on:** "250 tokens is the sweet spot for medical paragraphs of 50-150 tokens each."
+
 **A:** Windows are 250 tokens with 100-token overlap. This is intentional:
 - **250 tokens** captures 3-5 paragraphs — enough context for the LLM to understand the medical procedure
 - **100-token overlap** ensures no information is lost at window boundaries — a paragraph about "tourniquet placement" won't be split across two windows with no overlap
@@ -1178,6 +1226,8 @@ The trade-off: smaller windows = more precise retrieval but less context; larger
 ---
 
 **Q23: Explain your context engineering approach for Q-Gen.**
+
+**Memory hook:** *Right examples, right time* · 45 examples, 5 per stage → score by keyword overlap → top-3 into the prompt → add stage definition, anti-patterns · **Land on:** "It's cheaper than fine-tuning, and I update it by adding examples to the JSON."
 
 **A:** Instead of fine-tuning, we use **context engineering** — injecting the right examples into the prompt at runtime:
 
@@ -1193,6 +1243,8 @@ This is cheaper than fine-tuning, instantly updatable (add more examples to the 
 
 **Q24: How would you add multi-language support?**
 
+**Memory hook:** *Translate, embed, or rebuild* · translate query in and out → multilingual-e5-large embeddings → full multilingual pipeline, highest cost · **Land on:** "For medical safety, I'd start with query translation using human-verified translations."
+
 **A:** Three options, increasing in effort:
 
 1. **Query translation:** Translate query to English → retrieve → generate in English → translate response back. Cheapest but adds latency and translation errors.
@@ -1204,6 +1256,8 @@ For medical safety, option 1 with human-verified translations is the safest star
 ---
 
 **Q25: What happens when the LLM generates invalid JSON?**
+
+**Memory hook:** *Bad JSON never blocks* · try json.loads → fail: whole text becomes one item → empty checklist: default items → empty citations: generic TCCC references · **Land on:** "The FSM always advances, so bad LLM output never blocks the stages."
 
 **A:** The system has a robust fallback chain:
 
@@ -1230,21 +1284,31 @@ Additionally:
 
 ### "Your quality score is only 0.64. Why so low?"
 
+**Memory hook:** *Strict grader, clear roadmap* · automated baseline, three parts → citation format is the drag → humans rate content higher → 0.75, then 0.85, then 0.92+ · **Land on:** "Prompt fixes, domain models, then fine-tuning take us from 0.64 to 0.92+."
+
 **Response:** "0.64 is our **automated baseline** across all three dimensions (question quality, citation accuracy, checklist quality). The main drag is citation accuracy — the LLM sometimes outputs citations in non-standard formats that fail our strict database mapping. Human evaluators rate the checklist content significantly higher. We have a concrete roadmap: prompt-level citation formatting gets us to 0.75, domain-adapted models to 0.85, and fine-tuning to 0.92+."
 
 ### "Why not use GPT-4 or Claude instead of Mistral 7B?"
+
+**Memory hook:** *Local, cheap, fast* · data can't leave the machine → no per-token cost, 9 prompts → no network round-trips → JSON from retrieved text · **Land on:** "For this task Mistral 7B works well; for complex planning I'd consider larger models."
 
 **Response:** "Three constraints: (1) Medical data privacy — content can't leave the local machine; (2) Cost — no per-token API charges for a system that generates 9 prompts per assessment; (3) Latency — local inference avoids network round-trips. For this specific task (structured JSON generation from retrieved content), Mistral 7B at 4-bit quantization performs well. If we needed complex reasoning or multi-step planning, I'd consider larger models."
 
 ### "Only 141 vectors? That's tiny."
 
+**Memory hook:** *One manual, fully covered* · one manual, not a collection → 141 windows cover all of it → exact search, zero error → complexity lives in the pipeline · **Land on:** "The hard part is the 8-step ingestion, hybrid retrieval, and orchestration, not corpus size."
+
 **Response:** "The TC 4-02.1 manual is a single, authoritative reference — not a document collection. 141 windows cover the entire manual comprehensively with overlap. The small corpus is actually an advantage: we use exact search (IndexFlatIP) with zero approximation error, and our hybrid retrieval ensures we never miss relevant content. The real complexity is in the 8-step ingestion pipeline, hybrid retrieval, and multi-stage orchestration — not raw corpus size."
 
 ### "How do you know the medical advice is correct?"
 
+**Memory hook:** *Support tool, not a doctor* · decision support, not replacement → grounded in the TCCC manual → verifiable paragraph citations → evaluator plus stage-by-stage FSM · **Land on:** "When relevance is low, it says 'I don't know' instead of guessing."
+
 **Response:** "We don't claim autonomous correctness — the system is a **decision support tool**, not a replacement for medical training. Every recommendation is (1) grounded in retrieved excerpts from the official TCCC manual, (2) cited with verifiable paragraph references, (3) filtered through a quality evaluator, and (4) subject to the FSM's systematic stage-by-stage approach. The refusal mechanism ensures the system says 'I don't know' rather than guessing when content relevance is low."
 
 ### "Your ingestion pipeline is complex. Why not just use LangChain's PDF loader?"
+
+**Memory hook:** *Generic loader loses the numbers* · misses numbered paragraphs like 6-4 → no font-size heading hierarchy → no cross-page stitching → no citation metadata · **Land on:** "The extra effort pays off in citation accuracy."
 
 **Response:** "Generic PDF loaders produce poor results on structured military manuals because: (1) They miss the numbered paragraph format (e.g., '6-4. Apply tourniquet...'); (2) They don't detect heading hierarchy from font sizes; (3) They can't handle cross-page paragraph stitching; (4) They don't produce citation-quality metadata. Our custom pipeline preserves paragraph-level granularity and generates the anchor metadata needed for verifiable citations. The extra effort pays off in citation accuracy."
 
@@ -1450,6 +1514,8 @@ def verify_citation(citation: str) -> dict:
 
 The graph is deliberately **not** free-roaming. Every loop is bounded (`repair_attempts >= 2`), the stage order is planned up front rather than chosen turn-by-turn, and refusal is a first-class terminal state per stage.
 
+**Memory hook:** *Autonomy on a short leash* · as much autonomy as needed → routes and retries, hard bounds → no new stages, no endless loops → assert on the node trace · **Land on:** "In a clinical tool, predictable and auditable beats clever."
+
 > **Say this:** "I gave the agent exactly as much autonomy as the task needed and no more. It routes and retries within hard bounds, but it can't invent new stages or loop forever. In a clinical decision-support tool, predictable and auditable beats clever — and a bounded graph is far easier to test, because I can assert on the node trace."
 
 ### 8.5 How this connects to the rest of your portfolio
@@ -1509,6 +1575,8 @@ Two levers, and know the difference:
 - **Constrained decoding** (grammar/JSON-schema enforced at sampling time — Outlines, llama.cpp GBNF, Ollama `format: json`): the model *cannot* emit invalid syntax. Cheap and strong for format.
 - **Post-hoc validation + repair** (Pydantic then re-prompt): still needed, because valid JSON can be **semantically** wrong — a well-formed citation to a paragraph that doesn't exist.
 
+**Memory hook:** *Syntax is not truth* · constrained decoding fixes syntax → Pydantic checks the meaning → verify every citation · **Land on:** "Grammar for format, validation for meaning. I use both."
+
 > **Say this:** "Constrained decoding solves syntax; it does nothing for truth. I use both — grammar-constrained generation so I never fight a JSON parser, then Pydantic plus citation verification for meaning."
 
 ### 9.3 Grounding guardrail — the one that actually matters
@@ -1543,6 +1611,8 @@ Note the second check — an anchor can exist while the claim isn't actually sup
 
 ### 9.5 Why local 4-bit Mistral-7B *is* a guardrail
 
+**Memory hook:** *Nothing leaves the machine* · not only cost, a guardrail → queries may hold patient details → privacy drove the model choice → 4-bit fits the hardware · **Land on:** "Quantization let a 7B model fit the hardware and stay under five seconds."
+
 > **Say this:** "Running a 4-bit Mistral-7B locally through Ollama wasn't only a cost decision — it's a compliance guardrail. Protocol queries in a medical context can contain patient specifics, so the strongest privacy control available is that no inference request ever leaves the machine. That constraint drove the model choice, and quantization is what made a 7B model fit the hardware budget while keeping latency under five seconds."
 
 Cross-reference: `../learning/31_ai_safety_guardrails_responsible_ai.md`, `../learning/13_quantization.md`, `../learning/49_llmops_and_observability.md`.
@@ -1554,34 +1624,67 @@ Cross-reference: `../learning/31_ai_safety_guardrails_responsible_ai.md`, `../le
 The adversarial set. These are the questions that separate "I built this" from "I read about this."
 
 **Q: "+28% top-five relevance — 28% of what? Absolute or relative?"**
+
+**Memory hook:** *Relative, not absolute* · top-five hit rate, labelled set → dense-only baseline → relative, baseline already decent → mostly exact-term matching · **Land on:** "The correct paragraph made the top five about 28% more often."
+
 > "Relative improvement in top-five hit rate on a labelled query set I built from the manual — representative medic questions paired with the ground-truth paragraphs. Dense-only was the baseline. I quote it as relative because the absolute baseline was already decent; the honest framing is 'the correct paragraph made it into the top five about 28% more often once I added BM25 fusion and reranking.' Most of that came from lexical matching on exact medical terms."
 
 **Q: "Your quality score is 0.64. Would you ship a 0.64 medical system?"**
+
+**Memory hook:** *Yes, as support only* · decision support, citations required → 0.64 is a format-heavy composite → unverifiable claims never shown → never autonomous medical advice · **Land on:** "The roadmap to 0.92 is citation formatting, then domain adaptation, then fine-tuning."
+
 > "As a decision-support tool with mandatory citations, yes — and I'd be explicit that 0.64 is my *automated composite*, dominated by strict citation-format matching, not clinical correctness. The safety property that matters is that it never surfaces an unverifiable claim: ungrounded citations are dropped and low-relevance stages refuse. I'd never ship it as autonomous medical advice, and the roadmap to 0.92 is prompt-level citation formatting, then domain adaptation, then fine-tuning."
 
 **Q: "141 vectors. Isn't RAG overkill — why not just put the manual in a long context window?"**
+
+**Memory hook:** *Five paragraphs, not the whole book* · fair, long context is viable → citations need retrieval → five paragraphs, lower cost → must scale to a library · **Land on:** "Plus 'lost in the middle': accuracy drops for facts buried mid-context."
+
 > "Fair challenge, and for one 200-page manual a long-context model is genuinely viable. Three reasons I still built retrieval: paragraph-level citation is a hard requirement and long-context gives you no attribution primitive; cost and latency per query are far lower when you send five paragraphs instead of the whole manual; and the architecture has to scale to a library of protocols, not one document. There's also 'lost in the middle' — accuracy degrades for facts buried mid-context."
 
 **Q: "You used a cross-encoder. What's your latency budget, and doesn't reranking blow it?"**
+
+**Memory hook:** *Expensive scorer, small set* · 20 candidates, milliseconds → LRU cache on query-document pairs → LLM generation costs the most · **Land on:** "You only pay the expensive scorer on a small candidate set."
+
 > "Reranking 20 candidates with MiniLM-L-6-v2 is milliseconds on the relevant hardware, and I cache scores with an LRU keyed on query-document pairs. The dominant cost is LLM generation, not reranking. That's the whole point of the retrieve-then-rerank cascade — you only pay the expensive scorer on a small candidate set."
 
 **Q: "How do you know your RRF weights aren't overfit to your own eval set?"**
+
+**Memory hook:** *Directional, not proven* · real risk, small set → rules, not per-query tuning → bootstrap confidence interval → grow the labelled set · **Land on:** "I'd rather state the uncertainty than over-claim."
+
 > "That's a real risk with a small labelled set. The adaptive alpha is rule-based on query characteristics rather than tuned per query, which limits how much I can overfit. Honestly, with a set this size I'd treat the 28% as directional, report a bootstrap confidence interval, and expand the labelled set before making stronger claims. I'd rather state the uncertainty than over-claim."
 
 **Q: "What happens when the LLM invents a drug dosage?"**
+
+**Memory hook:** *No anchor, no dosage* · dosage must trace to a citation → similarity check against source text → too much stripped, show excerpts · **Land on:** "Degrade to source, never to guess."
+
 > "It gets dropped. Dosages must trace to a cited paragraph, and the grounding check compares the generated claim against the cited source text — so an invented dosage either has no valid anchor or fails the similarity check. If validation strips too much, the stage degrades to showing verified excerpts rather than a synthesized answer. Degrade to source, never to guess."
 
 **Q: "You said LangGraph. Couldn't you have done this with a for-loop over nine stages?"**
+
+**Memory hook:** *Branches earn the graph* · happy path, a loop works → skip, refuse, repair, resume → node trace for debugging and tests · **Land on:** "Frameworks should be justified by control flow, not fashion."
+
 > "For the happy path, yes — and I'd have started there. The graph earns its place because of the branches: conditional skipping, the relevance gate that routes to refusal, bounded repair loops, and resumable sessions via a checkpointer. I also get the node trace for free, which is how I debug and how I assert behavior in tests. If the flow were genuinely linear I'd have kept the loop; frameworks should be justified by control flow, not fashion."
 
 **Q: "Mistral-7B is weak compared to a frontier model. Isn't that a quality cop-out?"**
+
+**Memory hook:** *Small model, strong scaffolding* · PHI must stay local → 4-bit fits, sub-5-second latency → retrieval, rerank, validation compensate · **Land on:** "For grounded tasks, a small model with good context beats a big model with a naive prompt."
+
 > "It's a constraint-driven choice: PHI can't leave the environment, so local inference was non-negotiable, and 4-bit was what made a 7B fit the hardware with sub-5-second latency. I compensated architecturally — heavy retrieval, reranking, few-shot context engineering, structured output constraints, and validation — so the model does less unaided reasoning. That's the general lesson: with strong grounding and validation, a small model plus good context beats a big model with a naive prompt for extractive, grounded tasks."
 
 **Q: "How would you evaluate this properly if you had a month?"**
+
+**Memory hook:** *Three tracks, one golden set* · retrieval: recall@k and MRR → generation: clinicians plus LLM judge → system: p95, refusals, citation drops · **Land on:** "Then the golden set goes into CI, so a prompt change can't silently regress it."
+
 > "Three tracks. Retrieval: expand the labelled set to a few hundred queries, report recall@k and MRR with confidence intervals. Generation: clinician-reviewed ratings on a stratified sample plus an LLM-as-judge for groundedness, calibrated against those human labels. System: latency p95, refusal rate, and citation-drop rate as production health metrics. Then wire the golden set into CI so a prompt change can't silently regress it."
 
 **Q: "What's the single biggest weakness of this system?"**
+
+**Memory hook:** *Strong design, thin evaluation* · evaluation depth is the gap → score is a one-engineer proxy → no clinician-validated ground truth yet · **Land on:** "Being straight about that line is more credible than inflating it."
+
 > "Evaluation depth. The architecture and safety story are strong, but my automated quality score is a proxy built by one engineer, not clinician-validated ground truth at scale. I can defend every design decision; I can't yet claim clinically-validated accuracy — and I think being straight about that line is more credible than inflating it."
 
 **Q: "If you had to cut one component, which goes?"**
+
+**Memory hook:** *Cut the clever part* · drop the z-score threshold → least evidence behind its calibration → simpler tuned floor instead → keep BM25 and citation checks · **Land on:** "BM25 and citation verification carry the most value per line of code."
+
 > "The dynamic z-score threshold. It's elegant but it's the piece with the least evidence behind its calibration — I'd replace it with a simpler tuned floor validated on a larger set. I would not cut BM25 or citation verification; those carry the most value per line of code."

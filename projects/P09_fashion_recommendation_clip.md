@@ -992,6 +992,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q1: Walk me through this project from start to finish.**
 
+**Memory hook:** *Prep, tune, index, search* · DeepFashion, DensePose masks, BLIP captions → LoRA on CLIP RN50, 0.096% trainable → 44K masked images into FAISS → alpha blends image and text · **Land on:** "The system achieved 88% Mean Opinion Score against human relevance judgments."
+
 > This is a multimodal fashion recommendation system built during my coursework at UMD. The core problem is bridging the semantic gap between how users describe clothing in natural language and how fashion catalogs store images.
 >
 > The pipeline has four stages: First, **data preparation** — I used the DeepFashion dataset with 44,000+ images. I ran DensePose to generate body segmentation masks, isolating clothing from backgrounds. Then I used BLIP with few-shot prompting to generate rich fashion captions for each image.
@@ -1004,6 +1006,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q2: How does CLIP work, and why did you choose it for this project?**
 
+**Memory hook:** *Pictures and words, one space* · dual encoder, 400 million pairs → shared space, compare with cosine → cross-modal, zero-shot, fine-tunable · **Land on:** "From scratch I'd need millions of labeled fashion pairs and lose CLIP's 400M-pair pretraining."
+
 > CLIP uses a dual-encoder architecture — a vision encoder (ResNet or ViT) and a text encoder (Transformer) — trained contrastively on 400 million image-text pairs. The key insight is that it learns a shared embedding space where semantically similar images and text are close together.
 >
 > I chose CLIP for three reasons: First, it provides **cross-modal alignment** out of the box — I can encode both fashion images and text descriptions into the same space and compare them with cosine similarity. Second, it has **strong zero-shot transfer** — even without fine-tuning, CLIP understands visual concepts like "red dress" or "leather jacket." Third, it's **fine-tunable** — the pretrained representations provide an excellent starting point that I can adapt to the fashion domain with relatively little data.
@@ -1011,6 +1015,8 @@ Encourages embeddings to spread on the hypersphere.
 > The alternative was training a retrieval model from scratch, which would require millions of labeled fashion pairs and wouldn't benefit from CLIP's 400M-pair pretraining.
 
 **Q3: Why fine-tune CLIP instead of using it directly?**
+
+**Memory hook:** *Web words miss fashion words* · trained on general web alt text → struggled on chiffon A-line queries → gaps: vocabulary, granularity, attribute binding · **Land on:** "LoRA avoids catastrophic forgetting, so CLIP keeps general vision and adds fashion knowledge."
 
 > Base CLIP has a significant **domain gap** for fashion. It was trained on general web image-text pairs — alt text like "woman standing in park" — which doesn't capture fashion-specific details. When I tested base CLIP on queries like "chiffon A-line dress with boat neckline," it struggled because these terms appear infrequently in its training data.
 >
@@ -1020,6 +1026,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q4: Explain LoRA and why you chose rank 16.**
 
+**Memory hook:** *Freeze big, train small* · freeze W, learn small A and B → rank 16, 32x compression → 4-8 too tight, 32-64 too costly → adapt q, k, v, out projections · **Land on:** "Rank 16, alpha 32, under 36K trainable parameters, just 0.096% of the model."
+
 > LoRA — Low-Rank Adaptation — works by freezing all pretrained weights and injecting small trainable matrices into attention layers. For each weight matrix W, instead of updating W directly, you learn two small matrices A and B such that the effective weight becomes W + B·A, where A is d×r and B is r×d with r << d.
 >
 > I chose rank 16 as a balance between capacity and efficiency. With the 1024-dimensional RN50 attention layers, rank 16 gives each adapted layer 2×16×1024 = 32,768 parameters instead of 1024² = 1,048,576 — a 32x compression. Rank 4-8 is often too constrained for domain adaptation; rank 32-64 approaches full fine-tuning cost. At rank 16 with alpha 32 (effective scaling = 2.0), I achieved strong fashion adaptation while keeping total trainable parameters under 36K — just 0.096% of the model.
@@ -1027,6 +1035,8 @@ Encourages embeddings to spread on the hypersphere.
 > I targeted the attention projections (q_proj, k_proj, v_proj, out_proj) because attention layers control what the model "looks at" — adapting these changes the visual features the model prioritizes (e.g., focusing more on fabric texture, color, and silhouette rather than background objects).
 
 **Q5: Why RN50 instead of ViT-B/32?**
+
+**Memory hook:** *Stable beats fancy* · ViT hit MPS segfaults on macOS → RN50 stable on CPU → 1024 dims vs 512 → ViT overfit more early on · **Land on:** "At scale on GPU I'd try ViT-L/14, but here RN50 with LoRA was the best trade-off."
 
 > Practical and technical reasons. Practically, ViT-B/32 caused MPS (Metal Performance Shaders) segmentation faults on macOS during LoRA training, while RN50 was stable on CPU — a real engineering constraint I had to work around.
 >
@@ -1036,6 +1046,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q6: How does the segmentation mask improve retrieval quality?**
 
+**Memory hook:** *Hide the room, keep the clothes* · full image adds background noise → same white backdrop looks similar → mask whites out non-clothing pixels → DensePose label above 0 kept · **Land on:** "Masks added 6-8% MOS. Edges can clip, but the net effect is strongly positive."
+
 > Without masks, CLIP's vision encoder sees the entire image — person, background, floor, furniture. When computing similarity, background elements become confounding features. Two images might be "similar" because they both have a white studio background, not because the clothing is similar.
 >
 > The binary mask zeros out non-clothing pixels (set to white=255), so the encoder only processes clothing regions. This had a measurable +6-8% impact on MOS. The mask generation uses DensePose body part labels — any pixel with a body part label > 0 is considered "person/clothing," and I keep those while blanking the rest.
@@ -1043,6 +1055,8 @@ Encourages embeddings to spread on the hypersphere.
 > The trade-off is that masks can occasionally clip garment edges or miss loose-fitting clothing, but the net effect is strongly positive because it eliminates background noise from the embedding space.
 
 **Q7: Walk me through the FAISS search pipeline.**
+
+**Memory hook:** *Over-fetch, then filter* · 44K normalized embeddings in IndexFlatIP → encode image and text, blend with alpha → fetch top k times 10 → drop self-match and scores below 0.5 · **Land on:** "10x over-retrieval leaves enough results, and the threshold blocks irrelevant matches."
 
 > At index time, I encode all 44K masked images through the LoRA-adapted CLIP encoder, L2-normalize the 1024-dim embeddings, and store them in a FAISS `IndexFlatIP` (exact inner product search). For 44K vectors, exact search is still sub-second, so I didn't need approximate indices — though the code supports IVF and HNSW for larger catalogs.
 >
@@ -1054,6 +1068,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q8: How did you generate captions with BLIP?**
 
+**Memory hook:** *Show six examples, get fashion* · 6 hand-written exemplar captions → examples prepended to the prompt → 5 beams, length and repetition penalties → under 15 words, regenerate · **Land on:** "The output is captions.jsonl, one JSON per line with image path and caption."
+
 > I used `Salesforce/blip-image-captioning-base` with a few-shot prompting strategy. I manually wrote 6 detailed exemplar captions covering different clothing categories — jackets, dresses, shirts, pants, tanks, blouses — each describing garment type, sleeve length, color, fabric, texture, closures, and fit.
 >
 > These examples were prepended to the prompt: "Generate a detailed fashion description for this image. Use the same level of detail and style as these examples..." This guides BLIP toward fashion-specific vocabulary rather than generic descriptions like "a woman wearing clothes."
@@ -1064,6 +1080,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q9: What is contrastive learning and how does it work in your training loop?**
 
+**Memory hook:** *Pull pairs close, push others away* · N pairs make an N×N matrix → diagonal positive, rest negative → symmetric cross-entropy, both directions → temperature 0.07 sharpens softmax · **Land on:** "Small differences give big gradients, which matters when a blazer and sport coat look alike."
+
 > Contrastive learning teaches models to pull matching pairs closer and push non-matching pairs apart in embedding space. In our case, a batch of N image-text pairs creates an N×N similarity matrix. The diagonal entries are positive pairs (matched image-text), and all off-diagonal entries are negatives.
 >
 > The loss is symmetric cross-entropy: for each image, we compute softmax over its similarities with all texts in the batch (image→text direction), and for each text, softmax over its similarities with all images (text→image direction). The target is the identity matrix — each image should be most similar to its own caption.
@@ -1071,6 +1089,8 @@ Encourages embeddings to spread on the hypersphere.
 > Temperature τ=0.07 scales the logits before softmax, making the distribution sharper. This means even small differences in similarity scores produce large gradients, forcing the model to make fine distinctions — critical for fashion where items can be visually similar but semantically different (e.g., a blazer vs. a sport coat).
 
 **Q10: How did you handle negative prompts like "without jacket"?**
+
+**Memory hook:** *Flip negatives into positives* · CLIP learns presence, not absence → rule map: without jacket to shirt, top → richer color phrases → done before tokenization · **Land on:** "Not perfect, it's a curated mapping for common cases, but it worked for our use case."
 
 > CLIP fundamentally struggles with negation because contrastive training optimizes for presence, not absence. The word "jacket" in "without jacket" still activates jacket-related features in the text encoder.
 >
@@ -1082,6 +1102,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q11: What was your training data and how did you construct batches?**
 
+**Memory hook:** *Tiny batches, many steps* · 44,096 image-caption pairs → CLIP preprocessing, 224×224, truncate captions → batch 2, no shuffle, drop incomplete → 2×2 similarity matrix · **Land on:** "Small batches, but LoRA converges with many more gradient steps."
+
 > The training data consisted of 44,096 image-caption pairs from DeepFashion. Each pair had: (1) the fashion image (optionally masked using DensePose segmentation), (2) a BLIP-generated caption describing the garment in detail.
 >
 > For batch construction, images were preprocessed using CLIP's standard preprocessing (resize to 224×224, normalize). Captions were tokenized using CLIP's tokenizer with `truncate=True` to handle long descriptions. The DataLoader used batch size 2 (effective, limited by CPU memory), no shuffling during LoRA training for reproducibility, and `drop_last=True` to avoid incomplete batches that would break the contrastive loss symmetry.
@@ -1089,6 +1111,8 @@ Encourages embeddings to spread on the hypersphere.
 > Each batch forms a 2×2 similarity matrix (or 4×4 with batch_size=4). Within-batch negatives are the non-diagonal pairs. With a batch of 2, you get 2 positives and 2 negatives — small, but LoRA's efficiency means it converges with many more gradient steps over small batches. The cosine annealing scheduler adapts the learning rate across epochs*batches total steps.
 
 **Q12: How does the LoRA training ensure gradient flow through the adapted layers?**
+
+**Memory hook:** *Force the gradients to flow* · PEFT wrapper can break the graph → `enable_grad` plus add 0.0 → fallback if loss has no grad → clip gradient norm at 1.0 · **Land on:** "CLIP was built for inference, so its no-grad decorators had to be bypassed."
 
 > This was actually a tricky engineering challenge. The PEFT library wraps the original modules, but gradient flow can break if the wrapper doesn't properly connect to the computation graph. In the code, I use `torch.enable_grad()` context and add `+ 0.0` to features to force them into the computational graph:
 >
@@ -1101,6 +1125,8 @@ Encourages embeddings to spread on the hypersphere.
 > If `loss.requires_grad` is False (gradient chain broken), the code falls back to an alternative approach using a dummy input. I also verify gradient norms and clip to max 1.0 to prevent explosion. The key insight is that PEFT's integration with CLIP required explicit gradient verification because CLIP was originally designed for inference, not training — its internal `@torch.no_grad()` decorators had to be bypassed.
 
 **Q13: What is the temperature parameter and what would happen if you changed it?**
+
+**Memory hook:** *Turn the sharpness knob* · temperature divides the logits → at 0.07, a 0.1 gap becomes 1.43 → near 0 unstable, infinity uniform → 1.0 too soft, weak gradients · **Land on:** "CLIP learns it from 0.07, but I kept it fixed to keep the pretrained calibration."
 
 > Temperature τ scales the logits in the contrastive loss: `logits = (img_features @ txt_features.T) / τ`. It controls the "peakiness" of the softmax distribution.
 >
@@ -1116,6 +1142,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q14: How do you handle the cold start / new items problem?**
 
+**Memory hook:** *Encode, normalize, append* · new image through LoRA CLIP → L2-normalize the embedding → add to NumPy matrix and FAISS → batches of 1000 for full rebuilds · **Land on:** "In production I'd use `add_with_ids()` plus periodic index rebuilds."
+
 > When new items are added to the catalog, they need to be embedded and indexed. The system handles this by:
 >
 > 1. Running the new image through the LoRA-adapted CLIP encoder (optionally with mask)
@@ -1129,6 +1157,8 @@ Encourages embeddings to spread on the hypersphere.
 ### System Design & Scaling (Q15-Q19)
 
 **Q15: How would you deploy this system at scale (millions of items)?**
+
+**Memory hook:** *Compress, accelerate, split, cache* · IVF plus PQ, 4KB to 64 bytes → GPU FAISS, TorchServe or Triton → queue for new item embeddings → shard index, Redis cache, CDN · **Land on:** "IVF plus PQ gives sub-10ms search with 95%+ recall at 10M items."
 
 > Several architectural changes needed:
 >
@@ -1148,6 +1178,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q16: What are the latency bottlenecks and how would you optimize them?**
 
+**Memory hook:** *Encoding is the slow part* · query encoding 50-100ms on CPU → fix with GPU, ONNX, TensorRT → FAISS 1-5ms at 44K → image loading 10-20ms, turbojpeg · **Land on:** "Target p99 under 200ms. Now about 150ms on CPU, under 50ms with GPU."
+
 > Three main bottlenecks:
 >
 > 1. **Query encoding (~50-100ms on CPU):** The LoRA CLIP forward pass is the biggest bottleneck. Solution: batch queries, use GPU inference with TorchServe, or use ONNX Runtime for optimized inference. TensorRT could give 5-10x speedup.
@@ -1160,6 +1192,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q17: How would you add real-time personalization?**
 
+**Memory hook:** *Simple to complex, three steps* · average liked items into a vector → blend it with the query → re-rank top-100 with user features → per-user LoRA for power users · **Land on:** "The wardrobe already stores liked items in Supabase, the base for approach one."
+
 > Three approaches, from simple to complex:
 >
 > 1. **User preference vector:** Average the embeddings of items the user has liked/saved in their wardrobe. At query time, blend this preference vector with the query embedding: `q_final = β·q_query + (1-β)·q_user_pref`. This is essentially collaborative filtering in embedding space.
@@ -1171,6 +1205,8 @@ Encourages embeddings to spread on the hypersphere.
 > The virtual wardrobe feature in the Streamlit app already stores user-liked items in Supabase, which provides the foundation for approach #1.
 
 **Q18: What monitoring would you add for a production system?**
+
+**Memory hook:** *Quality, speed, model, index, users* · MOS sample, CLIPScore, no-results rate → p50, p95, p99, alert over 500ms → embedding drift, index freshness → click-through, add-to-wardrobe rate · **Land on:** "Five areas: retrieval quality, latency, model health, index health, and user behavior."
 
 > Five categories:
 >
@@ -1186,6 +1222,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q19: How would you handle multiple fashion domains (shoes, jewelry, bags)?**
 
+**Memory hook:** *One model first, then adapters* · add domain context to text queries → or one LoRA adapter per domain → zero-shot picks domain, load adapter → adapters about 150KB each · **Land on:** "Start with one model, move to adapters if per-domain metrics show degradation."
+
 > Two strategies:
 >
 > **Strategy 1: Single model, domain-aware prompts.** Keep one LoRA-adapted CLIP model but prepend domain context to text queries: "a shoe that is red leather boots" rather than just "red leather." This leverages CLIP's cross-category understanding.
@@ -1198,6 +1236,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q20: What was the hardest technical challenge you faced?**
 
+**Memory hook:** *Dead gradients, MPS segfaults* · CLIP's no-grad code blocked gradients → `enable_grad`, add 0.0, gradient check → ViT segfaults, switched to RN50 · **Land on:** "PEFT plus CLIP is not plug-and-play. I had to understand how both work inside."
+
 > **Making LoRA work with CLIP on CPU without segmentation faults.** CLIP's reference implementation uses `torch.no_grad()` extensively for inference optimization, which breaks the gradient computation needed for training. When I first applied PEFT's LoRA wrapper to CLIP, the loss had `requires_grad=False` — no gradients were flowing.
 >
 > The fix required three things: (1) wrapping forward passes in `torch.enable_grad()`, (2) adding identity operations (`+ 0.0`) to force tensors into the computational graph, and (3) implementing a fallback path with explicit gradient verification. Additionally, ViT-B/32 was causing MPS segfaults, so I switched to RN50 — a pragmatic engineering decision that also gave us richer 1024-dim embeddings.
@@ -1205,6 +1245,8 @@ Encourages embeddings to spread on the hypersphere.
 > This taught me that integrating pre-built libraries (PEFT + CLIP) isn't always plug-and-play. Understanding the internal behavior of both libraries was essential to making them work together.
 
 **Q21: What would you do differently if you started over?**
+
+**Memory hook:** *Bigger model, harder negatives, better eval* · ViT-L/14 with GPU training → hard negative mining → BLIP-2 for richer captions → attribute-based re-ranking · **Land on:** "And proper evaluation: Recall@K, NDCG, and MRR with MOS, on held-out test sets."
 
 > Five things:
 >
@@ -1220,6 +1262,8 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q22: How does DensePose specifically help with fashion recommendation compared to simpler segmentation?**
 
+**Memory hook:** *Not just person, which body part* · U-Net only says person or not → 24 body parts, region masks → UV coordinates remove pose bias → part edges match garment edges · **Land on:** "Here I used it for masks, but UV mapping could enable virtual try-on later."
+
 > Simpler segmentation (e.g., U-Net binary foreground/background) just tells you "person vs. not person." DensePose goes further in three ways:
 >
 > 1. **Body-part awareness:** DensePose labels 24 body parts, so you can extract "torso-only" masks (for top recommendations), "lower body" masks (for pants/skirts), or "full body" masks (for dresses). This enables body-region-specific retrieval.
@@ -1231,6 +1275,8 @@ Encourages embeddings to spread on the hypersphere.
 > In this project, I used DensePose primarily for mask generation (improvement #1), but the UV mapping capabilities could enable virtual try-on as a future extension.
 
 **Q23: Explain the embedding space geometry — what does it look like for fashion items?**
+
+**Memory hook:** *A sphere of clothing clusters* · 1024-dim normalized hypersphere → category clusters, attribute gradients inside → text sits near matching images → alpha moves along the arc · **Land on:** "At alpha 0.3, it finds items that look like the image, biased toward the text."
 
 > After LoRA fine-tuning, the embedding space exhibits clear structure. Imagine a 1024-dimensional hypersphere (since all embeddings are L2-normalized):
 >
@@ -1244,11 +1290,15 @@ Encourages embeddings to spread on the hypersphere.
 
 **Q24: Why inner product similarity in FAISS instead of L2 distance?**
 
+**Memory hook:** *Unit vectors: IP equals cosine* · normalized, so inner product is cosine → L2 is a monotonic transform → keeps CLIP's pretrained geometry → slightly faster, easier to read · **Land on:** "0.95 means 95% similar, which is easier to threshold than L2 distance."
+
 > For L2-normalized vectors (which ours are), inner product and cosine similarity are equivalent: `cos(a,b) = a·b / (||a||·||b||) = a·b` when `||a||=||b||=1`. L2 distance is a monotonic transformation: `||a-b||² = 2 - 2·a·b`.
 >
 > I chose `IndexFlatIP` over `IndexFlatL2` because: (1) CLIP's original training uses cosine similarity, so inner product preserves the pretrained geometry; (2) inner product search is slightly faster (no subtraction and square root); and (3) the scores are more interpretable — 0.95 means 95% similar, which is easier to threshold than L2 distance values.
 
 **Q25: How did you validate that the system was actually learning fashion-specific features?**
+
+**Memory hook:** *Loss, eyes, humans, scores* · loss fell over 5 epochs → black blazer query gave blazers → MOS 88% vs about 68-72% → true matches score higher · **Land on:** "Humans judged it much more relevant, 88% MOS, consistent across categories and query types."
 
 > Three validation approaches:
 >

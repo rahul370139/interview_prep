@@ -283,21 +283,39 @@ A **build-step-free** SPA in `frontend/` (vanilla ES modules + hand-rolled SVG c
 # 6. Interview Questions & Model Answers
 
 **Q1. Why not just compute the per-user CTR and run a t-test?**
+
+**Memory hook:** *Ratio of two randoms* · clicks and impressions both vary → per-user ratios give the wrong variance → delta method, linearize at the mean → `ratio_difference` · **Land on:** "CTR is a ratio metric, so it needs the delta method, not a plain t-test."
+
 Because CTR is a ratio of two random quantities (clicks and impressions) and impressions vary per user. The variance of the ratio-of-means is not the variance of per-user ratios; you need the delta method (linearize around the mean: $g_i = (\text{num}_i - r\,\text{den}_i)/\overline{\text{den}}$). The platform's `ratio_difference` does exactly this.
 
 **Q2. The treatment increased the triggered-cohort conversion. Can we report that as the effect?**
+
+**Memory hook:** *Triggering happens after treatment* · treatment changes who triggers → triggered cohort not randomized → ITT is the headline, triggered is secondary → overlap check · **Land on:** "ITT is the valid effect. A big overlap gap means the triggered number is confounded."
+
 Carefully. Triggering (e.g., searching) is a *post-assignment* behavior; if treatment changes who triggers, the triggered cohort is no longer a randomized comparison. We report ITT as the valid headline and triggered as a precision-oriented secondary, with an overlap diagnostic. If the cross-arm overlap gap is large, the triggered estimand is confounded.
 
 **Q3. A cluster-randomized test shows a 1.1 SMD imbalance and user-level SRM p≈1e-139. Is it broken?**
+
+**Memory hook:** *Design, not defect* · market-level randomization → user-level checks fail by construction → cluster-level SRM and balance → cluster-robust SE · **Land on:** "It's not broken. This was a real bug I fixed in `diagnostics.py`."
+
 No — that's the design, not a defect. With market-level randomization, every user inherits its market's arm, so user-level SRM and user-level balance compare whole markets and "fail" by construction. The correct diagnostics are cluster-level SRM (cluster counts vs expected) and cluster-mean balance, and residual imbalance across few clusters is absorbed by cluster-robust standard errors. (This is implemented in `diagnostics.py` and was a specific bug I fixed.)
 
 **Q4. How do you stop people from peeking?**
+
+**Memory hook:** *Plan the looks, spend the alpha* · group-sequential boundaries → O'Brien-Fleming, strict early → Bonferroni over planned looks → flag if naive z crossed · **Land on:** "Naive repeated 0.05 tests can push the false-positive rate past 20%."
+
 Compute group-sequential boundaries. The platform reports an O'Brien–Fleming boundary $z_{\alpha/2}/\sqrt{t}$ (conservative early, near-nominal at the end) and a Bonferroni boundary over the planned looks, and flags whether the naive z crossed either. Naive repeated 0.05 testing can push Type-I error past 20%.
 
 **Q5. RCT, DiD, and IPW disagree. What now?**
+
+**Memory hook:** *Disagreement is information* · each design has different assumptions → check IPW overlap, DiD pre-trends, RCT SRM and balance → ship only on direction agreement plus passing checks · **Land on:** "Three designs, three sets of assumptions. When they agree, that's the strongest evidence."
+
 Triangulation works *because* the designs rely on different assumptions (randomization vs parallel trends vs ignorability+overlap). Disagreement is information: check overlap for IPW, pre-trends for DiD, and SRM/balance for the RCT. The decision card already keys "ship" on direction agreement + passing diagnostics.
 
 **Q6. What makes a result reproducible here?**
+
+**Memory hook:** *Same inputs, same hash* · SHA-256 of config, seed, git SHA, library versions → `analysis_hash` → `verify` recomputes it · **Land on:** "Same inputs and same code give the same hash, so every readout is auditable."
+
 A manifest: SHA-256 of the resolved config, the seed, git SHA, and library versions, with an `analysis_hash`. `verify` recomputes it. Same inputs + same code ⇒ identical hash, so a saved readout is auditable.
 
 ---
@@ -305,6 +323,8 @@ A manifest: SHA-256 of the resolved config, the seed, git SHA, and library versi
 # 7. Debugging War-Stories
 
 These are real fixes made while hardening the platform — good "tell me about a bug you found" material.
+
+**Memory hook:** *Healthy test said Investigate* · `lift`: 0.02 warn vs 0.03 health check → aligned both at 0.03 → `cluster_lift`: user-level checks on markets → cluster-level checks, honest Investigate · **Land on:** "Both were judgement bugs, not math bugs, and judgement is the hard part of this work."
 
 1. **Flagship `lift` never shipped.** The triggered-overlap warn threshold (0.02) was tighter than the triggering health check (0.03). A natural 2.2pp search-rate gap from a *genuine* lift tripped the stricter threshold and fired an "Investigate" rule, so the healthy demo showed *Investigate* instead of *Ship*. Fix: align both thresholds at 0.03 so the decision rule keys off the same diagnostic.
 

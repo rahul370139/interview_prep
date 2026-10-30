@@ -1380,6 +1380,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q1: "Walk me through this project end to end."
 
+**Memory hook:** *Messy calls in, dashboards out* · 200 labels into clean taxonomy → Cortex summarizes each call → 70B few-shot teacher → 7B LoRA student → daily runs feed dashboards · **Land on:** "The 7B student hit 94% recall on validated labels, at roughly 10x lower cost and latency."
+
 > **Answer:**
 > "At Jet2, our contact centre handled millions of calls annually, generating massive volumes of transcripts that needed to be categorized by intent for operational decision-making. Manual review was slow and inconsistent.
 >
@@ -1397,6 +1399,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q2: "Why did you use few-shot learning instead of fine-tuning for the teacher?"
 
+**Memory hook:** *Prompts change in minutes* · iteration speed, 8 prompt versions → taxonomy still changing → no labels yet, teacher makes them → then fine-tune the student · **Land on:** "Few-shot built the labels; then we fine-tuned the student to be fast and cheap."
+
 > **Answer:**
 > "There were three main reasons. First, iteration speed — with few-shot, I could change intent definitions, add examples, or restructure the prompt in minutes. Fine-tuning would require hours of GPU training for every change. We went through about 8 major prompt iterations; that would have been 8 training runs.
 >
@@ -1409,6 +1413,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q3: "Explain teacher-student distillation in the context of your project."
+
+**Memory hook:** *Teacher writes, student studies* · 70B few-shot teacher sets ceiling → label 50,000 transcripts → keep ~40,000 above 0.85 → LoRA fine-tune 7B student → sequence-level, no logits needed · **Land on:** "The 7B student hit 94% recall, a small margin below the teacher, at roughly 10x lower cost."
 
 > **Answer:**
 > "Knowledge distillation is about transferring the capabilities of a large, expensive model to a smaller, production-friendly one.
@@ -1427,6 +1433,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q4: "How did you validate the student model against the teacher?"
 
+**Memory hook:** *Copy check, then truth check* · 5,000 held-out vs teacher → ~1,000 human gold labels → 200 disagreements read by hand → per-intent recall tracked · **Land on:** "The 94% comes from human gold labels, so it measures correctness, not just teacher agreement."
+
 > **Answer:**
 > "We used a multi-layered validation approach.
 >
@@ -1442,6 +1450,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q5: "Why recall on the validated label set as your primary metric?"
 
+**Memory hook:** *Missing hurts more than extra* · multi-label, exact match too strict → set-based gives partial credit → a missed intent costs more → guardrails: Jaccard, labels per call · **Land on:** "At 94%, we capture roughly nineteen out of every twenty true intent labels."
+
 > **Answer:**
 > "Two reasons: the nature of the task and the business need.
 >
@@ -1454,6 +1464,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q6: "How did you handle ambiguous intents?"
+
+**Memory hook:** *Refund or reschedule? Both.* · allow multi-label in taxonomy → ambiguous examples in prompt → below 0.7 goes to humans → new intents in v2, v3 · **Land on:** "Many ambiguous calls just had multiple intents, so we added new categories in v2 and v3."
 
 > **Answer:**
 > "Ambiguity was one of the biggest challenges. A customer might start asking about a refund, then pivot to rescheduling — is the primary intent cancellation or booking change?
@@ -1468,6 +1480,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q7: "What if a call has no clear intent?"
 
+**Memory hook:** *OTHER bucket is an alarm* · OTHER/UNCLASSIFIABLE category → prompt says explain why → short, wrong-number, unusual calls → watch the OTHER rate · **Land on:** "When a new booking policy caused a spike, we quickly added the missing intent category."
+
 > **Answer:**
 > "We handled this explicitly in the taxonomy with an 'OTHER/UNCLASSIFIABLE' category, and in the prompt with instructions like: 'If the call does not clearly match any intent, classify as OTHER and explain why in the reasoning field.'
 >
@@ -1478,6 +1492,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q8: "How did you scale to 1M+ transcripts?"
+
+**Memory hook:** *Shrink first, then run inside* · everything inside Snowflake, parallel → summary ~50x cheaper to classify → nightly Snowflake Tasks, no manual work → teacher backfill over weeks · **Land on:** "The student handled the daily volume in under 2 hours of batch processing."
 
 > **Answer:**
 > "Scalability came from three design decisions.
@@ -1494,6 +1510,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q9: "What would you improve if you could redo this project?"
 
+**Memory hook:** *Sample smarter, rank, retrain always* · active learning on uncertain cases → RLHF or DPO with SME rankings → embedding drift, automatic retraining · **Land on:** "Retraining was manual and quarterly; I would make it continuous."
+
 > **Answer:**
 > "Three things. First, I'd invest more in active learning. Instead of randomly sampling transcripts for the teacher, I'd use the student's confidence scores to prioritize uncertain or disagreement cases — this would make the teacher's labeling budget go further.
 >
@@ -1505,6 +1523,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q10: "How did you handle prompt engineering iterations?"
 
+**Memory hook:** *Draft, test, review, refine, repeat* · document every prompt version → fixed 500-transcript eval set → SMEs tag each error → refine definitions and examples · **Land on:** "Intent definitions added ~5% recall, and hard negative examples cut those confusions by ~40%."
+
 > **Answer:**
 > "Very systematically. Each prompt version was documented with: the exact prompt text, the intent definitions, the few-shot examples, and the evaluation results.
 >
@@ -1515,6 +1535,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q11: "Walk me through the cost analysis — teacher vs student in production."
+
+**Memory hook:** *800 tokens versus 200 tokens* · teacher: ~800 input tokens, few-shot → student: ~200 tokens, knowledge baked in → student ~10x faster, smaller warehouse → teacher kept for audits, retraining · **Land on:** "That's a 10x cost reduction, and that's before counting latency."
 
 > **Answer:**
 > "Let me break this down concretely. With 5,000 transcripts per day:
@@ -1530,6 +1552,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q12: "How did you monitor for drift in NLP?"
+
+**Memory hook:** *Four alarms on one dashboard* · label distribution, Jensen-Shannon → confidence over time → monthly teacher check, 85% bar → weekly human audit of 200 · **Land on:** "One real drift event came from a new booking policy, so we added intents and refreshed the student."
 
 > **Answer:**
 > "We tracked drift at multiple levels.
@@ -1548,6 +1572,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q13: "What's the difference between Jaccard similarity and set-based recall?"
 
+**Memory hook:** *Divide by union, or by truth* · Jaccard: intersection over union → recall: intersection over true set → recall headline, misses cost more → Jaccard catches over-prediction · **Land on:** "The gap between Jaccard and 94% is our over-prediction rate, and I show it, not hide it."
+
 > **Answer:**
 > "Jaccard similarity measures symmetric overlap: |intersection| / |union|. It penalizes both missing labels (false negatives) and extra labels (false positives) equally.
 >
@@ -1560,6 +1586,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q14: "How does Snowflake Cortex compare to using an external LLM API?"
+
+**Memory hook:** *Data never leaves Snowflake* · governance, PII stays inside → just SQL, easy to maintain → serverless, no idle GPUs → trade-off: fixed models, less control · **Land on:** "For the student we needed more control, so we trained it on separate infrastructure."
 
 > **Answer:**
 > "Three main advantages of Cortex for our use case.
@@ -1576,6 +1604,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q15: "Tell me about a time the model failed and how you fixed it."
 
+**Memory hook:** *Hear the customer, not the agent* · transferred calls, about 5% → model read agent notes → summary prompt: customer's needs → added a transferred-call example · **Land on:** "That category went from ~60% to ~85% accuracy, and overall recall improved by about 2 points."
+
 > **Answer:**
 > "One notable failure was with 'transfer to another department' calls. About 5% of calls involved a customer being transferred — the LLM was classifying based on the transferring agent's brief notes rather than the customer's actual intent.
 >
@@ -1588,6 +1618,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q16: "How did you handle class imbalance in the intent taxonomy?"
+
+**Memory hook:** *Big classes hide small ones* · two intents ~50% of calls → teacher: one example per rare class → student: stratify, oversample rare → per-intent metrics separately · **Land on:** "Rare intents stayed lower, ~75% vs ~93%, so low-confidence rare predictions went to human review."
 
 > **Answer:**
 > "Our intent distribution was heavily skewed — BOOKING_CHANGE and INFORMATION accounted for ~50% of calls, while categories like LOYALTY or SPECIAL_ASSISTANCE were under 3%.
@@ -1602,6 +1634,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q17: "Why not just fine-tune a single model instead of teacher-student?"
 
+**Memory hook:** *No labels, so teacher makes them* · bootstrapping problem, no labels → manual labeling takes months → teacher labels at scale → teacher also sets the ceiling · **Land on:** "Given our starting point of zero labels, teacher-student was the right architecture."
+
 > **Answer:**
 > "We could have, but there's a bootstrapping problem. Fine-tuning requires labeled data, and we didn't have it at scale. Manual labeling of 50,000 transcripts with a three-level intent taxonomy would take months of expert time.
 >
@@ -1614,6 +1648,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q18: "How do you ensure the model outputs valid JSON?"
+
+**Memory hook:** *Ask clearly, then catch failures* · format rules and examples in prompt → student learned format, ~98% parseable → fallback regex, then reprocess → today: constrained decoding · **Land on:** "At the time, prompt engineering plus post-processing was effective enough."
 
 > **Answer:**
 > "Multiple strategies. In the prompt, I included explicit formatting instructions and examples of valid JSON output. I also added negative instructions: 'Do not include explanatory text outside the JSON block.'
@@ -1628,6 +1664,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q19: "What's your understanding of how tokenization affects this pipeline?"
 
+**Memory hook:** *Fewer tokens, fewer problems* · raw transcript may not fit 4K → cost: ~50x fewer input tokens → student skips ~500 few-shot tokens → codes like PNR split badly · **Land on:** "Summarization helped here too, because the summary used natural language rather than codes."
+
 > **Answer:**
 > "Tokenization matters in two places. First, context window utilization — a raw transcript might be 5,000–10,000 tokens depending on the tokenizer. If the context window is 4K (Llama 2), that transcript doesn't even fit. Our summarization step compressed transcripts to ~50–150 tokens, making context windows a non-issue.
 >
@@ -1640,6 +1678,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q20: "How would you extend this system to real-time classification?"
+
+**Memory hook:** *Nightly batch to live stream* · serve student as low-latency API → lighter summarization inline → Snowpipe or Kafka/Kinesis stream → streaming ASR, mid-call classification · **Land on:** "At ~1 second per call with the 7B model, real-time is feasible."
 
 > **Answer:**
 > "Currently, the system runs as a nightly batch job. For real-time:
@@ -1656,6 +1696,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q21: "How did the dashboard integration work?"
 
+**Memory hook:** *See the spike, move the agents* · results land in Snowflake table → Tableau via native connector → trends, agent performance, anomaly alerts → disruption spike, reallocate agents · **Land on:** "Before our system, that reallocation happened hours later, based on manual observation."
+
 > **Answer:**
 > "The classified transcripts landed in a Snowflake production table with columns for call_id, timestamp, agent_id, primary/secondary/tertiary intent, confidence score, and the original summary.
 >
@@ -1666,6 +1708,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q22: "How did you handle PII in the transcripts?"
+
+**Memory hook:** *Mask first, never leave Snowflake* · mask PII before summarization → row-level security, masking, roles → pipeline sees masked summaries → Cortex means no data egress · **Land on:** "Keeping everything in Snowflake simplified GDPR compliance, one of the strongest arguments for Cortex."
 
 > **Answer:**
 > "PII handling was multi-layered. First, raw transcripts were processed through a PII detection and masking pipeline before summarization — names replaced with [CUSTOMER], card numbers with [CARD_REDACTED], booking references with [BOOKING_REF].
@@ -1678,6 +1722,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q23: "Why not just use the 70B? Compute is cheap now."
 
+**Memory hook:** *Labelling instrument versus product* · recurring nightly batch → ten to fifteen times the cost → late dashboards are worthless → five hundred prompt tokens every call → teacher kept for audits · **Land on:** "The 70B was a labelling instrument, and the 7B was the product."
+
 > **Answer:**
 > "Compute is cheaper than it was, but the economics of this particular workload didn't change shape. It's a *recurring* batch — thousands of calls, every night, indefinitely. The 70B was roughly ten to fifteen times the cost per inference and about ten times the latency, and at seasonal peak the batch wouldn't have finished inside its window. That last one isn't a budget argument, it's a correctness argument: forecasts and dashboards that land after the morning ops meeting are worthless.
 >
@@ -1688,6 +1734,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q24: "How do you know the student didn't collapse on rare intents?"
+
+**Memory hook:** *Averages hide dead labels* · per-label recall, head versus tail → stratified, oversampled rare data → positive weighting in BCE → lower thresholds for rare intents · **Land on:** "A collapsed label shows no threshold reaching acceptable recall; that's the diagnostic."
 
 > **Answer:**
 > "Because I never looked at the aggregate alone — that's exactly the failure mode a single headline number hides. A model can post 94% recall while a rare intent has quietly gone to zero, because the rare intent contributes almost nothing to the average.
@@ -1702,6 +1750,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q25: "What temperature did you use, and why that value?"
 
+**Memory hook:** *Near zero for decisions* · sequence-level, no KD temperature → decoding near zero, deterministic → moderate temperature for self-consistency → classic KD: start around three · **Land on:** "Two to four is the range where the dark knowledge shows without drowning the signal."
+
 > **Answer:**
 > "I should be precise here: for the production student I used sequence-level distillation, where the student trains on the teacher's generated text, so there's no softmax temperature on the KD loss in the classic sense. The temperature that mattered operationally was the *decoding* temperature — near zero, effectively greedy, for both models, because this is a classification task and you want determinism, not creativity. Same input, same output, every run. That matters for auditability as much as accuracy.
 >
@@ -1712,6 +1762,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q26: "How did you set the per-label thresholds?"
+
+**Memory hook:** *Each label gets its own bar* · tune on validation, never test → sweep, pick lowest meeting floor → floors come from operations → low for complaints, highest for OTHER · **Land on:** "A single global 0.5 assumes every label has the same base rate and cost, and neither is true."
 
 > **Answer:**
 > "On the validation set, never the test set — otherwise you've fitted your thresholds to the number you're about to report.
@@ -1725,6 +1777,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q27: "What's the difference between response-based, feature-based and relation-based knowledge distillation?"
+
+**Memory hook:** *Outputs, insides, or relationships* · response: match output distribution → feature: match hidden layers → relation: match sample geometry → mine: sequence-level, response-based · **Land on:** "Cortex returns only text, so with no white-box access, feature and relation KD were off the table."
 
 > **Answer:**
 > "They differ in *what* the student is asked to match.
@@ -1741,6 +1795,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q28: "How do you know your teacher labels weren't just propagating the teacher's bias into the student?"
 
+**Memory hook:** *Grade against humans, not teacher* · can't rule out, can bound → headline vs human gold labels → SMEs audited teacher labels → drop self-inconsistent examples → taxonomy blind spot remains · **Land on:** "A rising OTHER rate is the signal that reality has outgrown your label space."
+
 > **Answer:**
 > "I can't rule it out entirely, and I'd be suspicious of anyone who claimed they could. What I can do is bound it and detect the cases that matter.
 >
@@ -1754,6 +1810,8 @@ Decision: Used CoT only for the teacher during training data generation,
 
 ## Q29: "Walk me through the actual training setup for the student."
 
+**Memory hook:** *Small adapters, cheap rollbacks* · 7B open-weight base, LoRA → LoRA avoids catastrophic forgetting → summary in, JSON out → no few-shot in training prompts · **Land on:** "Early stopping was on validation recall, because loss and our metric weren't perfectly aligned."
+
 > **Answer:**
 > "Base model was a 7B open-weight model in the Mistral-7B / Llama-2-7B class. Training was parameter-efficient — LoRA rather than full fine-tuning — with rank in the 16 to 64 range and alpha roughly double the rank. Learning rate around 1e-4 to 2e-5 with a warmup and cosine decay, three to five epochs, effective batch size in the 8 to 16 range using gradient accumulation, and a 10% validation split held out from the training pairs.
 >
@@ -1766,6 +1824,8 @@ Decision: Used CoT only for the teacher during training data generation,
 ---
 
 ## Q30: "Did the student ever beat the teacher? Should it?"
+
+**Memory hook:** *Student wins big? Check leaks.* · ours didn't → it can: filtering, regularising, SME labels → big win means suspect a leak → gap sits in rare, ambiguous calls · **Land on:** "The student learned the bulk of the decision boundary and lost a little resolution in the tail."
 
 > **Answer:**
 > "Ours didn't, and I'd have wanted to explain it carefully if it had.
@@ -1786,6 +1846,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ### Trick Q1: "94% recall sounds high — what was your precision, and did you trade it away?"
 
+**Memory hook:** *Trade precision, buy coverage* · yes, precision materially lower → recall versus Jaccard gap → a missed complaint costs far more → high-frequency labels, higher thresholds → watch labels per call · **Land on:** "Average labels per call is the metric that catches recall bought with spray-and-pray."
+
 > **Answer:**
 > "Yes, deliberately, and I want to be straight about the number rather than invent one. Precision was materially lower than recall — that's the direct consequence of tuning per-label thresholds downward to maximise coverage. If I had to characterise it I'd say we were comfortably over-predicting, and the honest way to see it is the gap between the recall figure and the Jaccard similarity, which is symmetric and penalises extra labels. That gap *is* the over-prediction.
 >
@@ -1796,6 +1858,8 @@ These are the adversarial probes — the questions designed to find out whether 
 ---
 
 ### Trick Q2: "Multi-label with 1M transcripts — how did you handle label imbalance and rare intents?"
+
+**Memory hook:** *Sample, loss, threshold, evaluate* · stratified, oversampled 50,000 → capped positive weights in BCE → lower thresholds for rare intents → per-label metrics, head versus tail · **Land on:** "Rare intents still underperformed, so low-confidence rare predictions went to human review."
 
 > **Answer:**
 > "At four levels, because no single fix is sufficient.
@@ -1814,6 +1878,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ### Trick Q3: "You said 1M+ transcripts but only 50K teacher labels. Isn't the 1M number misleading?"
 
+**Memory hook:** *Process a million, label fifty thousand* · 1M+ is processed volume → 50,000 labelled, ~40,000 survived → that gap is the design → clarify it in thirty seconds · **Land on:** "Distillation lets a model process a million records without paying to label a million records."
+
 > **Answer:**
 > "They're two different things and I should be explicit about both. The million-plus is *processed* volume — the student model ran over the full historical corpus and then over every new call, two to five thousand a day. That's the operational scale of the system.
 >
@@ -1827,6 +1893,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ### Trick Q4: "Your confidence filter kept only high-confidence teacher predictions. Didn't that make the task artificially easy for the student?"
 
+**Memory hook:** *Clean data hides hard cases* · yes, a real effect → hard slice with SME labels → evaluation set not filtered → next time: active learning · **Land on:** "I'd spend the labelling budget where the student is weakest, not where the teacher is most confident."
+
 > **Answer:**
 > "That's the sharpest critique of the setup and yes, it's a real effect. Filtering to high-confidence teacher output systematically removes the ambiguous, multi-intent, edge-case calls — exactly the cases the student will meet in production. You end up with a clean training set that under-represents difficulty, and a student that's overconfident on the hard tail.
 >
@@ -1837,6 +1905,8 @@ These are the adversarial probes — the questions designed to find out whether 
 ---
 
 ### Trick Q5: "If the student imitates the teacher, isn't your ceiling the teacher's error rate? How is 94% not just an upper bound you got lucky on?"
+
+**Memory hook:** *Approximately the ceiling, not exactly* · yes, roughly the ceiling → denoised data, regularising, SME slice → a thousand unseen SME transcripts → held up for months in production · **Land on:** "If it were luck, the weekly teacher audits would have shown agreement decaying, and they didn't."
 
 > **Answer:**
 > "For pure imitation, yes, the teacher is approximately the ceiling — and our student does sit below it, which is the expected pattern.
@@ -1849,6 +1919,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ### Trick Q6: "Sequence-level distillation is just supervised fine-tuning on synthetic data. Why call it distillation?"
 
+**Memory hook:** *Same loop, different purpose* · concede: mechanically standard SFT → big model trains its small replacement → Kim and Rush, a named method → know Hinton KD, didn't use it · **Land on:** "Cortex doesn't expose logits, and pretending otherwise would fall apart in one follow-up question."
+
 > **Answer:**
 > "Mechanically you're right, and I'd concede that immediately — the training loop is standard SFT with a cross-entropy loss on next-token prediction. There's no KL term, no temperature, no logit matching. If someone wants to call it 'training on synthetic labels' I won't argue about the word.
 >
@@ -1860,6 +1932,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ### Trick Q7: "You measured against 1,000 SME-labelled transcripts. What was the inter-annotator agreement? If your humans disagree, what does 94% even mean?"
 
+**Memory hook:** *Humans disagree, model stays consistent* · agreement around 80% → ceiling set by task ambiguity → model more consistent than humans → adjudicated gold, no-consensus calls excluded · **Land on:** "Excluding no-consensus calls is a mild optimistic bias in the 94%, and I'd rather name it than hide it."
+
 > **Answer:**
 > "This is the right question and it constrains what any number can mean. Our estimate of manual inter-annotator agreement on this taxonomy was around 80% — meaning two trained humans given the same call assign meaningfully different label sets about one time in five.
 >
@@ -1870,6 +1944,8 @@ These are the adversarial probes — the questions designed to find out whether 
 ---
 
 ### Trick Q8: "Six percent of intents are missed. Which six percent, and did anyone get hurt?"
+
+**Memory hook:** *Which six percent matters* · misses sit in the tail → rare, high-consequence intents watched weekly → lowest thresholds for those → low confidence goes to humans · **Land on:** "The model was a routing and analytics layer, not the last line of defence."
 
 > **Answer:**
 > "The honest answer to 'which' is: disproportionately the tail. Misses concentrate on rare intents with few training examples and on calls carrying three or more simultaneous intents, where the third and fourth labels are the ones that drop. They are *not* uniformly distributed, and if they were I'd be more relaxed, not less.
@@ -1886,6 +1962,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ## 6.1 "Did you actually train the student model on teacher outputs?"
 
+**Memory hook:** *Yes, trained on teacher outputs* · LoRA on ~40,000 teacher examples → summary in, teacher JSON out → no teacher at inference → checked vs teacher and gold · **Land on:** "The student achieved 94% recall on validated intent labels, a small margin below the teacher."
+
 **The concern:** Interviewers may wonder if you really did distillation or just used the teacher directly.
 
 **How to address:**
@@ -1899,6 +1977,8 @@ These are the adversarial probes — the questions designed to find out whether 
 ---
 
 ## 6.2 "94% recall — is that too good, or not good enough?"
+
+**Memory hook:** *Nineteen of twenty, honestly measured* · SME gold, fully held out → recall chosen, precision traded → errors: rare and ambiguous calls → low confidence goes to humans → human agreement around 80% · **Land on:** "The system is more consistent than the process it replaced, not just faster."
 
 **The concern:** this cuts both ways. Some interviewers hear 94% and think "6% of intents are missed, that's a lot of unrouted complaints." Others hear it and suspect the metric was chosen to flatter.
 
@@ -1918,6 +1998,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ## 6.3 "Why few-shot for the teacher instead of fine-tuning a large model?"
 
+**Memory hook:** *Cold start, no labels yet* · deliberate choice, not a shortcut → teacher's job: create labels → 8 prompt versions in weeks → then fine-tune the student · **Land on:** "Direct fine-tuning would need a large labeled dataset, and that dataset didn't exist."
+
 **The concern:** Few-shot might seem like a shortcut.
 
 **How to frame it:**
@@ -1932,6 +2014,8 @@ These are the adversarial probes — the questions designed to find out whether 
 
 ## 6.4 "How much of this was your work vs the team?"
 
+**Memory hook:** *I owned the model side* · primary data scientist → taxonomy, Cortex pipeline, prompts → distillation, evaluation, drift monitoring → data engineer, PMs, BI helped · **Land on:** "The dashboard was built by our BI team, based on the data I produced."
+
 **How to frame it:**
 
 > "I was the primary data scientist on this project. Specifically, I owned: the intent taxonomy design (collaborating with product for domain knowledge), the Cortex pipeline setup, prompt engineering for the teacher, the distillation process for the student, evaluation methodology, and drift monitoring.
@@ -1941,6 +2025,8 @@ These are the adversarial probes — the questions designed to find out whether 
 ---
 
 ## 6.5 "What if the ASR (speech-to-text) is noisy?"
+
+**Memory hook:** *The summary cleans the noise* · ASR noise was real → summarization acts as denoiser → noisy examples in few-shot prompts → considered explicit error correction · **Land on:** "We considered an explicit error correction step, but summarization was effective enough."
 
 **How to address:**
 > "ASR noise was a real issue — roughly 5–8% word error rate on our transcripts. We handled this in two ways. First, the summarization step acted as a denoiser — the LLM could understand the gist even with some garbled words, and the summary was cleaner than the raw transcript. Second, we explicitly included noisy examples in our few-shot prompts so the classifier learned to handle imperfect input. We did consider adding an explicit error correction step, but the summarization approach was effective enough."

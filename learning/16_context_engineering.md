@@ -884,6 +884,8 @@ During autoregressive generation, the transformer recomputes Keys and Values for
 | **Llama-3-70B** | 80 | 8192 | 336 GB | 168 GB |
 | **GPT-4 (est.)** | ~120 | ~12288 | ~756 GB | ~378 GB |
 
+> These rows assume every attention head stores its own K and V (no GQA). Real Llama-3 models use GQA with 8 KV heads, so their cache is much smaller: Llama-3-8B at 128K is about 16 GB in FP16 (4x less), and Llama-3-70B is about 40 GB (8x less). See §5.4.
+
 ### Quick Estimation
 
 ```python
@@ -902,17 +904,21 @@ def kv_cache_size_gb(n_layers, d_model, seq_len, dtype_bytes=2):
     bytes_total = 2 * n_layers * seq_len * d_model * dtype_bytes
     return bytes_total / (1024 ** 3)
 
-# Llama-3-8B at 128K context, FP16
+# Llama-3-8B at 128K context, FP16, no GQA (d_model = 4096)
 print(f"{kv_cache_size_gb(32, 4096, 131072, 2):.1f} GB")
-# Output: 67.1 GB
+# Output: 64.0 GB
 
 # Same model, INT8 quantized KV-cache
 print(f"{kv_cache_size_gb(32, 4096, 131072, 1):.1f} GB")
-# Output: 33.5 GB
+# Output: 32.0 GB
 
 # Practical: 8K context on 8B model, FP16
 print(f"{kv_cache_size_gb(32, 4096, 8192, 2):.2f} GB")
-# Output: 4.19 GB
+# Output: 4.00 GB
+
+# Real Llama-3-8B uses GQA: 8 KV heads x 128 dims = 1024, not 4096
+print(f"{kv_cache_size_gb(32, 1024, 131072, 2):.1f} GB")
+# Output: 16.0 GB
 ```
 
 ---
@@ -942,18 +948,22 @@ print(f"{kv_cache_size_gb(32, 4096, 8192, 2):.2f} GB")
 
 ---
 
-## **5.4 128K Context ≈ 0.5 GB Rule of Thumb**
+## **5.4 128K Context ≈ 16 GB Rule of Thumb (Llama-3-8B, GQA, FP16)**
 
 For practical estimation in interviews:
 
 ```
-128K tokens on a ~7B parameter model (FP16):
-  KV-cache ≈ 0.5 GB per forward pass (with grouped-query attention)
-  
-Why lower than the formula suggests?
+128K tokens on Llama-3-8B (FP16, GQA with 8 KV heads × 128 dims = 1,024):
+  KV-cache = 2 × 32 layers × 131,072 tokens × 1,024 × 2 bytes
+           ≈ 17.2 GB (16 GiB) per sequence
+
+Why lower than the d_model formula suggests?
   • Grouped-Query Attention (GQA): shares KV heads → 4-8x reduction
-  • Llama-3-8B uses GQA with 8 KV heads (vs 32 attention heads)
-  • Effective: 2 × 32 layers × 128K × (4096/4) × 2 bytes ≈ 0.5 GB
+  • Llama-3-8B uses GQA with 8 KV heads (vs 32 attention heads) → 4x
+  • Without GQA it would be ≈ 68.7 GB (64 GiB)
+
+Per-token shortcut: 2 × 32 × 1,024 × 2 bytes = 128 KB per token
+  → 8K context ≈ 1 GB, 128K context ≈ 16 GB, INT8 KV-cache halves it (≈ 8 GB)
 
 This is the number to quote in interviews for "How much RAM does 128K context need?"
 ```
@@ -1471,6 +1481,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 
 ## **Q1: "What is context engineering and why does it matter?"**
 
+**Memory hook:** *Choose the toys for its hands* · Select, compress, order, inject → retrieval is the bottleneck → GPT-4 still hallucinates on bad chunks → relevance per token · **Land on:** "It's about maximizing relevance per token within your budget, which drives faithfulness, accuracy, and cost."
+
 > **Strong answer:**
 > "Context engineering is the practice of selecting, compressing, ordering, and injecting the right tokens into a model's context window to maximize output quality. Think of it as choosing which toys to put in the model's hands — the model can only work with what you give it.
 >
@@ -1479,6 +1491,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 ---
 
 ## **Q2: "How do you manage a limited context window?"**
+
+**Memory hook:** *Budget first, then fill* · Budget: window minus fixed parts → retrieve top-20, re-rank to top-5 → compress 6-8x with LLMLingua → sandwich order, pack to budget · **Land on:** "With 8K, I keep ~6500 tokens for context, worth 40-50K raw tokens after compression."
 
 > **Strong answer:**
 > "I use a token budgeting approach. First, I calculate the available space: window size minus system prompt, user query, and generation buffer. Then I apply a multi-stage pipeline:
@@ -1495,6 +1509,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 
 ## **Q3: "What is the 'lost in the middle' problem?"**
 
+**Memory hook:** *Best chunks on the bread* · Liu et al. 2023: ends win → true even at 128K → sandwich ordering → keep it short, repeat key instructions · **Land on:** "Don't just dump everything in. Put the best chunks at the start and the end."
+
 > **Strong answer:**
 > "Liu et al. (2023) showed that language models attend disproportionately to information at the beginning and end of the context window. Information placed in the middle is effectively 'lost' — the model has lower recall and accuracy on it.
 >
@@ -1503,6 +1519,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 ---
 
 ## **Q4: "How would you reduce token usage in a RAG system?"**
+
+**Memory hook:** *Six levers, one budget* · Smaller semantic chunks → re-rank, 20 chunks to 5 → drop >92% near-duplicates → LLMLingua 6-8x, cache compressed chunks → INT8 KV-cache saves 75% · **Land on:** "Combined, these cut token usage by 10-15x compared to naive RAG."
 
 > **Strong answer:**
 > "There are multiple levers at different stages:
@@ -1520,6 +1538,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 
 ## **Q5: "Explain the tradeoffs between HNSW and IVF-PQ for vector indexing."**
 
+**Memory hook:** *Accuracy versus memory* · HNSW: graph, >98% recall → ~6KB per vector, 10M needs 60GB → IVF-PQ: clusters plus compression → ~64 bytes, recall ~92-95% · **Land on:** "Under 5M documents I default to HNSW. For billions of vectors, IVF-PQ or Pinecone."
+
 > **Strong answer:**
 > "Both are approximate nearest neighbor algorithms, optimized for different constraints:
 >
@@ -1532,6 +1552,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 ---
 
 ## **Q6: "Walk me through designing a RAG system from scratch."**
+
+**Memory hook:** *Seven stations on one line* · Parse, chunk with 15% overlap → embed, pgvector HNSW → hybrid 70% semantic, 30% BM25 → re-rank to top-5, MMR → sandwich prompt, RAGAS, iterate · **Land on:** "Then I A/B test chunk sizes, models, and re-ranker thresholds, and watch hallucination rates."
 
 > **Strong answer:**
 > "I follow a structured pipeline:
@@ -1554,6 +1576,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 
 ## **Q7: "What is Self-RAG and when would you use it?"**
 
+**Memory hook:** *Model decides, model checks* · Model decides when to retrieve → special tokens gate and check → use: skip needless retrieval → use: grounded, verified answers · **Land on:** "The tradeoff is complexity: Self-RAG needs a fine-tuned model, standard RAG works with any LLM."
+
 > **Strong answer:**
 > "Self-RAG is a framework where the model itself decides whether to retrieve external knowledge, and then self-critiques whether the retrieved context supports its answer. It uses special tokens like [Retrieve], [IsRelevant], [IsSupported] to gate retrieval and validate outputs.
 >
@@ -1565,6 +1589,8 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 
 ## **Q8: "How do you calculate KV-cache memory requirements?"**
 
+**Memory hook:** *Two tensors, every layer, every token* · 2 × layers × seq_len × d_model × bytes → 2 for Key and Value → Llama-3-8B, 8K, FP16: 4.3 GB → GQA, 8 vs 32 heads, 4x less · **Land on:** "For Llama-3-8B at 8K context, that's 4.3 GB, or about 1 GB with GQA."
+
 > **Strong answer:**
 > "The formula is: `KV_bytes = 2 × n_layers × seq_len × d_model × dtype_bytes`.
 >
@@ -1572,7 +1598,7 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 >
 > In practice, modern models use Grouped-Query Attention (GQA) which shares KV heads — Llama-3 uses 8 KV heads vs 32 attention heads, giving a 4x reduction. So the effective cache is closer to ~1 GB for 8K context.
 >
-> For the quick interview estimate: 128K context on a 7-8B model with GQA ≈ 0.5 GB. KV-cache quantization (INT8) can further halve that."
+> For the quick interview estimate: Llama-3-8B with GQA needs about 128 KB per token in FP16, so 128K context is about 16 GB per sequence. KV-cache quantization (INT8) can further halve that, to about 8 GB."
 
 ---
 
@@ -1606,7 +1632,7 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 │                                                                          │
 │   6. KV-CACHE MATH MATTERS                                              │
 │      2 × layers × seq_len × d_model × dtype.                           │
-│      128K context ≈ 0.5 GB (with GQA). Quantize to INT8 for 75% save. │
+│      Llama-3-8B, 128K, GQA ≈ 16 GB in FP16. INT8 KV-cache halves it.  │
 │                                                                          │
 │   7. HYBRID RETRIEVAL WINS                                              │
 │      Semantic + BM25 with RRF fusion outperforms either alone.          │
@@ -1638,7 +1664,7 @@ def log_retrieval(query, chunks, scores, final_prompt_tokens):
 | Compression ratio | 6-8x | "How do you reduce token usage?" |
 | MMR lambda | 0.7 (relevance-heavy) | "How do you ensure diverse retrieval?" |
 | KV-cache formula | 2 × L × S × D × dtype | "Memory estimation for LLM inference?" |
-| 128K cache (GQA) | ~0.5 GB | "How much RAM for long context?" |
+| 128K cache (Llama-3-8B, GQA, FP16) | ~16 GB (128 KB/token) | "How much RAM for long context?" |
 | KV quant savings | up to 87% (INT4) | "How do you optimize inference memory?" |
 | Lost-in-middle | Begin + End > Middle | "How do you order context chunks?" |
 | Hybrid alpha | 0.7 semantic / 0.3 BM25 | "Best retrieval strategy?" |

@@ -1538,6 +1538,8 @@ passage_emb = model.encode(passage_text)
 
 ## **Q1: "How does HNSW work? Walk me through the algorithm."**
 
+**Memory hook:** *Express highway down to local streets* · Build: layers like a skip list → link to M closest nodes → search: greedy walk, drop down → layer 0: beam search, efSearch → defaults M=16, efConstruction=200, efSearch=64 · **Land on:** "That gives O(log N) search, with 95-99%+ recall and sub-millisecond queries at million scale."
+
 **Strong answer:**
 
 > "HNSW is a graph-based approximate nearest neighbor algorithm that builds a multi-layer navigable small-world graph.
@@ -1556,6 +1558,8 @@ passage_emb = model.encode(passage_text)
 
 ## **Q2: "FAISS vs Pinecone vs pgvector — when would you use each?"**
 
+**Memory hook:** *Control versus convenience* · FAISS: GPU, billion-scale, full control → Pinecone: zero ops, lock-in cost → pgvector: Postgres, SQL, under 5-10M → my project: ~2M, pgvector fine · **Land on:** "At ~2M vectors pgvector handled it fine, so there was no need to add infrastructure complexity."
+
 **Strong answer:**
 
 > "These serve different points on the control-vs-convenience spectrum:
@@ -1571,6 +1575,8 @@ passage_emb = model.encode(passage_text)
 ---
 
 ## **Q3: "How would you design a vector search system for 10M documents?"**
+
+**Memory hook:** *Embed, index, serve, fuse, watch* · Embed: 512 tokens, L2-normalize → HNSW if RAM, else IVFPQ → pgvector, FAISS, or Pinecone → hybrid RRF, cross-encoder re-rank → monitor recall, p99, drift · **Land on:** "RAM decides the index: HNSW needs ~70 GB, IVFPQ compresses to ~320 MB."
 
 **Strong answer:**
 
@@ -1597,6 +1603,8 @@ passage_emb = model.encode(passage_text)
 
 ## **Q4: "What is ANN vs exact nearest neighbor search? When would you choose exact?"**
 
+**Memory hook:** *Check everyone versus smart shortcut* · Exact: every vector, true top-k → ANN: prune, lose 1-5% recall → exact: small data, 100% recall needed → ANN: over 100K, real-time · **Land on:** "I always build a flat index first as ground truth, then measure my ANN recall@k against it."
+
 **Strong answer:**
 
 > "Exact nearest neighbor (k-NN) computes the distance between the query and every vector in the database — guaranteed to return the true k closest vectors. It's O(N × d) per query. In FAISS, this is `IndexFlatL2` or `IndexFlatIP`.
@@ -1619,6 +1627,8 @@ passage_emb = model.encode(passage_text)
 ---
 
 ## **Q5: "How do you tune HNSW parameters for a production system?"**
+
+**Memory hook:** *Fix M, sweep efSearch* · Flat baseline, ~1000 queries → M=16, raise only if needed → efConstruction=200, one-time cost → sweep efSearch, plot recall-latency → monitor recall drift · **Land on:** "For RAG I target 95%+ recall@10, so efSearch=64-128 is my sweet spot."
 
 **Strong answer:**
 
@@ -1649,6 +1659,8 @@ passage_emb = model.encode(passage_text)
 
 ## **Q6: "How does Product Quantization compress vectors? What's the trade-off?"**
 
+**Memory hook:** *Chop, cluster, replace with IDs* · Split into m sub-vectors → k-means, 256 centroids each → 1-byte IDs, 3,072 to 32 bytes → query: distance table, sum lookups → 50-400× smaller, recall 80-95% · **Land on:** "To win back precision, retrieve top-100 with IVFPQ, then re-rank with exact distances from disk."
+
 **Strong answer:**
 
 > "PQ divides each d-dimensional vector into m equal sub-vectors and independently quantizes each sub-vector to its nearest centroid in a learned codebook. Each sub-vector is replaced by an 8-bit centroid ID, compressing a d=768 float32 vector from 3,072 bytes to just m bytes (e.g., 32 bytes for m=32).
@@ -1667,6 +1679,8 @@ passage_emb = model.encode(passage_text)
 ---
 
 ## **Q7: "How do you evaluate retrieval quality in a RAG system?"**
+
+**Memory hook:** *Find it first, then answer it* · Retrieval: Recall@k, MRR, nDCG → test set, ~100-500 labeled queries → end-to-end: correctness, faithfulness, relevance → RAGAS plus human samples · **Land on:** "Hybrid search consistently beats pure vector by 5-15% recall on technical corpora."
 
 **Strong answer:**
 
@@ -1696,6 +1710,8 @@ passage_emb = model.encode(passage_text)
 
 ## **Q8: "Explain the difference between pre-filtering and post-filtering in vector search."**
 
+**Memory hook:** *Filter before, after, or together* · Post: search first, may return zero → pre: filter first, slow if selective → integrated: index knows both → FAISS manual, pgvector automatic · **Land on:** "Integrated filtering is best, because the planner weighs the metadata filter and vector closeness together."
+
 **Strong answer:**
 
 > "This comes up when you need to combine metadata filters with vector similarity — for example, 'find similar documents but only from 2024 in the ML category.'
@@ -1720,6 +1736,8 @@ passage_emb = model.encode(passage_text)
 ---
 
 ## **Q9: "What happens when your embedding model changes? How do you handle re-indexing?"**
+
+**Memory hook:** *New model, new map* · Must re-embed everything → blue-green, store raw text → shadow test both indexes → atomic swap, version tags → pin the exact checkpoint · **Land on:** "Vectors from different models live in incompatible spaces, so you can't mix them."
 
 **Strong answer:**
 

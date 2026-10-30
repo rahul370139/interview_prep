@@ -811,6 +811,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q1: "What is the difference between prefill and decode?"**
 
+**Memory hook:** *Parallel prefill, one-by-one decode* · Prefill: compute-bound, gives TTFT → Decode: memory-bandwidth bound → Latency: queue, prefill, per-token → Long prompt hurts TTFT · **Land on:** "I would never quote a single latency number without saying which phase."
+
 **Strong answer:**
 
 > "Prefill runs the whole prompt in parallel — one big compute-bound pass — writes the initial KV-cache, and emits the first token. That is TTFT. Decode then walks one token at a time: each step reads the weights and the growing KV, so it is memory-bandwidth bound. Total latency is queue plus prefill plus time-per-token times remaining output tokens. A 4k-token RAG prompt hurts TTFT; a 600-token answer hurts e2e even if TTFT was fine. I would never quote a single 'latency' number without saying which phase."
@@ -818,6 +820,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q2: "Write the KV-cache memory formula."**
+
+**Memory hook:** *Two times layers times KV heads* · Two, for key and value → Layers, KV heads, head dim, bytes → Times sequence lengths in flight → About 128 KB per token → Size from leftover HBM, then measure · **Land on:** "GQA matters more than 7B versus 8B. Then I measure, because fragmentation and activations eat the leftover."
 
 **Strong answer:**
 
@@ -827,6 +831,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q3: "What is PagedAttention?"**
 
+**Memory hook:** *Virtual memory for the KV-cache* · Fixed-size blocks on demand → Block table maps them → Less fragmentation, shared prefixes → Decode still memory-bound · **Land on:** "Decode is still memory-bound. It just stops you OOMing from dumb reservation."
+
 **Strong answer:**
 
 > "It is virtual memory for the KV-cache. Instead of reserving max-sequence-length times max-batch as one contiguous tensor, vLLM allocates fixed-size KV blocks on demand and maps them with a block table. You stop paying for 32k slots on a 2k chat, external fragmentation drops, and identical prefixes can share blocks. That is why prefix caching is cheap to implement on top. It does not change the fact that decode is memory-bound — it just stops you OOMing from dumb reservation."
@@ -834,6 +840,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q4: "Continuous batching vs dynamic batching vs static batching."**
+
+**Memory hook:** *Does the short reply wait?* · Static waits for longest sequence → Dynamic batches at generate start → Continuous re-packs every decode step → vLLM, TGI, TRT-LLM do this · **Land on:** "If a 20-token reply waits on an 800-token reply, it is not continuous."
 
 **Strong answer:**
 
@@ -843,6 +851,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q5: "How does vLLM compare to TGI, TensorRT-LLM, SGLang, and Ollama?"**
 
+**Memory hook:** *vLLM default, Ollama on Bilbo* · vLLM: my default self-host → TGI: Hugging Face cousin → TensorRT-LLM: peak latency, ops cost → SGLang: shared prefix trees → Ollama: best local DX · **Land on:** "For dozens of concurrent users on that 7B, I'd keep the OpenAI client and point it at vLLM."
+
 **Strong answer:**
 
 > "vLLM is my default self-host: OpenAI API, PagedAttention, prefix cache, LoRA, speculative, huge community. TGI is the Hugging Face-native cousin. TensorRT-LLM wins peak NVIDIA latency after you compile an engine — I pay ops cost on every shape or model change. SGLang's RadixAttention is excellent when many requests share a prefix tree — agents, tools, multi-turn. Ollama is what I actually used on Bilbo: best local DX, llama.cpp, not a multi-tenant SLO engine. If I had to put that same 7B behind dozens of concurrent users I would keep the OpenAI client and point it at vLLM."
@@ -850,6 +860,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q6: "Explain speculative decoding. Is it lossy?"**
+
+**Memory hook:** *Cheap draft, target decides* · Drafter proposes several tokens → Target verifies in one forward → Resample disagreement from target → Watch acceptance rate alpha · **Land on:** "With that correction it is lossless. Below about 0.4 alpha, I turn it off."
 
 **Strong answer:**
 
@@ -859,6 +871,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q7: "How do you set gpu-memory-utilization?"**
 
+**Memory hook:** *KV pool share, not weights* · Fraction for the KV block pool → Too high OOMs, too low cuts concurrency → Start at 0.9, watch KV → Operate near 80 percent KV · **Land on:** "The real cap I operate to is KV around 80 percent, so a burst does not cliff TTFT."
+
 **Strong answer:**
 
 > "It is the fraction of GPU memory vLLM is allowed to take for the KV block pool after the weights are loaded — not 'use 90% of the GPU for weights.' Too high and you OOM on CUDA graphs or a slightly longer prompt. Too low and you cut concurrency for no reason. I start at 0.9, watch KV percent and OOM, and leave headroom on the first deploy. The real cap I operate to is KV around 80 percent so a burst does not cliff TTFT."
@@ -866,6 +880,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q8: "Why did my vLLM box OOM even though nvidia-smi showed free memory at start?"**
+
+**Memory hook:** *Free at start, full later* · Pool reserved, requests grow into it → Fragmentation, activations, CUDA graphs → max-model-len set to 128k → Lower it, add admission control · **Land on:** "Set max-model-len to the p99 prompt I actually send, and add admission control."
 
 **Strong answer:**
 
@@ -875,6 +891,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q9: "How would you serve 50 concurrent users on a 7B?"**
 
+**Memory hook:** *Concurrency at SLO, not OOM* · Compute bytes per token → Pick a real context, 4k → One L4 holds ten-plus chats → Several replicas, KEDA, prefix cache → Load-test before quoting · **Land on:** "I would load-test with production-shaped prompts before I quote a replica count."
+
 **Strong answer:**
 
 > "I would not assume one GPU. I compute bytes per token, pick a real max context — say 4k, not 128k — estimate KV, and see concurrency at SLO, not at OOM. A 4-bit 7B on an L4 often holds on the order of ten-plus 4k chats, not fifty. Fifty in-flight at a two-second TTFT is several replicas behind a gateway, KEDA on waiting-requests, prefix cache on the shared system prompt, and chunked prefill so one fat context cannot stall the others. I would load-test with production-shaped prompts before I quote a replica count."
@@ -882,6 +900,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q10: "Tensor parallel a 7B across four GPUs to make it faster?"**
+
+**Memory hook:** *TP a 70B, DP a 7B* · A 7B already fits → All-reduce can make TP slower → Four replicas give four times QPS · **Land on:** "I TP a 70B. I DP a 7B."
 
 **Strong answer:**
 
@@ -891,6 +911,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q11: "How do you autoscale vLLM on Kubernetes?"**
 
+**Memory hook:** *Scale on waiting, not CPU* · Export engine metrics → KEDA on waiting and KV percent → Cooldown of minutes → minReplicas one for interactive → Readiness waits for model in HBM · **Land on:** "Cold start is node plus image plus weight load. I plan for that in the SLO."
+
 **Strong answer:**
 
 > "Not on CPU. I export engine metrics — running, waiting, KV cache percent, TTFT — and KEDA or HPA on waiting-requests and KV percent, with a cooldown of minutes because loading weights is expensive. Interactive paths get minReplicas at least one; I do not scale-to-zero a clinician chat. Batch and eval sweep can go to zero. Readiness probes have to wait for the model to be in HBM or we will 502 during every rollout. Cold start is node plus image plus weight load — I plan for that in the SLO, I do not pretend it is a Node.js deploy."
@@ -898,6 +920,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q12: "Prefix caching is not helping. Why?"**
+
+**Memory hook:** *Static first, chunks after* · Cache keys on the token prefix → Timestamp or user id first misses → Pin static text at the front → Check engine prefix hit rate · **Land on:** "If hit rate is high and TTFT is still bad, that is a retrieval problem, not a vLLM problem."
 
 **Strong answer:**
 
@@ -907,6 +931,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q13: "Throughput went up after I raised max-num-seqs. Users are angrier. What happened?"**
 
+**Memory hook:** *Throughput up, goodput down* · Optimized throughput, not goodput → More queueing and KV pressure → Drop concurrency to meet SLO → Then add replicas · **Land on:** "Admission control is kinder than a 15-second first token."
+
 **Strong answer:**
 
 > "I optimized throughput instead of goodput. More in-flight requests raise GPU utilization and tokens per second, and they also raise queueing and KV pressure, which blows p95 TTFT. I would drop concurrency until p95 is inside the SLO, then add replicas. Admission control — 429 or a shed-to-batch queue — is kinder than a 15-second first token."
@@ -914,6 +940,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q14: "How does this relate to Bilbo's sub-5s RAG?"**
+
+**Memory hook:** *Generation is one slice* · Sub-5s is end-to-end → Ollama, 4-bit 7B, short answers → Next: prefix cache, cap tokens, chunk prefill → Measure TTFT versus retrieval first · **Land on:** "I would not claim vLLM is what produced the sub-5s number today."
 
 **Strong answer:**
 
@@ -923,6 +951,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q15: "Walk me through speculative decoding like I'm a staff engineer who thinks it's fake."**
 
+**Memory hook:** *Show me alpha on our traces* · Decode is bound on reading weights → Score five draft tokens in one pass → Verification keeps distribution honest → Skepticism should be empirical · **Land on:** "At 0.35 alpha it's fake for us. At 0.85, it's one of the few free lunches left."
+
 **Strong answer:**
 
 > "Decode is bottlenecked on reading weights. If I can get the target to score five draft tokens in one pass, I paid one memory-bound forward for several tokens whenever the draft is right. Verification plus target-resample keeps the distribution honest. Your skepticism should be empirical: show me alpha on our traces and the draft's extra HBM. If alpha is 0.35 on support-ticket prose, I agree it's fake for us. If it's 0.85 on a Medusa head trained for our JSON schema, it's one of the few free lunches left."
@@ -930,6 +960,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q16: "Medusa vs a small draft model."**
+
+**Memory hook:** *Second model or extra heads* · Small draft: second stack in memory → Medusa: trained heads on the target → EAGLE: uses target hidden states → Pick by what I already have · **Land on:** "Draft model when I have a distilled little sibling. Medusa or EAGLE when I want one backbone."
 
 **Strong answer:**
 
@@ -939,6 +971,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q17: "What is chunked prefill and when do you need it?"**
 
+**Memory hook:** *Slice the 20k prompt* · Big prefill stalls other requests → Split and interleave with decode → Needed for mixed traffic → Isolate batch, need it less · **Land on:** "I need it the moment interactive chat and huge RAG dumps share the same replica."
+
 **Strong answer:**
 
 > "A 20k-token prefill is a long compute job. If I run it atomically, every other request's inter-token latency stalls. Chunked prefill splits that prompt and interleaves chunks with decode steps. I need it the moment I have mixed traffic — interactive chat plus occasional huge RAG dumps — on the same replica. If I can isolate batch summarization on another pool, I need it less."
@@ -946,6 +980,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q18: "How do you A/B a serving change — AWQ vs FP16, or speculative on vs off?"**
+
+**Memory hook:** *Treat it like a model upgrade* · Offline golden set, paired → Shadow: latency and task metrics → Canary with a kill switch → Pin image digest and weights · **Land on:** "Quality can move, so I never A/B speculative on throughput alone."
 
 **Strong answer:**
 
@@ -955,6 +991,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q19: "KServe or Triton or Ray — which one?"**
 
+**Memory hook:** *Deployment plus KEDA is enough* · Single 7B: Deployment, GPU, KEDA → KServe if InferenceService exists → Ray Serve if stack is Ray → Triton for NVIDIA ensembles · **Land on:** "The serving math does not change because the YAML CRD did."
+
 **Strong answer:**
 
 > "For a single 7B with an OpenAI client, a Deployment, a GPU limit, and KEDA is enough — I would say that first so I don't sound like I collect control planes. KServe if the platform already uses InferenceService and I want canary plus scale-to-zero for non-interactive. Ray Serve if the rest of the stack is already Ray. Triton if the org standardized NVIDIA ensembles. The serving math — KV, continuous batch, prefix — does not change because the YAML CRD did."
@@ -962,6 +1000,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q20: "How do you handle a multi-LoRA SaaS on one GPU?"**
+
+**Memory hook:** *One backbone, many adapters* · vLLM LoRA manager, cap adapters → KV still per request → Isolation by gateway quotas → Dedicated replica only if forced → Eval each adapter · **Land on:** "I eval each adapter like a prompt version. A bad LoRA is a silent quality incident."
 
 **Strong answer:**
 
@@ -971,6 +1011,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q21: "FP8 vs INT4 for production serving in 2026."**
 
+**Memory hook:** *Pick from the eval gate* · INT4 fits 7B/13B on cheap GPU → FP8 cleaner on Hopper/Blackwell → Decide by eval and tok/s → KV FP8 is separate · **Land on:** "I would not pick from a blog table. I pick from the eval gate plus tok/s at my concurrency."
+
 **Strong answer:**
 
 > "INT4 AWQ/GPTQ is still the default way I fit a 7B/13B on a cheap GPU with acceptable quality if I eval it. FP8 is the cleaner NVIDIA path on Hopper/Blackwell — better kernels, simpler than a 4-bit dance, often the sweet spot for 70B. I would not pick from a blog table; I would pick from the eval gate plus tok/s at the concurrency I need. KV in FP8 is a separate decision from weight FP8."
@@ -978,6 +1020,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q22: "What is goodput? Why do I care?"**
+
+**Memory hook:** *Tokens that met the SLO* · Goodput counts in-SLO tokens → Raw throughput counts late tokens → Set SLO per workload → Outside SLO is wasted capacity · **Land on:** "That is how I decide to add a replica instead of raising max-num-seqs."
 
 **Strong answer:**
 
@@ -987,6 +1031,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q23: "How would you debug a sudden ITL spike — tokens arriving in bursts with gaps?"**
 
+**Memory hook:** *Burst, gap, big prefill* · Prefill interference or stop-the-world → Traces by phase, KV percent → Chunked prefill on, batch job shared? → Isolate, chunk, lower, or add replica · **Land on:** "I do not start by tuning temperature."
+
 **Strong answer:**
 
 > "That pattern is usually prefill/decode interference or a stop-the-world: a huge prefill landed, a GC, a weight offload, or the scheduler ran a chunk that was too big. I look at traces split by phase, KV percent, whether chunked prefill is on, and whether a batch job shared the replica. Fix: isolate batch, chunk prefills, lower max-num-seqs, or add a replica. I do not start by 'tuning temperature.'"
@@ -994,6 +1040,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q24: "You listed vLLM on your resume. Have you run it in production?"**
+
+**Memory hook:** *Honest, not a war story* · No multi-node vLLM fleet → Served 7B models with Ollama → Know vLLM well enough to size → Day one: pin, serve, measure, gate · **Land on:** "I would rather say that than invent a production war story."
 
 **Strong answer:**
 
@@ -1003,6 +1051,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q25: "Design a serving stack for a medical RAG with citations and a sub-5s SLO."**
 
+**Memory hook:** *Short prompt, warm replica* · Gateway with auth and budget → Retriever and reranker shorten prompt → One warm 4-bit 7B on vLLM → p95 e2e under 5s, no scale-to-zero → Eval gate, provider fallback · **Land on:** "Serving cannot fix a 30k dump, so I try retrieval trim before speculative decoding."
+
 **Strong answer:**
 
 > "Gateway with auth and a per-tenant budget. Retriever and reranker in front so the prompt is short — serving cannot fix a 30k dump. One warm vLLM replica of a 4-bit 7B, prefix-cache the system prompt and citation instructions, max tokens capped, structured output if the engine supports grammar. Traces with TTFT vs retrieval vs rerank. SLO is p95 e2e under 5s and p95 TTFT under ~1.5s after retrieval. Min replicas 1, scale on waiting, no scale-to-zero. Eval gate on groundedness and citation validity, same as Bilbo. Speculative decoding only if acceptance is high on short clinical answers — I would try retrieval trim first. Fallback: a provider API if the GPU dies, same pattern as AI Cargo's failover."
@@ -1010,6 +1060,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q26: "What's the difference between time-per-output-token and tokens per second?"**
+
+**Memory hook:** *Per user versus whole replica* · TPOT is per request → Tokens per second often aggregate → 2k tok/s, still 80 ms TPOT → Always say which one · **Land on:** "Product cares about per-request ITL; finance cares about aggregate tokens per GPU-hour."
 
 **Strong answer:**
 
@@ -1019,6 +1071,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q27: "How do MoE models change serving?"**
 
+**Memory hook:** *Few experts fire, all stay resident* · Fewer FLOPs per token → All experts still in memory → Expert-parallel, all-to-all, imbalance → Ask what's resident, what interconnect · **Land on:** "Capacity math starts from resident weights plus KV, not from the active-parameter marketing number."
+
 **Strong answer:**
 
 > "Dense 7B is one set of weights every token. MoE only fires a few experts, so FLOPs per token drop but **you still need the experts in memory** unless you offload. Serving becomes expert-parallel: all-to-all dispatch, risk of expert imbalance, and a different KV story depending on the architecture. I would not treat Mixtral like 'a 12B that is free.' I would ask which experts are resident, what the interconnect is, and whether vLLM/SGLang's EP path is stable for that checkpoint. Capacity math starts from resident weights plus KV, not from the 'active parameter' marketing number."
@@ -1026,6 +1080,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q28: "Where does speculative decoding fail on tool-calling agents?"**
+
+**Memory hook:** *High-entropy plan, low-entropy JSON* · Poor alpha on planning tokens → Prose-trained draft fails tool traces → Measure alpha by stage → Grammar decoding for JSON validity · **Land on:** "Constrained decoding and speculation solve different problems, so I measure alpha by stage."
 
 **Strong answer:**
 
@@ -1035,6 +1091,8 @@ Practice these **out loud**. End with how you would **measure**.
 
 ## **Q29: "Give me a 60-second capacity plan for a 70B."**
 
+**Memory hook:** *Make the 140 GB fit* · FP16 is about 140 GB → Quantize after eval → Fat KV, low concurrency → Prefix cache is mandatory → Speculative only if alpha high · **Land on:** "I load-test before I promise QPS, and keep a provider fallback for a 70B cold start."
+
 **Strong answer:**
 
 > "70B FP16 is ~140 GB — that is multiple 80 GB GPUs with TP, or a quantized 70B on fewer. I pick AWQ/FP8 after eval. Bytes per token scale with layers and KV heads — 70B KV is much fatter than 8B; concurrency per replica collapses. I would rather two TP=2 replicas than one TP=4 if interconnect is the tax and QPS is the goal, but the model has to fit first. Prefix cache is mandatory — 70B prefill is expensive. Speculative with a 7B/8B draft is the classic setup **if** alpha is high. I load-test before I promise QPS. I keep a provider fallback because a 70B cold start is a bad day."
@@ -1042,6 +1100,8 @@ Practice these **out loud**. End with how you would **measure**.
 ---
 
 ## **Q30: "What would you monitor that LangSmith will not show you?"**
+
+**Memory hook:** *App trace plus engine metrics* · LangSmith sees app spans → Not KV, prefix hits, acceptance, queue → Prometheus on the vLLM replica → Need both when TTFT is bad · **Land on:** "I would export both to the same dashboard rather than argue across tools."
 
 **Strong answer:**
 

@@ -565,23 +565,33 @@ The project includes an agent-based architecture with:
 
 **Q1: Walk me through the system architecture of SkillSpring.**
 
+**Memory hook:** *PDF in, lessons and careers out* · Vercel front, Railway FastAPI back → four modules, one job each → PDF: extract, chunk, embed, generate → Supabase plus LRU cache → RIASEC quiz to 6D vector · **Land on:** "Quiz answers become a 6D vector, matched against the O*NET/BLS career dataset."
+
 > SkillSpring uses a decoupled architecture with a React/Next.js frontend on Vercel and a FastAPI backend on Railway. The backend is organized into specialized modules: `distiller.py` handles PDF processing and RAG-based content generation, `career_matcher.py` manages the RIASEC-based career quiz and matching, `unified_career_system.py` generates comprehensive career roadmaps, and `supabase_helper.py` abstracts all database operations.
 >
 > When a user uploads a PDF, it flows through PyMuPDF for text extraction, gets chunked into 400-word segments with 50-word overlap, embedded via Cohere's API, and then we run parallel content generation (summary, quiz, flashcards, concept map) using Groq's LLM. Everything is stored in Supabase PostgreSQL and cached in-memory with an LRU cache (50 lessons, 2-hour TTL). For career matching, the user's 10-question RIASEC quiz answers are converted to a 6D vector and matched against an O*NET/BLS career dataset using a combination of embedding-based semantic similarity and skill/interest matching.
 
 **Q2: Why did you choose FastAPI over Flask or Django?**
 
+**Memory hook:** *Async, schemas, speed* · native async for Groq, Cohere calls → Pydantic checks 35+ models → Uvicorn ASGI beats Flask WSGI · **Land on:** "That matters when each request makes multiple LLM API calls."
+
 > Three reasons: First, **native async support** -- our system makes multiple concurrent API calls to Groq and Cohere, and FastAPI's async/await integration with Starlette handles this elegantly. Second, **Pydantic integration** -- with 35+ request/response models, Pydantic's automatic validation and serialization saved enormous development time and caught bugs at the schema level. Third, **performance** -- FastAPI on Uvicorn (ASGI) handles concurrent requests much better than Flask's WSGI model, which matters when each request involves multiple LLM API calls.
 
 **Q3: Why Groq with llama-3.3-70b instead of OpenAI GPT-4?**
+
+**Memory hook:** *Fast, cheap, clean JSON* · Groq LPU, content in seconds → llama 70b at fraction of GPT-4 cost → temperature 0.3 for structured JSON → two API keys, automatic failover · **Land on:** "If one key hits rate limits, the system switches to the backup."
 
 > **Cost and speed.** Groq provides extremely fast inference through their LPU architecture, making it practical for a real-time learning platform where users expect content generation in seconds, not minutes. The `llama-3.3-70b-versatile` model offers strong instruction-following and JSON output capabilities at a fraction of GPT-4's cost. I set temperature to 0.3 to get more deterministic, structured JSON outputs rather than creative but unparseable responses. The dual API key system with automatic failover also provides resilience -- if one key hits rate limits, the system seamlessly switches to the backup.
 
 **Q4: Explain your chunking strategy. Why 400 words with 50-word overlap?**
 
+**Memory hook:** *One idea per chunk* · 400 words holds one idea → fits embedding and prompt budgets → 50-word overlap, 12.5% → words, not sentences · **Land on:** "I split by words because PDFs often have inconsistent sentence boundaries."
+
 > The 400-word chunk size is a deliberate trade-off. It's large enough to capture a coherent idea or paragraph section -- most technical concepts can be explained in 300-500 words -- but small enough to fit within embedding model context windows and LLM prompt budgets. The 50-word overlap (12.5%) prevents information loss at chunk boundaries. If a concept spans two chunks, the overlap ensures both chunks retain the transitional context. I chose word-based splitting over sentence-based because it's more predictable for buffer management, and PDFs often have inconsistent sentence boundaries.
 
 **Q5: How does your three-tier content resolution work?**
+
+**Memory hook:** *Memory, database, then generate* · LRU cache, O(1) lookup → Supabase after a restart → LLM regenerates, then caches · **Land on:** "Cache hits under 50ms, the DB survives restarts, and LLM generation is the final fallback."
 
 > When the frontend requests content (say, a quiz for lesson #42), the backend checks three tiers in order:
 > 1. **In-memory LRU cache** -- O(1) lookup in the OrderedDict. If the lesson was recently processed, it's here.
@@ -592,15 +602,21 @@ The project includes an agent-based architecture with:
 
 **Q6: How do you handle concurrent API calls and rate limiting?**
 
+**Memory hook:** *Only two through the door* · Semaphore caps Groq at 2 → gather runs chunks in parallel → Cohere batches of 32 → on 429, read the wait hint · **Land on:** "I sleep as the server says, with exponential backoff capped at 15 seconds."
+
 > I use `asyncio.Semaphore(2)` to limit concurrent Groq LLM calls to 2. This prevents overwhelming Groq's rate limits while still allowing parallelism. The map-reduce summarization uses `asyncio.gather()` to process chunks in parallel, but the semaphore ensures at most 2 are hitting the API simultaneously. For Cohere embeddings, I batch requests (32 texts per call) to minimize API round trips. If a 429 rate limit response comes back, I parse the server's "try again in Xs" header and sleep accordingly, with exponential backoff capped at 15 seconds.
 
 **Q7: What's your approach to JSON parsing from LLM outputs?**
+
+**Memory hook:** *Clean the mess, then parse* · strip markdown code fences → grab the largest braces block → fix quotes and trailing commas → None means use fallback · **Land on:** "The user never sees an error, just slightly less personalized content."
 
 > LLMs are unreliable JSON generators, so I built a robust `_parse_json_safely()` function that: (1) strips markdown code fences, (2) finds the largest `{...}` block in the response, (3) replaces single quotes with double quotes if no double quotes exist, (4) removes trailing commas before `}` or `]`, and (5) returns `None` on failure so callers can use fallback content. Every content generation function has a fallback -- for example, if quiz generation fails, we return a set of generic but well-structured quiz questions. The user never sees an error; they just get slightly less personalized content.
 
 ### RAG & ML (Q8-Q12)
 
 **Q8: Walk me through a complete RAG query.**
+
+**Memory hook:** *Find the pages, then ask* · regex pulls the topic → Cohere embeds it → cosine similarity, top 6 chunks → prompt with context, Groq answers → parse, validate, cache, return · **Land on:** "Retrieval grounds the LLM in the user's own document, not its training data."
 
 > Let's say a user in the chat types "Generate quiz about machine learning."
 > 1. We extract the topic "machine learning" using regex-based command detection.
@@ -615,9 +631,13 @@ The project includes an agent-based architecture with:
 
 **Q9: Why Cohere for embeddings instead of OpenAI or a local model?**
 
+**Memory hook:** *Small vectors, fast compare* · 384 dims, good English, free tier → smaller than OpenAI's 1536 → input_type: document vs query → keyword heuristic as fallback · **Land on:** "So the system still works even if Cohere's API is down."
+
 > Cohere's `embed-english-light-v3.0` offers an excellent trade-off: 384 dimensions (compact, fast to compare), high quality for English text, and a generous free tier. Compared to OpenAI's `text-embedding-3-small` (1536 dimensions), Cohere's smaller vectors mean faster cosine similarity computation and less memory for caching. I also liked the explicit `input_type` parameter -- `search_document` for indexing vs `search_query` for retrieval -- which improves retrieval quality. For fallback, I implemented a heuristic embedding based on keyword density (technical terms, framework mentions, learning terms), so the system works even if Cohere's API is down.
 
 **Q10: How does your career matching combine embedding similarity with RIASEC scores?**
+
+**Memory hook:** *Fifty, thirty, twenty* · 50% semantic profile similarity → 30% skill overlap → 20% interest match · **Land on:** "If embedding similarity is below 0.3, I fall back to plain RIASEC cosine similarity."
 
 > It's a weighted ensemble approach:
 > 1. **Semantic similarity (50% weight):** We embed the user's comprehensive profile (RIASEC scores, skills, interests, work preferences, learning style, career goals) using Cohere, and compare it against embeddings of each career's description. This captures nuanced semantic relationships.
@@ -628,9 +648,13 @@ The project includes an agent-based architecture with:
 
 **Q11: Why did you implement cosine similarity by hand instead of using scipy/sklearn?**
 
+**Memory hook:** *Right tool, right place* · hot path runs on every chat → just dot product over magnitudes → numpy adds startup time, memory → career_matcher still uses numpy, sklearn · **Land on:** "It's about choosing the right tool for the right context."
+
 > For the hot path in `distiller.py` where we do retrieval on every chat message and content generation request, I wanted zero external dependency overhead. The function is simple -- dot product divided by magnitude product -- and adding numpy/scipy just for this would add startup time and memory. In `career_matcher.py`, where we process the full career dataset, I do use numpy and sklearn for batch operations. It's about choosing the right tool for the right context.
 
 **Q12: How do you handle embedding failures?**
+
+**Memory hook:** *Backup vector from keywords* · Cohere fails, build 384-dim vector → dims 0-2: keyword density → dims 3-4: length, word density → rest seeded by text hash · **Land on:** "Less meaningful, but it still tells content apart, so the system keeps working."
 
 > Every embedding function has a fallback path. If Cohere's API fails, I generate a heuristic 384-dimensional vector based on:
 > - Dimensions 0-2: keyword density scores (technical terms, framework terms, learning terms)
@@ -643,6 +667,8 @@ The project includes an agent-based architecture with:
 
 **Q13: How would you scale this system to handle 10,000 concurrent users?**
 
+**Memory hook:** *Move state out of memory* · Redis replaces in-memory cache → pgvector search in the database → task queue for PDF processing → Vercel CDN for frontend · **Land on:** "Move all in-memory state to Redis or the database, then run multiple instances."
+
 > Several changes needed:
 > 1. **Replace in-memory cache with Redis** -- the current OrderedDict doesn't survive restarts or share across instances. Redis provides distributed caching with built-in TTL.
 > 2. **Use pgvector for vector search** -- instead of loading all embeddings into memory, store them in Supabase's pgvector extension and do similarity search at the database level.
@@ -651,6 +677,8 @@ The project includes an agent-based architecture with:
 > 5. **CDN for static assets** -- Vercel already handles this for the frontend.
 
 **Q14: What are the security implications of your CORS configuration?**
+
+**Memory hook:** *Open for dev, locked for prod* · allow-all origin is for development → allow only the Vercel domain → rate limit, check file magic bytes → Supabase JWT auth middleware · **Land on:** "And I'd sanitize user inputs before LLM prompts to prevent prompt injection."
 
 > Currently, the CORS config includes `"*"` (allow all origins) which is intentional for development but should be restricted in production. In a production hardening pass, I'd:
 > - Remove `"*"` and only allow the specific Vercel domain
@@ -661,9 +689,13 @@ The project includes an agent-based architecture with:
 
 **Q15: How does content deduplication work?**
 
+**Memory hook:** *Same PDF, same fingerprint* · SHA-256 hash of full text → hash maps to lesson ID → repeat upload skips the pipeline · **Land on:** "It saves LLM API costs and gives instant responses for re-uploads."
+
 > When a PDF is uploaded, I compute a SHA-256 hash of the full extracted text. I maintain a `content_hash_to_lesson_id` mapping in memory. If the same PDF content is uploaded again (by the same or different user), we skip the expensive processing pipeline and return the existing `lesson_id`. This saves LLM API costs and provides instant responses for re-uploads.
 
 **Q16: How do you ensure the LLM generates valid structured output?**
+
+**Memory hook:** *Six safety nets* · exact JSON shape in prompt → temperature 0.3 → safe parsing → validate, then repair · **Land on:** "And every generation function has a static fallback with well-structured default content."
 
 > Multi-layered approach:
 > 1. **Prompt engineering:** I specify exact JSON structure in the prompt with examples and explicit "Return ONLY valid JSON (no prose, no markdown)."
@@ -675,6 +707,8 @@ The project includes an agent-based architecture with:
 
 **Q17: Explain your conversation management system.**
 
+**Memory hook:** *One box per conversation* · in-memory store keyed by conversation ID → messages, PDF text, chunks, metadata → remember last conversation per user · **Land on:** "I send the last 10 messages plus retrieved chunks, so chat stays context-aware."
+
 > I maintain an in-memory `conversation_store` dict keyed by conversation ID. Each conversation holds:
 > - `messages`: chat history (role + content + timestamp)
 > - `file_context`: full PDF text if uploaded
@@ -684,6 +718,8 @@ The project includes an agent-based architecture with:
 > I also keep a `last_conversation_by_user` mapping so if the frontend forgets to pass a conversation ID (which happened), we can automatically resume the user's most recent conversation. For the chat, I send the last 10 messages as context to the LLM plus the RAG-retrieved chunks, creating a context-aware conversational experience.
 
 **Q18: What monitoring/observability do you have in production?**
+
+**Memory hook:** *Logs today, Sentry tomorrow* · Loguru logs in every module → debug endpoints and /health check → every error logged with context · **Land on:** "To improve, I'd add Sentry, Prometheus metrics, and structured JSON logging for ELK."
 
 > - **Loguru** structured logging throughout every module with `logger.info()`, `logger.error()`, `logger.warning()`
 > - **Debug endpoints:** `/api/debug/supabase/check` tests database connectivity, `/api/debug/lesson/{id}` tests all content generation
@@ -695,9 +731,13 @@ The project includes an agent-based architecture with:
 
 **Q19: What was the hardest technical challenge you faced?**
 
+**Memory hook:** *Messy JSON broke everything* · LLM added fences, single quotes, commas → whole content pipeline broke → parser: strip, find block, repair, parse → repair agents re-prompt on failure · **Land on:** "Over 95% success. LLM integration is not just prompt engineering, it's output processing."
+
 > **Reliable JSON extraction from LLM outputs.** The LLM would randomly wrap JSON in markdown code fences, use single quotes, add trailing commas, or include explanatory text before/after the JSON. This broke the entire content generation pipeline. I built `_parse_json_safely()` as a multi-stage parser: strip fences, find largest `{...}` block, repair common issues, then parse. Combined with the repair agents that re-prompt on validation failure, we achieved >95% successful structured output generation. This taught me that LLM integration isn't just prompt engineering -- it's building robust output processing.
 
 **Q20: What would you do differently if you started over?**
+
+**Memory hook:** *Five fixes from day one* · vector database from day one → JWT auth from the start → task queue for PDFs → more unit and integration tests · **Land on:** "And streaming responses, so users see results as they come instead of waiting."
 
 > 1. **Use a proper vector database** (Pinecone or pgvector from day one) instead of in-memory embeddings. The current approach doesn't scale beyond a single server instance.
 > 2. **Implement proper authentication** from the start. The current system uses user IDs but lacks JWT verification.
@@ -706,6 +746,8 @@ The project includes an agent-based architecture with:
 > 5. **Use a streaming response** for LLM-generated content so users see incremental results instead of waiting for full generation.
 
 **Q21: How did you decide on the map-reduce pattern for summarization?**
+
+**Memory hook:** *Three tries, map-reduce won* · full PDF overflowed context windows → truncation lost later sections → refine worked but was slow → map-reduce: parallel, then merge · **Land on:** "Slightly more API calls, but with Groq the total latency is lower than refine."
 
 > I initially tried sending the entire PDF text to the LLM, but longer documents exceeded context windows and produced inconsistent summaries. I explored three approaches:
 > 1. **Truncation** -- just send the first N tokens. Lost information from later sections.
@@ -716,6 +758,8 @@ The project includes an agent-based architecture with:
 
 **Q22: How does the explanation level system work?**
 
+**Memory hook:** *Kid, intern, senior* · three levels, one prompt modifier each → injected into every LLM call → user changes it in chat, it persists · **Land on:** "A simple way to personalize content without changing the underlying architecture."
+
 > Three levels: `5_year_old`, `intern`, and `senior`. Each maps to a system prompt modifier:
 > - **5-year-old:** "Explain like you're talking to a 5-year-old. Use simple words, analogies."
 > - **Intern:** "Explain for someone learning with basic knowledge. Use clear examples."
@@ -724,6 +768,8 @@ The project includes an agent-based architecture with:
 > This prompt is injected into every LLM call -- summaries, quizzes, flashcards, chat responses. The user can change levels dynamically in the chat ("explain like 5"), and the preference persists per conversation. It's a simple but effective way to personalize content without changing the underlying architecture.
 
 **Q23: Walk me through how the agentic system works.**
+
+**Memory hook:** *Generate, check, fix, return* · router detects user intent → summarizer and diagnostic agents → validators check structure → repairs re-prompt on failure → mastery scores per skill · **Land on:** "Generate, validate, repair if needed, return. Much more reliable than single-shot generation."
 
 > The agentic system adds a layer of intelligence on top of the core content generation:
 > 1. **AgentRouter** detects user intent from natural language (summary, quiz, flashcards, diagnostic).
@@ -737,11 +783,15 @@ The project includes an agent-based architecture with:
 
 **Q24: How do you handle the cold start problem?**
 
+**Memory hook:** *Warm up at boot* · startup hook precomputes micro-lesson embeddings → recommendations instant from first request → career data, quiz, Supabase load at import · **Land on:** "Only LLM calls stay on-demand, and Groq's LPU keeps them fast."
+
 > Two strategies:
 > 1. **Startup precomputation:** The `@app.on_event("startup")` hook precomputes embeddings for all micro-lessons at boot time. This means career roadmap recommendations with relevant micro-lesson suggestions are instant from the first request.
 > 2. **Lazy initialization with caching:** Career data (pandas DataFrame) and quiz questions (JSON) are loaded once at module import time. The Supabase client is initialized at import. Only LLM calls are lazy (on-demand), but they're fast thanks to Groq's LPU infrastructure.
 
 **Q25: How do you prevent prompt injection?**
+
+**Memory hook:** *Admit the gap, show the plan* · known gap, minimal sanitization today → system prompt blocks role override → strip control characters, limit length · **Land on:** "Then output validation, and a prompt injection classifier as a pre-filter."
 
 > Currently, user messages are passed to the LLM with minimal sanitization -- this is a known gap. In production, I would:
 > 1. Use a separate system prompt that explicitly instructs the LLM to ignore user attempts to override its role

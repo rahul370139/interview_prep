@@ -1829,6 +1829,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q1: "What's actually different about LLMOps versus MLOps?"**
 
+**Memory hook:** *Borrowed weights, many right answers* · Vendor owns the weights → Non-deterministic, test properties → No single ground truth → Same discipline stays · **Land on:** "What stays the same is the discipline: version everything, gate deploys on evaluation, canary, monitor, close the loop."
+
 **Strong answer:**
 
 > "Three structural facts change, and everything else follows from them.
@@ -1844,6 +1846,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q2: "How do you know your LLM app got better?"**
+
+**Memory hook:** *Three levels, one honest number* · Hard constraints, pass or fail → Paired golden set with CI → Canary on business outcome → Say what I don't trust · **Land on:** "When I claim an improvement, the sentence has a number, a sample size, and an interval."
 
 **Strong answer:**
 
@@ -1861,6 +1865,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q3: "LLM-as-judge is biased. Why should I trust it?"**
 
+**Memory hook:** *Calibrated and relative, never absolute* · Each bias has a mitigation → Calibrate with Cohen's kappa → Give judge the reference context → Judge is one input · **Land on:** "Above 0.8 kappa I ship it. Below 0.6, the rubric is broken."
+
 **Strong answer:**
 
 > "You shouldn't trust it as an absolute measurement. You should use it as a *calibrated relative* measurement, and you should know its error rate.
@@ -1876,6 +1882,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q4: "Your eval set is 60 examples and the score moved 4%. Is that real?"**
+
+**Memory hook:** *Four-point move, ten-point noise* · Standard error about 5.2 points → Pair it, McNemar's test → Read the discordant examples → Expand toward failure modes · **Land on:** "I would not ship on a 4-point move and tell people quality improved."
 
 **Strong answer:**
 
@@ -1893,6 +1901,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q5: "The provider silently updated the model and quality dropped. How do you detect that?"**
 
+**Memory hook:** *Frozen canary, live fingerprints* · Frozen canary every six hours → Fingerprints on all traffic → Pin dated snapshots → Roll back, add to regression set · **Land on:** "It's the difference between finding out from a dashboard and finding out from a customer."
+
 **Strong answer:**
 
 > "You detect it by running a frozen canary eval on a schedule, and by monitoring behavioural fingerprints on 100% of traffic.
@@ -1908,6 +1918,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q6: "How do you budget for an agent that can loop?"**
+
+**Memory hook:** *Quadratic cost, hard caps* · Cost grows quadratic, not linear → Hard caps checked every step → Detect loops, compact context → Per-tenant budgets, graceful handoff → Alert on p99, not mean · **Land on:** "The mean stays flat while 1% of requests burn 200× budget."
 
 **Strong answer:**
 
@@ -1928,6 +1940,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q7: "What do you log without leaking PII?"**
+
+**Memory hook:** *Metrics raw, content redacted* · Metrics raw, kept long → Redact content in-process → Hash user IDs, salted → Embeddings count as PII → Short-retention raw store, audited · **Land on:** "Redaction happens in-process, not at the vendor. Once it's in their store, you've made a disclosure."
 
 **Strong answer:**
 
@@ -1951,6 +1965,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q8: "How do you test a non-deterministic system in CI?"**
 
+**Memory hook:** *Test properties, not strings* · Assert properties, never exact output → Record/replay for orchestration → Sample k times, binomial CI → Tier gates by cost → Gate on confidence bound · **Land on:** "A point-estimate gate on a noisy metric gives flaky builds, and a flaky gate gets disabled."
+
 **Strong answer:**
 
 > "By moving as much as possible out of the non-deterministic path, and applying statistics to what's left.
@@ -1971,6 +1987,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q9: "Walk me through how you'd build an eval set from scratch for a new LLM feature."**
 
+**Memory hook:** *Real inputs first, then taxonomy* · Ship v0 to internal users → Cluster, sample stratified → Expert labels give failure taxonomy → One evaluator per failure class → Golden, regression, adversarial, rotating sets · **Land on:** "A stale eval set is worse than a small one, because it gives confidence you haven't earned."
+
 **Strong answer:**
 
 > "I'd resist writing examples at my desk, because synthetic inputs are systematically easier and cleaner than real ones, and a golden set built that way makes you feel good and teaches you nothing.
@@ -1989,6 +2007,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q10: "Reference-based versus reference-free evaluation — when do you use each?"**
 
+**Memory hook:** *Known answer offline, rubric online* · Reference-based when canonical answer exists → Reference-free for open output, online → Both, in a fixed arrangement → Best is a deterministic outcome · **Land on:** "Whenever a verifiable outcome exists, make it the north star. Judges are for cases where it doesn't."
+
 **Strong answer:**
 
 > "Reference-based means comparing against a known-good answer; reference-free means judging the output against the input and a rubric.
@@ -2004,6 +2024,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q11: "Your RAG system gives wrong answers. Is it retrieval or generation?"**
+
+**Memory hook:** *Hand it the gold context* · Context recall is the upper bound → Faithfulness checks the generator → Diagnose with the 2×2 → Feed gold context by hand → Read twenty failing traces · **Land on:** "If it answers correctly with gold context, retrieval is the problem. If it still fails, generation is."
 
 **Strong answer:**
 
@@ -2023,6 +2045,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q12: "What would you trace in an agent, and how is it different from a simple chain?"**
 
+**Memory hook:** *Fixed DAG versus dynamic tree* · step_index on every span → Tool calls as first-class spans → State diff per node → Cost, decisions, terminal condition → Score outcome and path · **Land on:** "I'd score both the outcome and the path, and monitor the path metrics as their own SLIs."
+
 **Strong answer:**
 
 > "A chain is a fixed DAG — you know the spans in advance. An agent has a *dynamic* trace shape: variable depth, loops, branching on model decisions. Three things change.
@@ -2040,6 +2064,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q13: "How do you choose between LangSmith, Langfuse, and Phoenix?"**
+
+**Memory hook:** *Residency decides first* · Data residency and self-hosting → Framework coupling → Traces or the whole loop → Cost at volume → Portability through OTel · **Land on:** "LangChain shop with no residency constraint, LangSmith. Residency constraint or high volume, self-hosted Langfuse."
 
 **Strong answer:**
 
@@ -2061,6 +2087,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q14: "Semantic caching sounds like free money. What's the risk?"**
 
+**Memory hook:** *US answer, EU customer* · Confident wrong answers from cache → Near-misses: negations, entities → Tune threshold, scope the keys → Evaluate the cache like a model → Try provider prompt caching first · **Land on:** "Provider prompt caching is exact-prefix, so correctness is unaffected. That's usually the better first move."
+
 **Strong answer:**
 
 > "The risk is that it's a retrieval system in your critical path that returns *wrong answers with high confidence*, and most teams deploy it without evaluating it.
@@ -2076,6 +2104,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q15: "Your p95 latency is 9 seconds. Walk me through fixing it."**
+
+**Memory hook:** *Split the 9 seconds first* · Decompose p95 by stage → TTFT, generation, tools, retries → Stream the response → Route to a fast small model → Set SLO on the right metric · **Land on:** "For a chat product, p95 TTFT under 2 seconds with streaming is the better target, because users feel it."
 
 **Strong answer:**
 
@@ -2099,6 +2129,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q16: "How do you detect hallucination in production at scale, without labels?"**
 
+**Memory hook:** *Check claims against retrieved context* · Number, entity, citation checks on all → Sampled groundedness judge → Self-consistency for high stakes → Log-probs only for triage → Add retrieval to make it checkable · **Land on:** "Designing for verifiability beats detecting after the fact."
+
 **Strong answer:**
 
 > "For RAG, hallucination is tractable because there's a concrete artifact to check against: the retrieved context. That reframes an open-ended problem into a verifiable one.
@@ -2117,6 +2149,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q17: "What's the difference between an eval and a guardrail?"**
 
+**Memory hook:** *Inline blocker versus offline judge* · Guardrail inline, fast, can block → Eval offline, slow is fine → Same check, different constraints → Evals reveal needed guardrails · **Land on:** "Evals tell you what guardrails you need, then keep checking the guardrail isn't over-blocking."
+
 **Strong answer:**
 
 > "Timing, blocking behaviour, and latency budget.
@@ -2133,6 +2167,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q18: "How do you version a prompt, and what breaks if you don't?"**
 
+**Memory hook:** *Immutable ID on every trace* · Hash or registry commit, bundled config → Without it, no regression attribution → Rollback becomes a deploy → Evals lose meaning → Gate label promotion with evals · **Land on:** "Convenience is fine; unaudited convenience is not."
+
 **Strong answer:**
 
 > "A prompt version is an immutable identifier — a content hash or a registry commit — attached to every trace, every eval run, and every deploy record. It travels bundled with the model snapshot, retriever index version, and sampling params in a single config object with its own fingerprint, because a prompt tuned against one model isn't valid against another.
@@ -2148,6 +2184,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q19: "You're at 5% thumbs-down. Is that good or bad?"**
+
+**Memory hook:** *A sample of a sample* · Uninterpretable on its own → Use as trend and router → Implicit signals like edit distance → Push for deterministic outcome → Four preset thumbs-down reasons · **Land on:** "Same friction for the user, and you get a labeled failure taxonomy for free."
 
 **Strong answer:**
 
@@ -2166,6 +2204,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q20: "Cost tripled overnight. Debug it."**
+
+**Memory hook:** *Four terms, one culprit* · Volume or unit cost → Input versus output tokens → Cache hit rate, model mix → Retries, agent steps, tenants → Match the deploy timeline · **Land on:** "Overnight strongly suggests a deploy, not organic drift. Then cost per request becomes a CI gate."
 
 **Strong answer:**
 
@@ -2191,6 +2231,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q21: "How do you evaluate an agent versus a single LLM call?"**
 
+**Memory hook:** *Right answer, twelve wasted calls* · Outcome, deterministic where possible → Trajectory: tools, order, recovery → Efficiency metrics at p95, p99 → Inject tool failures → Evaluate sub-components separately · **Land on:** "If the planner picks the wrong tool 20% of the time, an end-to-end score will never show it."
+
 **Strong answer:**
 
 > "You have to evaluate the **trajectory**, not just the final answer, because an agent that arrives at the right answer after twelve redundant tool calls is a cost and latency incident that a final-answer metric scores as a success.
@@ -2208,6 +2250,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q22: "All your offline evals pass, but users say quality dropped. What now?"**
+
+**Memory hook:** *Believe users, then find gap* · Passing evals only cover known things → Distribution shift or wrong metric → Outside change or judge drift → Read 50 thumbs-down traces → Add, evaluate, fix, gate · **Land on:** "Refresh the production-sample eval set weekly, with an owner. It is maintenance, not a one-time build."
 
 **Strong answer:**
 
@@ -2233,6 +2277,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q23: "Design the observability for a multi-tenant enterprise LLM product."**
 
+**Memory hook:** *Tenant ID on every span* · Isolation at the query layer → Cost and quality by tenant → Per-tier SLOs and routing → Per-tenant quality baselines → Config, retention, residency per tenant · **Land on:** "Tenant ID is a required field, validated at ingress. Make it optional and traffic becomes unattributable."
+
 **Strong answer:**
 
 > "Multi-tenancy adds three requirements on top of standard LLM observability: isolation, per-tenant attribution, and per-tenant SLOs.
@@ -2254,6 +2300,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q24: "What's your incident-response playbook for an LLM quality event?"**
+
+**Memory hook:** *Mitigate first, root-cause second* · Detect, size the blast radius → Check four change streams → Read twenty bad traces → Roll back, then root cause → Regression set, CI gate, alert · **Land on:** "A prompt change has the blast radius of a code deploy, but far weaker change control."
 
 **Strong answer:**
 
@@ -2279,6 +2327,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q25: "When would you NOT build evals?"**
 
+**Memory hook:** *Traces first, evals second* · Before real users exist → When a deterministic check works → When outcome signal is abundant → Throwaway prototypes → Never skip tracing · **Land on:** "Invest heavily the moment you can't answer 'did last week's change help?' without arguing."
+
 **Strong answer:**
 
 > "There's a real answer here, and giving it honestly is more credible than eval maximalism.
@@ -2299,6 +2349,8 @@ They overlap, but the overlap isn't the interesting part.
 
 ## **Q26: "How do you handle multi-turn conversation evaluation?"**
 
+**Memory hook:** *Grade the conversation, not the turn* · Turn-level misses cross-turn failures → Conversation-level evaluators → Fixed replay or simulated user → Group traces by session → Monitor session-level metrics · **Land on:** "Turns to resolution, abandonment, and escalation track real satisfaction far better than per-turn judge scores."
+
 **Strong answer:**
 
 > "The unit of quality is the conversation, not the turn, and evaluating turns independently misses most of what goes wrong.
@@ -2314,6 +2366,8 @@ They overlap, but the overlap isn't the interesting part.
 ---
 
 ## **Q27: "Explain how you'd roll out a model upgrade — say, moving from one model version to a newer one."**
+
+**Memory hook:** *Highest-risk deploy, seven steps* · Offline paired evals → Re-tune the prompt → Cost and latency delta → Shadow 10%, then canary → Keep old model behind flag · **Land on:** "Keep the old model behind a flag for at least a week. Rollback must not require a deploy."
 
 **Strong answer:**
 

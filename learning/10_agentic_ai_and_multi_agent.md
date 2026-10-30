@@ -2195,6 +2195,8 @@ class TokenBudget:
 
 ## **Q1: "How would you design a multi-agent system for a complex task?"**
 
+**Memory hook:** *Break it, staff it, wire it* · decompose into sub-tasks → specialist agent roles → LangGraph orchestrates, shared state → right model per role → production hardening · **Land on:** "Then I harden it: retries, fallback models, token budgets, tracing, and circuit breakers."
+
 **Strong Answer:**
 
 > I'd follow a structured approach:
@@ -2215,6 +2217,8 @@ class TokenBudget:
 
 ## **Q2: "Compare LangChain vs LangGraph vs CrewAI — when would you use each?"**
 
+**Memory hook:** *Library, graph, team* · LangChain is the standard library → LangGraph adds loops, branching, checkpoints → CrewAI is a role-based crew → combine them in practice · **Land on:** "LangChain for tools, LangGraph for orchestration, CrewAI for quick prototypes I later move to LangGraph."
+
 **Strong Answer:**
 
 > These three solve different problems at different abstraction levels:
@@ -2230,6 +2234,8 @@ class TokenBudget:
 ---
 
 ## **Q3: "What is the ReAct pattern and why is it effective?"**
+
+**Memory hook:** *Think, act, look, repeat* · Reasoning plus Acting loop → Thought, Action, Observation → reasoning cuts hallucination → actions ground in facts → traces you can inspect · **Land on:** "Act-only picks bad tools, Reason-only hallucinates. ReAct combines the best of both."
 
 **Strong Answer:**
 
@@ -2248,6 +2254,8 @@ class TokenBudget:
 ---
 
 ## **Q4: "How do agents handle errors and recover gracefully?"**
+
+**Memory hook:** *Seven safety nets* · retry with backoff → fallback models, fallback tools → reflect and self-correct → circuit breakers → degrade, then human escalation · **Land on:** "Seven layers, from a simple retry all the way up to asking a human."
 
 **Strong Answer:**
 
@@ -2271,6 +2279,8 @@ class TokenBudget:
 
 ## **Q5: "Where is agentic AI heading? What's the future?"**
 
+**Memory hook:** *Plug in, remember more, go real* · MCP standard tool protocol → longer context, better memory → small specialized agent models → agent marketplaces → evaluation, safety, real-world actions · **Land on:** "Agents are moving beyond text-in, text-out into real-world systems."
+
 **Strong Answer:**
 
 > Several major trends are converging:
@@ -2290,6 +2300,8 @@ class TokenBudget:
 ---
 
 ## **Q6: "How would you evaluate if an agent is performing well?"**
+
+**Memory hook:** *Six dials, one test suite* · task success rate → tool efficiency → latency and cost → error recovery rate → safety, red-team testing · **Land on:** "I run a suite of representative tasks on every deployment, like software tests."
 
 **Strong Answer:**
 
@@ -2313,6 +2325,8 @@ class TokenBudget:
 
 ## **Q7: "Explain the difference between hierarchical and decentralized multi-agent orchestration."**
 
+**Memory hook:** *Boss versus peers* · supervisor delegates, like a PM → easy debug, but bottleneck → peer-to-peer via message bus → resilient, but harder debug → hybrid of both · **Land on:** "Hybrid gives the debuggability of hierarchy with the resilience of decentralization."
+
 **Strong Answer:**
 
 > **Hierarchical orchestration** has a clear chain of command. A supervisor agent receives the task, decomposes it, delegates sub-tasks to specialist agents, monitors their progress, and aggregates results. Think of it like a project manager directing a team.
@@ -2330,6 +2344,8 @@ class TokenBudget:
 ---
 
 ## **Q8: "How do you manage memory in a long-running agent system?"**
+
+**Memory hook:** *Four drawers of memory* · short-term conversation buffer → working memory, task state → long-term vector store → episodic past-task summaries → retrieval quality is key · **Land on:** "Bad retrieval hurts, so I use hybrid search, re-ranking, and a 0.75 similarity threshold."
 
 **Strong Answer:**
 
@@ -2349,6 +2365,8 @@ class TokenBudget:
 
 ## **Q9: "What is MCP (Model Context Protocol) and how does it relate to agents?"**
 
+**Memory hook:** *USB-C for AI* · open standard, ends fragmentation → servers expose tools and resources → clients discover tools dynamically → reusable across frameworks → my FastAPI tool servers · **Land on:** "Tool servers become reusable across frameworks, so the tool layer is decoupled from the agent layer."
+
 **Strong Answer:**
 
 > MCP is Anthropic's open standard for connecting AI agents to external tools and data sources — think of it as **"USB-C for AI."** Before MCP, every agent framework had its own way of defining and calling tools, creating fragmentation.
@@ -2364,6 +2382,8 @@ class TokenBudget:
 ---
 
 ## **Q10: "Walk me through how you'd build a production agent from scratch."**
+
+**Memory hook:** *Start narrow, then harden* · define a narrow scope → prototype, then LangGraph → add memory, wrap in FastAPI → observability and eval suite → deploy, monitor, iterate · **Land on:** "Agent development is iterative. The first version is never the last."
 
 **Strong Answer:**
 

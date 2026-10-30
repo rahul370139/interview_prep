@@ -1398,6 +1398,8 @@ Always have 2–3 "go-to" project stories ready:
 
 ## Question 1: "Design a content recommendation feed (like TikTok/YouTube)"
 
+**Memory hook:** *Funnel 10M videos into a feed* · scope: 100M+ users, <200ms → candidates 10M to 500 → rank, then re-rank → two-tower daily, ranker hourly → NDCG@20, watch time, retention · **Land on:** "A/B test every model change for at least 7 days, and watch for filter bubbles."
+
 ### Framework
 
 ```
@@ -1438,6 +1440,8 @@ Requirements → Two-stage architecture → Features → Metrics → Iteration
 
 ## Question 2: "Design a real-time bidding (RTB) system for ad targeting"
 
+**Memory hook:** *Bid in under 100ms* · predict click, conversion, revenue → Redis features, fast scoring → calibrate with Platt scaling → bid is P(click) times value → watch calibration, win rate, ROI · **Land on:** "The key trade-off is latency vs accuracy, so I use lightweight models with pre-computed features."
+
 ### Framework
 
 ```
@@ -1466,6 +1470,8 @@ Requirements → Two-stage architecture → Features → Metrics → Iteration
 ---
 
 ## Question 3: "How would you handle a model that performs well offline but poorly in production?"
+
+**Memory hook:** *Lab hero, field zero* · data: skew, leakage, shift → features: missing, stale, mismatched → infra: wrong version, preprocessing → evaluation: wrong metric, test set → log, compare, shadow mode · **Land on:** "Log 1% of production inputs and outputs, then re-run offline evaluation on that data."
 
 ### Framework
 
@@ -1506,6 +1512,8 @@ Systematic debugging checklist:
 
 ## Question 4: "Design a system to detect hate speech in user-generated content"
 
+**Memory hook:** *Three tiers, then a human* · 500M posts/day, <5s → async queue: allow, flag, remove → blocklist, BERT, LLM judge → multilingual, evasion, sarcasm → precision, recall, review rate · **Land on:** "Balance safety and freedom: catch harmful content, but avoid over-censorship."
+
 ### Framework
 
 ```
@@ -1539,6 +1547,8 @@ Systematic debugging checklist:
 ---
 
 ## Question 5: "How would you reduce inference latency from 500ms to 50ms?"
+
+**Memory hook:** *Easiest wins first* · caching, biggest bang for buck → quantize, distill, prune → GPU, batching, more replicas → cascade and pre-computation → gRPC, pooling, co-location · **Land on:** "Start with caching. Cache hits can be 10 to 100× faster."
 
 ### Framework
 
@@ -1577,6 +1587,8 @@ Systematic optimization checklist (ordered by ease of implementation):
 
 ## Question 6: "Design an anomaly detection system for server metrics"
 
+**Memory hook:** *Two detectors must agree* · 10K servers, under 1 min → metrics plus deploy metadata → Z-score, Isolation Forest, LSTM autoencoder → seasonality, deploys, alert fatigue · **Land on:** "Ensemble the detectors, and alert when 2 or more agree."
+
 ### Framework
 
 ```
@@ -1608,6 +1620,8 @@ Systematic optimization checklist (ordered by ease of implementation):
 ---
 
 ## Question 7: "How do you handle class imbalance in a classification problem?"
+
+**Memory hook:** *Simple fixes first* · data: oversample, undersample, augment → algorithm: class weights, focal loss → evaluate with PR-AUC, F1 → tune the threshold → architecture: anomaly frame, cascade · **Land on:** "The default 0.5 threshold is almost always wrong. Pick it from the PR curve."
 
 ### Framework
 
@@ -1644,6 +1658,8 @@ Layered approach (ordered from simplest to most complex):
 ---
 
 ## Question 8: "Walk me through how you'd approach a brand-new ML project at a company"
+
+**Memory hook:** *Understand, baseline, iterate, ship* · weeks 1-2, understand, design doc → weeks 3-4, simple baseline → weeks 5-8, features, error analysis → weeks 9-10, productionize, shadow mode → weeks 11-12, launch and learn · **Land on:** "Then I roll out gradually: canary, then 10%, 50%, and 100%."
 
 ### Framework
 
@@ -1690,6 +1706,8 @@ Week 11-12: LAUNCH & LEARN
 
 ## Question 9: "Compare microservices vs monolith for an ML system"
 
+**Memory hook:** *One box versus many boxes* · monolith is faster initially → microservices scale per service → independent deploys and frameworks → shared feature service avoids skew · **Land on:** "Monolith for a small team or MVP. Microservices for a large team with multiple models in production."
+
 ### Framework
 
 | Aspect | Monolith | Microservices |
@@ -1727,6 +1745,8 @@ Each model service:
 ---
 
 ## Question 10: "What's your experience deploying ML systems to production?"
+
+**Memory hook:** *TrainPI, from PDF to prod* · FastAPI on Railway, Supabase pgvector → RAG, career matching, agents → async, LRU cache, logging → lessons: managed services first · **Land on:** "Async is essential for LLM APIs, and structured logging saves hours of debugging."
 
 ### Your Answer Template
 
